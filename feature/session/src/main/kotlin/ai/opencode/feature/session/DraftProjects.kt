@@ -44,12 +44,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -238,7 +240,7 @@ fun DraftProjectList(
                 Box(
                     Modifier
                         .alpha(highlightAlpha)
-                        .background(OpenCodeTheme.colors.text.copy(alpha = 0.06f), RoundedCornerShape(8.dp)),
+                        .background(MaterialTheme.colorScheme.secondaryContainer, CircleShape),
                 )
             },
         ) {
@@ -304,12 +306,12 @@ private fun DraftProjectRow(
     Row(
         Modifier
             .fillMaxWidth()
-            .heightIn(min = 48.dp)
-            .background(OpenCodeTheme.colors.text.copy(alpha = 0.06f * highlight), RoundedCornerShape(8.dp))
+            .heightIn(min = 56.dp)
+            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = highlight), CircleShape)
             // A hidden row has no pointer node at all: a disabled one would still be hit and end
             // the search, eating taps meant for the chosen row folded under it.
             .then(if (takesTouches) Modifier.clickable(role = Role.Button, onClickLabel = hint, onClick = onClick) else Modifier)
-            .padding(start = 17.dp, end = 16.dp)
+            .padding(start = 20.dp, end = 20.dp)
             .testTag(tag)
             .clearAndSetSemantics {
                 // `selected` would make the row checkable, and TalkBack would offer "double-tap to

@@ -290,9 +290,8 @@ private fun SearchCapsule(
     Surface(
         // The drawer's floating control, as its footer buttons: popover fill, hairline ring, soft shadow.
         shape = RoundedCornerShape(OpenCodeRadius.panel),
-        color = OpenCodeSurfaces.color,
-        border = OpenCodeSurfaces.border,
-        shadowElevation = OpenCodeSurfaces.raisedShadow,
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        shadowElevation = 0.dp,
         contentColor = OpenCodeTheme.colors.text,
         modifier = modifier
             .height(size)
@@ -340,9 +339,8 @@ private fun CancelButton(size: Dp, enabled: Boolean = true, onClick: () -> Unit)
     val cancelDescription = stringResource(R.string.drawer_search_cancel_description)
     Surface(
         shape = RoundedCornerShape(OpenCodeRadius.panel),
-        color = OpenCodeSurfaces.color,
-        border = OpenCodeSurfaces.border,
-        shadowElevation = OpenCodeSurfaces.raisedShadow,
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        shadowElevation = 0.dp,
         contentColor = OpenCodeTheme.colors.text,
         modifier = Modifier
             .size(size)

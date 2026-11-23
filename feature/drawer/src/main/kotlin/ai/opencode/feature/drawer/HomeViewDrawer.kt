@@ -512,9 +512,8 @@ private fun DrawerNewSessionButton(enabled: Boolean, onClick: () -> Unit) {
         // The desktop's floating control: the popover fill, hairline ring and a soft shadow, at the
         // floating panels' radius so the tall footer buttons don't read as keys.
         shape = RoundedCornerShape(OpenCodeRadius.panel),
-        color = OpenCodeSurfaces.color,
-        border = OpenCodeSurfaces.border,
-        shadowElevation = OpenCodeSurfaces.raisedShadow,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        shadowElevation = 0.dp,
         contentColor = tint,
         modifier = Modifier
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
@@ -597,9 +596,8 @@ private fun DrawerFooterTrailing(
         }
         Surface(
             shape = RoundedCornerShape(OpenCodeRadius.panel),
-            color = OpenCodeSurfaces.color,
-            border = OpenCodeSurfaces.border,
-            shadowElevation = OpenCodeSurfaces.raisedShadow,
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            shadowElevation = 0.dp,
             contentColor = OpenCodeTheme.colors.text,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {

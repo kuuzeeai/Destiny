@@ -218,9 +218,8 @@ fun SettingsSection(
         }
         // The desktop's card: flat fill inside a hairline border, small radius.
         Surface(
-            color = OpenCodeTheme.colors.groupedCard,
-            shape = RoundedCornerShape(OpenCodeRadius.card),
-            border = BorderStroke(1.dp, OpenCodeTheme.colors.border),
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            shape = RoundedCornerShape(OpenCodeRadius.panel),
             modifier = Modifier.fillMaxWidth(),
         ) {
             Column(Modifier.animateContentSize(MotionRole.Layout.animation(reduceMotion = rememberReduceMotion())), content = rows)

@@ -51,7 +51,7 @@ object OpenCodeSurfaces {
 
     /** The floating surface's hairline. */
     val border: BorderStroke
-        @Composable @ReadOnlyComposable get() = BorderStroke(hairline, OpenCodeTheme.colors.border)
+        @Composable @ReadOnlyComposable get() = BorderStroke(hairline, Color.Transparent)
 }
 
 /**
@@ -60,8 +60,8 @@ object OpenCodeSurfaces {
  */
 val OpenCodeColors.floating: Color
     get() = when {
+        theme == AppTheme.System -> userBubble.copy(alpha = 1f)
         !isDark -> canvas
-        theme == AppTheme.System -> codeBand.copy(alpha = 1f)
         else -> variant.darkFloatingFill().color
     }
 
@@ -75,7 +75,7 @@ internal fun ThemeVariant.darkFloatingFill(): ThemeRGBA =
 /** A hairline ring in [shape] (desktop `0 0 0 1px border-base`). */
 @Composable
 fun Modifier.openCodeHairline(shape: Shape): Modifier =
-    border(OpenCodeSurfaces.hairline, OpenCodeTheme.colors.border, shape)
+    this
 
 /**
  * Material's [AlertDialog] as the desktop's dialog: floating fill, hairline ring, 12 dp corners.

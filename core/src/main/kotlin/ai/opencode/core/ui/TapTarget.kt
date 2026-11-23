@@ -77,12 +77,12 @@ fun OpenCodeIconButton(
                 onClick = onClick,
                 modifier = face,
                 enabled = enabled,
-                shape = OpenCodeShape.card,
+                shape = OpenCodeShape.circle,
                 colors = IconButtonDefaults.outlinedIconButtonColors(
                     containerColor = container,
                     contentColor = tint?.highContrastForeground() ?: OpenCodeTheme.colors.text,
                 ),
-                border = if (tint == null) OpenCodeSurfaces.border else null,
+                border = null,
                 interactionSource = interactions,
             ) {
                 OpenCodeIcon(symbol, contentDescription = contentDescription, size = iconSize)

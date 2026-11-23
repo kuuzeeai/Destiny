@@ -51,7 +51,7 @@ fun OpenCodePrimaryButton(
         onClick = onClick,
         modifier = modifier.heightIn(min = OpenCodeButtonDefaults.height).motionPress(interactions),
         enabled = enabled,
-        shape = OpenCodeShape.control,
+        shape = OpenCodeShape.capsule,
         colors = colors,
         contentPadding = OpenCodeButtonDefaults.contentPadding,
         interactionSource = interactions,
@@ -82,19 +82,18 @@ fun OpenCodeSecondaryButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     // Desktop neutral button: a light neutral fill with a hairline.
-    val container = OpenCodeSurfaces.neutralFill
+    val container = MaterialTheme.colorScheme.secondaryContainer
     val colors = if (role == OpenCodeButtonRole.Destructive) {
         ButtonDefaults.filledTonalButtonColors(containerColor = container, contentColor = OpenCodeTheme.colors.destructive)
     } else {
-        ButtonDefaults.filledTonalButtonColors(containerColor = container, contentColor = OpenCodeTheme.colors.text)
+        ButtonDefaults.filledTonalButtonColors(containerColor = container, contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
     }
     val interactions = remember { MutableInteractionSource() }
     FilledTonalButton(
         onClick = onClick,
         modifier = modifier.heightIn(min = OpenCodeButtonDefaults.height).motionPress(interactions),
         enabled = enabled,
-        shape = OpenCodeShape.control,
-        border = OpenCodeSurfaces.border,
+        shape = OpenCodeShape.capsule,
         colors = colors,
         contentPadding = OpenCodeButtonDefaults.contentPadding,
         interactionSource = interactions,

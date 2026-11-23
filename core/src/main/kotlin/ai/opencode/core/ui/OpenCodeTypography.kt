@@ -66,19 +66,19 @@ object OpenCodeTextStyles {
     // tracked like the desktop's `text-16/20-medium`. Everything stays in sp, so font scaling works.
 
     /** `.largeTitle`: 28/34 medium. */
-    val largeTitle = style(28, 34, FontWeight.Medium, -0.4)
+    val largeTitle = style(32, 40, FontWeight.Bold)
     /** `.title` (title1): 24/30 medium. */
-    val title1 = style(24, 30, FontWeight.Medium, -0.32)
+    val title1 = style(28, 36, FontWeight.Bold)
     /** `.title2`: 20/26 medium (desktop `text-20-medium`). */
-    val title2 = style(20, 26, FontWeight.Medium, -0.32)
+    val title2 = style(22, 28, FontWeight.SemiBold)
     /** `.title3`: 18/24 medium. */
-    val title3 = style(18, 24, FontWeight.Medium, -0.16)
+    val title3 = style(20, 28, FontWeight.SemiBold)
     /** `.headline`: 16/22 medium (desktop `text-16-medium`). */
-    val headline = style(16, 22, FontWeight.Medium, -0.16)
+    val headline = style(16, 24, FontWeight.SemiBold, 0.1)
     /** `.body`: 15/23 (desktop markdown 14 px / 160 %). */
-    val body = style(15, 23)
+    val body = style(16, 24)
     /** `.callout`: 15/21. */
-    val callout = style(15, 21)
+    val callout = style(16, 22)
     /** `.subheadline`: 14/20 (desktop `text-14`). */
     val subheadline = style(14, 20)
     /** `.footnote`: 13/18 (desktop `text-12`, 13 px). */

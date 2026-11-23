@@ -14,21 +14,21 @@ import kotlin.math.min
  */
 object OpenCodeRadius {
     /** Tiny marks: inline code, checkbox insets (desktop 4). */
-    val xs: Dp = 4.dp
+    val xs: Dp = 6.dp
     /** Small fills and thumbnails (desktop 6). */
-    val sm: Dp = 6.dp
+    val sm: Dp = 12.dp
     /** Tertiary-fill fields and rows (`tertiarySystemFill` boxes, desktop 8). */
-    val fill: Dp = 8.dp
+    val fill: Dp = 16.dp
     /** Inline controls and trays (desktop 8). */
-    val control: Dp = 8.dp
+    val control: Dp = 16.dp
     /** Cards and glass cards (server list, error report, desktop 10). */
-    val card: Dp = 10.dp
+    val card: Dp = 20.dp
     /** Attachment chips, clipped media, settings tiles (desktop 10). */
-    val tile: Dp = 10.dp
+    val tile: Dp = 20.dp
     /** Large panels: connect, server details, What's New cards (desktop dock 12). */
-    val panel: Dp = 12.dp
+    val panel: Dp = 28.dp
     /** Sheets, scanner frame, model list, voice panel (16). */
-    val sheet: Dp = 16.dp
+    val sheet: Dp = 28.dp
 }
 
 /** [capsule] and [circle] stay true. */
@@ -53,11 +53,11 @@ object OpenCodeShape {
  */
 val OpenCodeShapes = Shapes(
     // Text fields and menus: the desktop's 6 px input and context-menu radius.
-    extraSmall = RoundedCornerShape(OpenCodeRadius.sm),
-    small = RoundedCornerShape(OpenCodeRadius.sm),
-    medium = RoundedCornerShape(OpenCodeRadius.fill),
-    large = RoundedCornerShape(OpenCodeRadius.card),
-    extraLarge = RoundedCornerShape(OpenCodeRadius.sheet),
+    extraSmall = RoundedCornerShape(8.dp),
+    small = RoundedCornerShape(12.dp),
+    medium = RoundedCornerShape(16.dp),
+    large = RoundedCornerShape(24.dp),
+    extraLarge = RoundedCornerShape(32.dp),
 )
 
 /**

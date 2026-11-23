@@ -36,7 +36,7 @@ object OpenCodeShape {
     val capsule = RoundedCornerShape(percent = 50)
 
     /** Buttons, pills and fields (desktop `--radius-md`/`-lg` at phone size). */
-    val control = RoundedCornerShape(OpenCodeRadius.fill)
+    val control = RoundedCornerShape(28.dp)
     val circle = CircleShape
     val card = RoundedCornerShape(OpenCodeRadius.card)
     val panel = RoundedCornerShape(OpenCodeRadius.panel)

@@ -60,6 +60,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -745,9 +746,8 @@ fun ComposerPillLabel(
                 .indication(interactions, ripple()),
             // The desktop's floating chip: flat fill, hairline ring, a small raised shadow.
             shape = OpenCodeShape.control,
-            color = OpenCodeSurfaces.color,
-            border = OpenCodeSurfaces.border,
-            shadowElevation = OpenCodeSurfaces.raisedShadow,
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            shadowElevation = 0.dp,
         ) {
             ComposerPillContent(title = title, rolls = rolls, leading = leading)
         }

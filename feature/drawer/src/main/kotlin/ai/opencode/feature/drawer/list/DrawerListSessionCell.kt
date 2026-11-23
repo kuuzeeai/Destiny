@@ -227,6 +227,7 @@ fun DrawerListSessionCell(
         landingSurface = false
     }
     val cornerRadius = DrawerMetrics.rowCornerRadius
+    val cardFill = MaterialTheme.colorScheme.secondaryContainer
     val rowEdge = DrawerMetrics.rowEdge
     val rowGap = DrawerTunables.rowGap
 
@@ -280,6 +281,15 @@ fun DrawerListSessionCell(
                 }
                 .onGloballyPositioned { rowCoordinates[0] = it }
                 .drawBehind {
+                    if (!row.isLifted) {
+                        val inset = 2.dp.toPx()
+                        drawRoundRect(
+                            cardFill,
+                            topLeft = Offset(0f, inset),
+                            size = Size(size.width, (size.height - 2f * inset).coerceAtLeast(0f)),
+                            cornerRadius = CornerRadius(cornerRadius.toPx()),
+                        )
+                    }
                     val tintAlpha = checkedTintAlpha()
                     if (tintAlpha > 0f) drawRoundRect(checkedTint.copy(alpha = checkedTint.alpha * tintAlpha), cornerRadius = CornerRadius(cornerRadius.toPx()))
                     when {

@@ -39,6 +39,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -64,8 +65,9 @@ internal fun ArchivedEntryRow(count: Int, regularList: Boolean, onClick: () -> U
     Row(
         Modifier
             .fillMaxWidth()
-            .then(if (regularList) Modifier.padding(horizontal = DrawerMetrics.rowEdge) else Modifier)
+            .then(if (regularList) Modifier.padding(horizontal = DrawerMetrics.rowEdge, vertical = 3.dp) else Modifier)
             .clip(RoundedCornerShape(if (regularList) DrawerMetrics.rowCornerRadius else 0.dp))
+            .background(if (regularList) MaterialTheme.colorScheme.secondaryContainer else androidx.compose.ui.graphics.Color.Transparent)
             .clickable(role = Role.Button, onClick = onClick)
             .heightIn(min = if (regularList) DrawerMetrics.rowHeight else 48.dp)
             .padding(start = start, end = end),

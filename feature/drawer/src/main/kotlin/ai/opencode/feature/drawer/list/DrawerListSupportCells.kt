@@ -51,6 +51,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -204,7 +205,7 @@ private fun CatchUpButton(
     returnFocus: AccessibilityFocusRequest?,
 ) {
     val shape = RoundedCornerShape(DrawerMetrics.rowCornerRadius)
-    val canvas = OpenCodeTheme.colors.drawerCanvas
+    val canvas = MaterialTheme.colorScheme.secondaryContainer
     val catchUpTitle = stringResource(R.string.drawer_catch_up_title)
     val sessionCount = pluralStringResource(R.plurals.drawer_catch_up_session_count, count, count)
     val openLabel = stringResource(R.string.drawer_catch_up_open_action)
@@ -256,7 +257,7 @@ private fun CatchUpButton(
 @Composable
 fun DrawerWhatsNewButton(action: () -> Unit, onHide: () -> Unit, modifier: Modifier = Modifier) {
     val shape = RoundedCornerShape(DrawerMetrics.rowCornerRadius)
-    val canvas = OpenCodeTheme.colors.drawerCanvas
+    val canvas = MaterialTheme.colorScheme.secondaryContainer
     val whatsNewTitle = stringResource(R.string.drawer_whats_new)
     val hideLabel = stringResource(R.string.drawer_whats_new_hide)
     RecentRowMenu(

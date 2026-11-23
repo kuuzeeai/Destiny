@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">OpenCode</string>
+    <string name="app_name" translatable="false">Destiny</string>
 
     <!-- App alerts -->
     <string name="app_alert_share_failed_title">Couldn’t Add Shared Items</string>

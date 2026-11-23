@@ -218,11 +218,11 @@ object DrawerTunables {
     /** Highlight from the sides. */
     val rowEdge: Dp = 10.dp
     /** Text inside the highlight. */
-    val textInset: Dp = 10.dp
+    val textInset: Dp = 16.dp
     /** Status inside the highlight. */
     val trailingInset: Dp = 12.dp
     /** Highlight corner radius. */
-    val rowCornerRadius: Dp = 6.dp
+    val rowCornerRadius: Dp = 24.dp
     /** Row text. */
     val rowFont: DrawerTextStyle = DrawerTextStyle.Subheadline
     /** Room above a header. */

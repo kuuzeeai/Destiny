@@ -68,6 +68,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
@@ -308,6 +309,7 @@ private fun DraftProjectRow(
             .fillMaxWidth()
             .heightIn(min = 56.dp)
             .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = highlight), CircleShape)
+            .clip(CircleShape)
             // A hidden row has no pointer node at all: a disabled one would still be hit and end
             // the search, eating taps meant for the chosen row folded under it.
             .then(if (takesTouches) Modifier.clickable(role = Role.Button, onClickLabel = hint, onClick = onClick) else Modifier)

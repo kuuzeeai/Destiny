@@ -1,0 +1,84 @@
+# Compila el APK release (R8 activado) firmado con tu llave fija y lo publica
+# siempre en el mismo enlace: releases/download/ultima/destiny.apk
+name: Compilar APK
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      OC_VERSION_CODE: ${{ github.run_number }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Versión
+        run: echo "OC_VERSION_SUFFIX=$(git rev-parse --short=7 HEAD)" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+        with:
+          packages: platform-tools
+
+      - name: SDK y build-tools
+        run: yes | sdkmanager "platforms;android-37.0" "build-tools;37.0.0" > /dev/null
+
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+
+      - name: Mirror de Maven Central
+        run: install -Dm644 .github/gradle/maven-mirror.init.gradle.kts "${GRADLE_USER_HOME:-$HOME/.gradle}/init.d/maven-mirror.init.gradle.kts"
+
+      - name: Restaurar llave de firma
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          test -n "$KEYSTORE_BASE64" || { echo "Falta el secreto KEYSTORE_BASE64"; exit 1; }
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/destiny.jks"
+          echo "KEYSTORE_FILE=$RUNNER_TEMP/destiny.jks" >> "$GITHUB_ENV"
+
+      - name: Compilar release
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew :app:assembleRelease --stacktrace
+
+      - name: Nombrar APK
+        run: cp app/build/outputs/apk/release/app-release.apk destiny.apk
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: destiny-${{ env.OC_VERSION_SUFFIX }}
+          path: destiny.apk
+          retention-days: 14
+
+      - name: Publicar en el release "ultima"
+        run: |
+          title="ultima · ${OC_VERSION_SUFFIX}"
+          notes="Build release de ${GITHUB_SHA} (código ${GITHUB_RUN_NUMBER})."
+          if gh release view ultima > /dev/null 2>&1; then
+            gh api -X PATCH "repos/${GH_REPO}/git/refs/tags/ultima" -f sha="${GITHUB_SHA}" -F force=true > /dev/null
+            gh release edit ultima --title "$title" --notes "$notes" --prerelease
+            gh release upload ultima destiny.apk --clobber
+          else
+            gh release create ultima destiny.apk --prerelease --latest=false --target "${GITHUB_SHA}" --title "$title" --notes "$notes"
+          fi

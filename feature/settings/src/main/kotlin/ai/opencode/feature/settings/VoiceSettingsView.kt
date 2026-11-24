@@ -146,6 +146,8 @@ fun VoiceSettingsView(store: SettingsStore) {
     val callSetupHeader = stringResource(R.string.settings_voice_call_setup_header)
     val callsHeader = stringResource(R.string.settings_voice_calls_header)
     val raiseToTalkHint = stringResource(R.string.settings_voice_raise_to_talk_hint)
+    val fishHeader = stringResource(R.string.settings_fish_header)
+    val fishFooter = stringResource(R.string.settings_fish_footer)
 
     SettingsPageScaffold(title = stringResource(R.string.settings_voice_title), store = store) {
         item(key = "scope") {
@@ -226,6 +228,9 @@ fun VoiceSettingsView(store: SettingsStore) {
                     VoiceDelegatorSettingsRow(state) { store.send(SettingsFeature.Action.PagePushed(SettingsPage.VoiceDelegator)) }
                 }
             }
+        }
+        settingsSection(key = "fish", header = fishHeader, footer = footerText(fishFooter)) {
+            FishAudioRows()
         }
         settingsSection(key = "options", header = callsHeader) {
             if (state.voiceModeEnabled && showsRaiseToTalk) {

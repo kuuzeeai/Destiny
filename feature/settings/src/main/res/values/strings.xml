@@ -233,4 +233,10 @@
     <string name="settings_pairing_point_camera">Point your camera at the QR code</string>
     <string name="settings_pairing_paste_link">Paste Pairing Link</string>
     <string name="settings_pairing_computer_hint">On your computer, open OpenCode’s Settings → Pairing, or run %1$s in a terminal.</string>
+    <string name="settings_fish_header">Fish Audio</string>
+    <string name="settings_fish_read_replies">Read replies aloud</string>
+    <string name="settings_fish_key_placeholder">Fish Audio API key</string>
+    <string name="settings_fish_voice_placeholder">Voice ID (optional)</string>
+    <string name="settings_fish_test">Test voice</string>
+    <string name="settings_fish_footer">Dictate with the mic in the composer and the reply is read in your Fish Audio voice. The key stays on this phone.</string>
 </resources>

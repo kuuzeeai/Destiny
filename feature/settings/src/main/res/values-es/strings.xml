@@ -226,4 +226,10 @@
     <string name="settings_pairing_point_camera">Apunta la cámara al código QR</string>
     <string name="settings_pairing_paste_link">Pegar enlace de emparejamiento</string>
     <string name="settings_pairing_computer_hint">En tu ordenador, abre Ajustes → Emparejamiento en OpenCode o ejecuta %1$s en un terminal.</string>
+    <string name="settings_fish_header">Fish Audio</string>
+    <string name="settings_fish_read_replies">Leer respuestas en voz alta</string>
+    <string name="settings_fish_key_placeholder">Clave API de Fish Audio</string>
+    <string name="settings_fish_voice_placeholder">ID de voz (opcional)</string>
+    <string name="settings_fish_test">Probar voz</string>
+    <string name="settings_fish_footer">Dicta con el micrófono del compositor y la respuesta se lee con tu voz de Fish Audio. La clave se queda en este teléfono.</string>
 </resources>

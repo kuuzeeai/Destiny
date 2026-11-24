@@ -371,19 +371,21 @@ fun HomeDrawer(
                 ) {
                     val titleModifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = DrawerMetrics.textInset, end = DrawerSearchPillDefaults.size + DrawerTunables.searchGap)
-                        .drawerSearchTitleFade(viewState.search)
+                        .padding(horizontal = DrawerMetrics.textInset)
                     ServerFlowTitle(store = store, onManage = viewState::manageServers, modifier = titleModifier)
-                    DrawerSearchPill(
-                        state = viewState.search,
-                        text = search,
-                        onTextChange = { store.send(HomeFeature.Action.SearchChanged(it)) },
-                        reducedMotion = reducedMotion,
-                        onEnd = viewState::endSearch,
-                        keyboardHold = viewState.keyboardHold,
-                    )
                 }
             }
+                if (!selection.isActive) DrawerSearchPill(
+                    state = viewState.search,
+                    text = search,
+                    onTextChange = { store.send(HomeFeature.Action.SearchChanged(it)) },
+                    reducedMotion = reducedMotion,
+                    onEnd = viewState::endSearch,
+                    modifier = Modifier
+                        .padding(horizontal = DrawerMetrics.rowEdge)
+                        .padding(bottom = 8.dp),
+                    keyboardHold = viewState.keyboardHold,
+                )
                 if (!selection.isActive) Row(
                     Modifier
                         .fillMaxWidth()

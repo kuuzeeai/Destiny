@@ -211,8 +211,6 @@ fun DrawerSearchPill(
         )
     }
 
-    val restPadding = (size - DrawerSearchPillDefaults.glyphWidth) / 2
-
     if (reducedMotion) {
         // A new identity per state, so they cross-fade rather than stretch.
         Crossfade(isSearching, modifier.fillMaxWidth(), animationSpec = Motion.reducedFadeSpec(), label = "drawer-search") { searching ->
@@ -220,10 +218,10 @@ fun DrawerSearchPill(
                 SearchCapsule(
                     isSearching = searching,
                     size = size,
-                    leadingPadding = if (searching) textInset else restPadding,
-                    trailingPadding = if (searching) 8.dp else restPadding,
+                    leadingPadding = textInset,
+                    trailingPadding = 8.dp,
                     onTap = begin,
-                    modifier = if (searching) Modifier.weight(1f) else Modifier,
+                    modifier = Modifier.weight(1f),
                     field = field,
                 )
                 if (searching) {
@@ -239,13 +237,13 @@ fun DrawerSearchPill(
                 SearchCapsule(
                     isSearching = isSearching,
                     size = size,
-                    leadingPadding = if (isSearching) textInset else restPadding,
-                    trailingPadding = if (isSearching) 8.dp else restPadding,
+                    leadingPadding = textInset,
+                    trailingPadding = 8.dp,
                     onTap = begin,
                     modifier = Modifier.animatedWidth {
                         val p = open.value
                         val openWidth = (full - size - DrawerSearchPillDefaults.cancelGap).value
-                        size.value + (openWidth - size.value) * p
+                        full.value + (openWidth - full.value) * p
                     },
                     field = field,
                 )
@@ -322,13 +320,21 @@ private fun SearchCapsule(
                 )
             }
             // The field fades on the morph spring.
-            AnimatedVisibility(
-                isSearching,
-                enter = fadeIn(DrawerSearchPillDefaults.morph(opening = true)),
-                exit = fadeOut(DrawerSearchPillDefaults.morph(opening = false)),
-                modifier = Modifier.weight(1f),
-            ) {
-                field(Modifier.fillMaxWidth())
+            Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                AnimatedVisibility(
+                    !isSearching,
+                    enter = fadeIn(DrawerSearchPillDefaults.morph(opening = false)),
+                    exit = fadeOut(DrawerSearchPillDefaults.morph(opening = true)),
+                ) {
+                    Text(stringResource(CoreR.string.common_search), style = OpenCodeTextStyles.body, color = OpenCodeTheme.colors.tertiaryText, maxLines = 1)
+                }
+                AnimatedVisibility(
+                    isSearching,
+                    enter = fadeIn(DrawerSearchPillDefaults.morph(opening = true)),
+                    exit = fadeOut(DrawerSearchPillDefaults.morph(opening = false)),
+                ) {
+                    field(Modifier.fillMaxWidth())
+                }
             }
         }
     }

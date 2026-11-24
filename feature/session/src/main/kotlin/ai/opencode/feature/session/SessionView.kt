@@ -180,6 +180,7 @@ fun SessionView(
         }
     }
     val importer = rememberSessionAttachmentImporter(store)
+    if (!isInertPreview) FishReplyEffect(store)
     val colors = OpenCodeTheme.colors
     val density = LocalDensity.current
     val attachmentMenu = rememberSessionAttachmentMenuState()

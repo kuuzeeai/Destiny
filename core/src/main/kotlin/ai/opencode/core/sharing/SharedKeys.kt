@@ -65,6 +65,15 @@ object SharedKeys {
     /** Your own xAI key for Grok Voice calls; never sent to the OpenCode server. */
     val xaiAPIKey = SharedKey.keychain<String?>("xai-api-key", null)
 
+    /** Your own Fish Audio key for reading replies aloud; only sent to api.fish.audio. */
+    val fishAPIKey = SharedKey.keychain<String?>("fish-api-key", null)
+
+    /** The Fish Audio voice (its model ID) replies are read in; empty uses Fish's default voice. */
+    val fishVoiceID = SharedKey.appStorage("fish-voice-id", "")
+
+    /** Whether the agent's replies are read aloud with Fish Audio. Off by default. */
+    val fishReadsReplies = SharedKey.appStorage("fish-reads-replies", false)
+
     /** The random key that owns this phone's uploaded voice calls; whoever has it can view them. Made on first upload. */
     val developerModeOwner = SharedKey.keychain<String?>("voice-call-upload-owner", null)
 

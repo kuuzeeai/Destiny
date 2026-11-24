@@ -71,6 +71,9 @@ object SharedKeys {
     /** The Fish Audio voice (its model ID) replies are read in; empty uses Fish's default voice. */
     val fishVoiceID = SharedKey.appStorage("fish-voice-id", "")
 
+    /** Keeps Destiny alive (silent notification) so the power-button assistant works with the app closed. */
+    val assistKeepAlive = SharedKey.appStorage("assist-keep-alive", true)
+
     /** Whether the agent's replies are read aloud with Fish Audio. Off by default. */
     val fishReadsReplies = SharedKey.appStorage("fish-reads-replies", false)
 

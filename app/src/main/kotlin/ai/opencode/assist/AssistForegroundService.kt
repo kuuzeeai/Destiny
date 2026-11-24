@@ -101,6 +101,30 @@ class AssistForegroundService : Service() {
                 },
             )
         }
+        // Modo reproductor: sesion de medios "reproduciendo" con portada del color de la fase.
+        // Asi HyperOS la muestra en la isla igual que a un reproductor de musica.
+        runCatching {
+            val art = artBitmap(tint)
+            val session = mediaSession ?: android.media.session.MediaSession(this, "DestinyAssist").also {
+                it.isActive = true
+                mediaSession = it
+            }
+            session.setMetadata(
+                android.media.MediaMetadata.Builder()
+                    .putString(android.media.MediaMetadata.METADATA_KEY_TITLE, label)
+                    .putString(android.media.MediaMetadata.METADATA_KEY_ARTIST, body)
+                    .putBitmap(android.media.MediaMetadata.METADATA_KEY_ALBUM_ART, art)
+                    .build(),
+            )
+            session.setPlaybackState(
+                android.media.session.PlaybackState.Builder()
+                    .setActions(0L)
+                    .setState(android.media.session.PlaybackState.STATE_PLAYING, 0L, 1f)
+                    .build(),
+            )
+            builder.setLargeIcon(art)
+            builder.setStyle(Notification.MediaStyle().setMediaSession(session.sessionToken))
+        }
         val notification = builder.build()
         startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         if (intent?.action == ACTION_STOP) {
@@ -122,7 +146,20 @@ class AssistForegroundService : Service() {
         return android.graphics.drawable.Icon.createWithBitmap(bmp)
     }
 
+    private var mediaSession: android.media.session.MediaSession? = null
+
+    /** Cuadro liso del color de la fase, para la portada de la isla. */
+    private fun artBitmap(color: Int): android.graphics.Bitmap {
+        val size = 256
+        val bmp = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply { this.color = color }
+        android.graphics.Canvas(bmp).drawRoundRect(0f, 0f, size.toFloat(), size.toFloat(), 56f, 56f, paint)
+        return bmp
+    }
+
     override fun onDestroy() {
+        runCatching { mediaSession?.release() }
+        mediaSession = null
         running = false
         main.removeCallbacks(timeout)
         super.onDestroy()

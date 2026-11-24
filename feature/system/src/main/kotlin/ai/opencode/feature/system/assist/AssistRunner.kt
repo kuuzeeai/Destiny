@@ -45,6 +45,25 @@ object AssistRunner {
         }
     }
 
+    private fun isFailure(item: OpenCodeTranscriptItem): Boolean =
+        item is OpenCodeTranscriptItem.RunError || (item is OpenCodeTranscriptItem.Notice && item.isError)
+
+    /** A short Spanish line that is fine to read aloud. */
+    private fun failureText(item: OpenCodeTranscriptItem): String {
+        val raw = when (item) {
+            is OpenCodeTranscriptItem.RunError -> item.error.message + " " + (item.error.status ?: "")
+            is OpenCodeTranscriptItem.Notice -> item.text
+            else -> ""
+        }.lowercase()
+        return when {
+            Regex("credit|quota|billing|balance|insufficient|payment|402|429|rate limit|limit").containsMatchIn(raw) ->
+                "Se acabó el crédito o el límite del modelo."
+            Regex("unauthorized|api key|invalid key|401|403|forbidden").containsMatchIn(raw) ->
+                "La clave del modelo no es válida."
+            else -> "Falló el modelo. " + raw.trim().take(100)
+        }
+    }
+
     private suspend fun replies(server: OpenCodeServer, sessionID: String): List<OpenCodeTranscriptItem> =
         runCatching { fetchRecentTranscript(server, sessionID, 12) }.getOrNull() ?: emptyList()
 
@@ -58,8 +77,9 @@ object AssistRunner {
         }
         val server = credentials.server
         onStage(Stage.Sending, null)
-        val known = replies(server, session.id)
-            .filterIsInstance<OpenCodeTranscriptItem.AssistantMarkdown>().map { it.id }.toSet()
+        val baseline = replies(server, session.id)
+        val known = baseline.filterIsInstance<OpenCodeTranscriptItem.AssistantMarkdown>().map { it.id }.toSet()
+        val knownErrors = baseline.filter { isFailure(it) }.map { it.id }.toSet()
         ShareSender(server).send(
             ShareSendRequest(
                 target = ShareSendRequest.Target.Session(session.id, session.directory),
@@ -77,6 +97,11 @@ object AssistRunner {
             val items = replies(server, session.id)
             if (items.isEmpty()) continue
             val fresh = items.filterIsInstance<OpenCodeTranscriptItem.AssistantMarkdown>().filter { it.id !in known }
+            val failure = items.firstOrNull { isFailure(it) && it.id !in knownErrors }
+            if (failure != null) {
+                onStage(Stage.Failed, failureText(failure))
+                return
+            }
             val now = items.joinToString(",") {
                 val m = it as? OpenCodeTranscriptItem.AssistantMarkdown
                 "${it.id}:${m?.text?.length}:${m?.inProgress}"

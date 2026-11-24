@@ -102,6 +102,13 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             setTextColor(0xFF6E6E76.toInt())
             setPadding(dp(46), dp(2), 0, 0)
         }
+        heard.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, st: Int, c: Int, a: Int) {}
+            override fun onTextChanged(s: CharSequence?, st: Int, b: Int, c: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                AssistForegroundService.heard(context, s?.toString().orEmpty())
+            }
+        })
         pill.addView(heard)
         pill.addView(diagText)
         diagView = diagText

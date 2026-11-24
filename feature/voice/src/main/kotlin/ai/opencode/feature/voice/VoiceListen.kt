@@ -30,11 +30,11 @@ import kotlin.math.min
 import kotlin.math.sqrt
 
 /**
- * Listens with the phone's own microphone and understands the speech with the person's Fish Audio
- * account (`POST /v1/asr`), so it does not depend on Google's recognizer. One utterance at a time:
- * it records until a pause, sends a WAV, and returns the text.
+ * Listens with the phone's own microphone and understands the speech with the person's Groq key
+ * (Whisper, free tier), so it does not depend on Google's recognizer. One utterance at a time:
+ * it records until a pause, sends a WAV, and returns the text. Fish Audio only speaks.
  */
-object FishListen {
+object VoiceListen {
     enum class Failure { Silence, Mic, Network }
 
     private class MicException : Exception("mic")
@@ -45,9 +45,9 @@ object FishListen {
     private val http: OkHttpClient by lazy { OkHttpClient().withVoiceTimeout(30) }
     private var job: Job? = null
 
-    /** A Fish Audio key is saved. */
+    /** A Groq key is saved. */
     val available: Boolean
-        get() = !shared(SharedKeys.fishAPIKey).value.isNullOrBlank()
+        get() = !shared(SharedKeys.groqAPIKey).value.isNullOrBlank()
 
     fun cancel() {
         job?.cancel()
@@ -57,7 +57,7 @@ object FishListen {
     /** Callbacks run on a background thread. */
     fun listen(onTranscribing: () -> Unit, onText: (String) -> Unit, onFail: (Failure, String?) -> Unit) {
         cancel()
-        val key = shared(SharedKeys.fishAPIKey).value?.trim().orEmpty()
+        val key = shared(SharedKeys.groqAPIKey).value?.trim().orEmpty()
         job = scope.launch {
             try {
                 val pcm = record()
@@ -75,7 +75,7 @@ object FishListen {
             } catch (e: SecurityException) {
                 onFail(Failure.Mic, null)
             } catch (e: Exception) {
-                AppLog.voice.notice("Fish Audio couldn’t understand the audio: ${e.message ?: e.javaClass.simpleName}")
+                AppLog.voice.notice("Groq couldn’t understand the audio: ${e.message ?: e.javaClass.simpleName}")
                 onFail(Failure.Network, e.message)
             }
         }
@@ -182,15 +182,14 @@ object FishListen {
 
     private suspend fun transcribe(key: String, wav: ByteArray): String {
         val body = MultipartBody.Builder().setType(MultipartBody.FORM)
-            .addFormDataPart("audio", "speech.wav", wav.toRequestBody("audio/wav".toMediaType()))
-            .addFormDataPart("ignore_timestamps", "true")
-            .addFormDataPart("tag_audio_events", "false")
+            .addFormDataPart("file", "speech.wav", wav.toRequestBody("audio/wav".toMediaType()))
+            .addFormDataPart("model", "whisper-large-v3-turbo")
+            .addFormDataPart("temperature", "0")
         val lang = Locale.getDefault().language
         if (lang.length == 2) body.addFormDataPart("language", lang)
         val request = Request.Builder()
-            .url("https://api.fish.audio/v1/asr")
+            .url("https://api.groq.com/openai/v1/audio/transcriptions")
             .header("Authorization", "Bearer $key")
-            .header("model", "transcribe-1-pro")
             .post(body.build())
             .build()
         val response = http.voiceSend(request)

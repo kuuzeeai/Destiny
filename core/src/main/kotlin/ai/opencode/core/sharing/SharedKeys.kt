@@ -68,6 +68,9 @@ object SharedKeys {
     /** Your own Fish Audio key for reading replies aloud; only sent to api.fish.audio. */
     val fishAPIKey = SharedKey.keychain<String?>("fish-api-key", null)
 
+    /** Your own Groq key: understands your voice (Whisper) for the power-button assistant; only sent to api.groq.com. */
+    val groqAPIKey = SharedKey.keychain<String?>("groq-api-key", null)
+
     /** The Fish Audio voice (its model ID) replies are read in; empty uses Fish's default voice. */
     val fishVoiceID = SharedKey.appStorage("fish-voice-id", "")
 

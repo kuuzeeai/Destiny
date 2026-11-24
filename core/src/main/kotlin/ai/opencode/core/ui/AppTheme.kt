@@ -24,6 +24,7 @@ import kotlinx.serialization.Serializable
 enum class AppTheme(val rawValue: String, private val brandTitle: String?) {
     @SerialName("system") System("system", null),
     @SerialName("oc-2") OpenCode("oc-2", "OpenCode"),
+    @SerialName("amoled") Amoled("amoled", "AMOLED"),
     @SerialName("tokyonight") TokyoNight("tokyonight", "Tokyo Night"),
     @SerialName("catppuccin") Catppuccin("catppuccin", "Catppuccin"),
     @SerialName("dracula") Dracula("dracula", "Dracula"),
@@ -327,6 +328,7 @@ object ThemePalette {
     fun definition(theme: AppTheme): ThemeDefinition = when (theme) {
         AppTheme.System -> system
         AppTheme.OpenCode -> BrandPalette.opencode
+        AppTheme.Amoled -> BrandPalette.amoled
         AppTheme.TokyoNight -> tokyonight
         AppTheme.Catppuccin -> catppuccin
         AppTheme.Dracula -> dracula

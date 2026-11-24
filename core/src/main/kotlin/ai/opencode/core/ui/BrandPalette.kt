@@ -75,4 +75,25 @@ internal object BrandPalette {
             swatchAccent = hex("#DBDBDB"),
         ),
     )
+
+    /**
+     * AMOLED: fondo negro puro (los pixeles se apagan) y las burbujas, tarjetas y bloques de codigo
+     * en grises un poco mas claros para que no sea todo negro plano. En modo claro usa el de OpenCode.
+     */
+    val amoled = ThemeDefinition(
+        id = AppTheme.Amoled,
+        title = "AMOLED",
+        light = opencode.light,
+        dark = opencode.dark.copy(
+            canvas = hex("#000000"),
+            canvasWeak = hex("#000000"),
+            codeBand = hex("#101010"),
+            userBubble = hex("#202020"),
+            surfaceStrong = hex("#2C2C2C"),
+            border = hex("#262626"),
+            borderStrong = hex("#3D3D3D"),
+            swatchCanvas = hex("#000000"),
+            swatchRing = hex("#3D3D3D"),
+        ),
+    )
 }

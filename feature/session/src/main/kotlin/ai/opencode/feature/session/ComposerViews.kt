@@ -580,6 +580,7 @@ internal fun Modifier.blockTouches(): Modifier = pointerInput(Unit) {
  * A trailing control's glyph in its circle. The circle grows with the font scale up to 44 dp; the
  * 48 dp target comes from the enclosing control.
  */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ComposerControlLabel(
     systemImage: String,
@@ -614,7 +615,7 @@ fun ComposerControlLabel(
             label = "composerControlGlyph",
         ) { glyph ->
             if (glyph.symbol == null) {
-                CircularProgressIndicator(Modifier.size(16.dp), color = foreground, strokeWidth = 2.dp)
+                androidx.compose.material3.LoadingIndicator(modifier = Modifier.size(28.dp), color = foreground)
             } else {
                 OpenCodeIcon(
                     glyph.symbol,

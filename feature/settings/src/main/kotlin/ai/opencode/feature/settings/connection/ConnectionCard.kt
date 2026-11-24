@@ -118,7 +118,7 @@ const val credentialsRejectedStatus = 401
  * it reads as one of them.
  */
 private object ConnectionCardMetrics {
-    val cornerRadius = OpenCodeRadius.card
+    val cornerRadius = OpenCodeRadius.panel
     /** The scope box's inset from the card. */
     val boxInset = 6.dp
     /** The text column's inset from the box. */
@@ -233,8 +233,7 @@ private fun ConnectionCardContent(
             Modifier
                 .fillMaxWidth()
                 .clip(cardShape)
-                .background(colors.groupedCard)
-                .border(1.dp, colors.border, cardShape)
+                .background(MaterialTheme.colorScheme.surfaceContainer)
                 .clickable(interactionSource = interaction, indication = ripple(), role = Role.Button, onClick = onOpen)
                 // Ahead of the clearing below, which would drop its marker.
                 .accessibilityFocusRequest(focusRequest)

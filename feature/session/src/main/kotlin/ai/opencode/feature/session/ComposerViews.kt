@@ -123,7 +123,7 @@ enum class ComposerTextStyle(val rawValue: String) {
 object ComposerTunables {
     const val barHeight = 56f
     /** The desktop dock's 12. */
-    const val cornerRadius = 12f
+    const val cornerRadius = 28f
     val textStyle = ComposerTextStyle.body
 
     const val horizontalMargin = 20f

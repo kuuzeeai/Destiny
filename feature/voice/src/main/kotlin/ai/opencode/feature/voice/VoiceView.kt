@@ -143,7 +143,7 @@ object ComposerMetrics {
     const val barHeight = 56f
 
     /** `composer.size.cornerRadius`; on this branch the desktop dock's 12. */
-    const val cornerRadius = 12f
+    const val cornerRadius = 28f
 
     /** `composer.spacing.innerHorizontal`. */
     const val innerHorizontal = 6f
@@ -156,11 +156,11 @@ object VoiceCallSurfaceDefaults {
      * (`--surface-raised-stronger-non-alpha`, white in light, a step above the canvas in dark).
      */
     val color: Color
-        @Composable @ReadOnlyComposable get() = OpenCodeTheme.colors.floating
+        @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceContainerHigh
 
     /** The dock's hairline ring (`--v2-border-border-base`). */
     val border: Color
-        @Composable @ReadOnlyComposable get() = OpenCodeTheme.colors.border
+        @Composable @ReadOnlyComposable get() = Color.Transparent
 
     /**
      * The floating call's card and sheet: one step off the page in both modes (`#F3F3F3` on the

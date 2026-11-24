@@ -116,7 +116,8 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             .queryIntentServices(Intent(android.speech.RecognitionService.SERVICE_INTERFACE), 0)
             .map { it.serviceInfo }
             .filter { it.packageName != context.packageName }
-        val svc = list.firstOrNull { it.packageName.contains("google") } ?: list.firstOrNull()
+        val svc = list.firstOrNull { it.packageName == "com.google.android.googlequicksearchbox" }
+            ?: list.firstOrNull { it.packageName.contains("google") } ?: list.firstOrNull()
         return if (svc != null) {
             SpeechRecognizer.createSpeechRecognizer(context, android.content.ComponentName(svc.packageName, svc.name))
         } else {
@@ -159,7 +160,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
                 .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                 .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-                .putExtra(RecognizerIntent.EXTRA_LANGUAGE, "es"),
+                .putExtra(RecognizerIntent.EXTRA_LANGUAGE, java.util.Locale.getDefault().toLanguageTag()),
         )
     }
 

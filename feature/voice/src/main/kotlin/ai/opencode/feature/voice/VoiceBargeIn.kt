@@ -111,7 +111,7 @@ object VoiceBargeIn {
                     if (rms > thr) {
                         loud += 2
                         if (loud >= 20) {
-                            val take = min(filled, RATE * 2 * 6 / 5)
+                            val take = min(filled, RATE * 3)
                             val snap = ByteArray(take)
                             val start = (pos - take + ring.size) % ring.size
                             for (k in 0 until take) snap[k] = ring[(start + k) % ring.size]

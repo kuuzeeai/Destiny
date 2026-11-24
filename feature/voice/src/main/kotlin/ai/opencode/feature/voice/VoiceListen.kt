@@ -223,7 +223,7 @@ object VoiceListen {
                 if (frames * 20 >= 20000) break
             }
             val all = out.toByteArray()
-            val from = if (pre != null) 0 else max(0, (firstLoud - 15) * FRAME * 2)
+            val from = if (pre != null) 0 else max(0, (firstLoud - 30) * FRAME * 2)
             val to = min(all.size, (lastLoud + 10) * FRAME * 2 + (pre?.size ?: 0))
             return if (to > from) boost(all.copyOfRange(from, to)) else null
         } finally {

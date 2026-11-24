@@ -39,6 +39,7 @@ object FishSpeech {
     @Volatile
     private var job: Job? = null
 
+    @Volatile private var fishModel = "s2-pro"
     @Volatile var startedAt = 0L
     @Volatile var firstSoundAt = 0L
 
@@ -122,13 +123,20 @@ object FishSpeech {
     private suspend fun synthesize(key: String, voice: String, text: String): File {
         val body = JSONObject().put("text", text).put("format", "mp3")
         if (voice.isNotEmpty()) body.put("reference_id", voice)
-        val request = Request.Builder()
-            .url("https://api.fish.audio/v1/tts")
-            .header("Authorization", "Bearer $key")
-            .header("model", "s2-pro")
-            .post(body.toString().toRequestBody(voiceJsonMediaType))
-            .build()
-        val response = http.voiceSend(request)
+        suspend fun call(m: String) = http.voiceSend(
+            Request.Builder()
+                .url("https://api.fish.audio/v1/tts")
+                .header("Authorization", "Bearer $key")
+                .header("model", m)
+                .post(body.toString().toRequestBody(voiceJsonMediaType))
+                .build(),
+        )
+        var response = call(fishModel)
+        if (response.statusCode == 402 && fishModel != "s2.1-pro-free") {
+            // Sin crédito para s2-pro: usa el modelo gratis de Fish y se queda con él.
+            fishModel = "s2.1-pro-free"
+            response = call(fishModel)
+        }
         if (response.statusCode !in 200..299) throw IllegalStateException("HTTP ${response.statusCode}: " + String(response.body, Charsets.UTF_8).take(120))
         if (response.body.isEmpty()) throw IllegalStateException("empty audio")
         val file = File.createTempFile("fish-", ".mp3", dependency(AppContext).cacheDir)

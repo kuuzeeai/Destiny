@@ -28,6 +28,8 @@ internal fun FishAudioRows() {
     val reads = shared(SharedKeys.fishReadsReplies)
     val key = shared(SharedKeys.fishAPIKey)
     val voice = shared(SharedKeys.fishVoiceID)
+    val keepAlive = shared(SharedKeys.assistKeepAlive)
+    val keepAliveOn by keepAlive.flow.collectAsState()
     val readsOn by reads.flow.collectAsState()
     val keyText by key.flow.collectAsState()
     val voiceText by voice.flow.collectAsState()
@@ -37,6 +39,12 @@ internal fun FishAudioRows() {
         stringResource(R.string.settings_fish_read_replies),
         checked = readsOn,
         onCheckedChange = { reads.set(it) },
+    )
+    SettingsDivider()
+    SettingsToggleRow(
+        "Asistente listo (botón de encendido con la app cerrada)",
+        checked = keepAliveOn,
+        onCheckedChange = { keepAlive.set(it) },
     )
     SettingsDivider()
     Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

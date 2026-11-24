@@ -4,7 +4,10 @@ import ai.opencode.core.dependencies.AppContext
 import ai.opencode.core.dependencies.DependencyValues
 import ai.opencode.core.haptics.AudioSessionHaptics
 import ai.opencode.core.log.AppLog
+import ai.opencode.assist.AssistKeepAliveService
 import ai.opencode.core.scene.ActiveScene
+import ai.opencode.core.sharing.SharedKeys
+import ai.opencode.core.sharing.shared
 import ai.opencode.devtools.DevTools
 import ai.opencode.feature.media.AgentImageSizeCache
 import ai.opencode.feature.session.AgentActivityLedger
@@ -93,6 +96,13 @@ class OpenCodeApplication : Application(), Configuration.Provider {
         // thread. Resolved after AppDependencies so the recorder gets the installed uploader.
         val voiceCallLog = dependency(VoiceCallLogClient)
         launchScope.launch(Dispatchers.IO) { voiceCallLog.recoverInterrupted() }
+        // "Asistente listo": keeps the process alive for the power-button assistant.
+        launchScope.launch {
+            shared(SharedKeys.assistKeepAlive).flow.collect { on ->
+                if (on) AssistKeepAliveService.start(this@OpenCodeApplication)
+                else AssistKeepAliveService.stop(this@OpenCodeApplication)
+            }
+        }
         // Remembered image shapes are read off the main thread.
         AgentImageSizeCache.live.warm()
         launchScope.launch {

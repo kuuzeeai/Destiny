@@ -157,6 +157,7 @@ object VoiceListen {
             var loudFrames = 0
             var speaking = false
             var firstLoud = 0
+            var speechLevel = 0.0
             var lastLoud = 0
             var waitStart = 0
             while (true) {
@@ -183,7 +184,13 @@ object VoiceListen {
                     if (frames == 8) threshold = min(max(noise * 2.5, 220.0), 700.0)
                     continue
                 }
-                if (rms > threshold) {
+                if (!speaking && rms < threshold) {
+                    noise = noise * 0.97 + rms * 0.03
+                    threshold = min(max(noise * 2.5, 220.0), 900.0)
+                }
+                val limit = if (speaking) max(threshold, speechLevel * 0.25) else threshold
+                if (rms > limit) {
+                    if (rms > threshold) speechLevel = if (speechLevel == 0.0) rms else speechLevel * 0.95 + rms * 0.05
                     loud++
                     loudFrames++
                     lastLoud = frames
@@ -194,15 +201,16 @@ object VoiceListen {
                 } else if (!speaking) {
                     loud = 0
                 }
-                if (speaking && (frames - lastLoud) * 20 >= 1000) {
+                if (speaking && (frames - lastLoud) * 20 >= 900) {
                     if (loudFrames >= 6) break
                     speaking = false
+                    speechLevel = 0.0
                     loud = 0
                     loudFrames = 0
                     waitStart = frames
                 }
                 if (!speaking && (frames - waitStart) * 20 >= 7000) return null
-                if (frames * 20 >= 30000) break
+                if (frames * 20 >= 20000) break
             }
             val all = out.toByteArray()
             val from = max(0, (firstLoud - 15) * FRAME * 2)

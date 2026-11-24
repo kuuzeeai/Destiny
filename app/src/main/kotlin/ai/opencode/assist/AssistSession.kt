@@ -1,6 +1,7 @@
 package ai.opencode.assist
 
 import ai.opencode.feature.system.assist.AssistRunner
+import ai.opencode.feature.voice.FishListen
 import ai.opencode.feature.voice.FishSpeech
 import android.Manifest
 import android.content.Context
@@ -66,6 +67,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             setPadding(dp(10), dp(4), 0, dp(4))
             setOnClickListener {
                 recognizer?.cancel()
+                FishListen.cancel()
                 FishSpeech.stop()
                 AssistRunner.cancel()
                 working = false
@@ -107,6 +109,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     /** Cuts the answer (or the wait) and listens again right away. */
     private fun interrupt() {
         recognizer?.cancel()
+        FishListen.cancel()
         FishSpeech.stop()
         AssistRunner.cancel()
         working = false
@@ -146,6 +149,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         if (!working) AssistForegroundService.stop(context)
         gen++
         listening = false
+        FishListen.cancel()
         recognizer?.destroy()
         recognizer = null
         super.onHide()
@@ -154,6 +158,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     override fun onDestroy() {
         AssistForegroundService.onInterrupt = null
         AssistForegroundService.stop(context)
+        FishListen.cancel()
         recognizer?.destroy()
         recognizer = null
         super.onDestroy()
@@ -164,7 +169,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         bars?.setMode(
             when {
                 text.startsWith("Escuchando") -> AssistBars.Mode.Listening
-                text.startsWith("Pensando") || text.startsWith("Enviando") -> AssistBars.Mode.Thinking
+                text.startsWith("Pensando") || text.startsWith("Enviando") || text.startsWith("Transcribiendo") -> AssistBars.Mode.Thinking
                 text.startsWith("Respondiendo") -> AssistBars.Mode.Speaking
                 else -> AssistBars.Mode.Idle
             },
@@ -197,11 +202,44 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             setStatus("Dale permiso de micrófono a Destiny")
             return
         }
+        if (FishListen.available) {
+            gen++
+            recognizer?.destroy()
+            recognizer = null
+            listenWithFish()
+            return
+        }
         val stale = recognizer
         recognizer = null
         stale?.destroy()
         val turn = ++gen
         main.postDelayed({ if (turn == gen && visible) beginRecognizer() }, 300)
+    }
+
+    private fun listenWithFish() {
+        FishListen.listen(
+            onTranscribing = { main.post { if (visible) setStatus("Transcribiendo…") } },
+            onText = { text ->
+                main.post {
+                    if (visible) {
+                        retries = 0
+                        send(text)
+                    }
+                }
+            },
+            onFail = { kind, _ ->
+                main.post {
+                    if (!visible) return@post
+                    listening = false
+                    when (kind) {
+                        FishListen.Failure.Silence ->
+                            if (followUp) hide() else setStatus("No te escuché. Toca para reintentar.")
+                        FishListen.Failure.Mic -> setStatus("No pude usar el micrófono. Toca para reintentar.")
+                        FishListen.Failure.Network -> setStatus("No pude entender el audio. Toca para reintentar.")
+                    }
+                }
+            },
+        )
     }
 
     private fun beginRecognizer() {

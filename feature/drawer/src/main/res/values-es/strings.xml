@@ -181,4 +181,7 @@
     <!-- Appearance settings transcript preview -->
     <string name="drawer_appearance_preview_user_text">Ayúdame a mejorar la pantalla de sesión. Muéstrame lo que encuentres y explica los cambios.</string>
     <string name="drawer_appearance_preview_assistant_text">Encontré el problema de diseño en `SessionView.swift`. La transcripción y el redactor comparten la altura disponible, así que el teclado es una buena prueba de estrés.</string>
+    <string name="drawer_filter_all">Todas</string>
+    <string name="drawer_filter_unread">Sin leer</string>
+    <string name="drawer_filter_pinned">Fijadas</string>
 </resources>

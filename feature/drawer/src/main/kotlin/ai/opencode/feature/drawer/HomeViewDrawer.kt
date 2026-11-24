@@ -83,7 +83,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import ai.opencode.core.ui.OpenCodeAlertDialog
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.mutableStateOf
+import ai.opencode.core.strings.localized
+import ai.opencode.feature.drawer.list.DrawerFilter
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -256,6 +263,7 @@ fun HomeDrawer(
         }
     }
 
+    var filter by remember { mutableStateOf(DrawerFilter.All) }
     val inputs = DrawerListInputs(
         selectedSessionID = selectedSessionID,
         reducedMotion = reducedMotion,
@@ -263,6 +271,7 @@ fun HomeDrawer(
         alwaysShowsHeaders = DrawerTunables.sectionBreak == DrawerSectionBreak.Header,
         serverSwap = serverSwapTarget,
         checkedIDs = selection.ids,
+        filter = filter,
     )
     val actions = remember(store, viewState) {
         DrawerListActions(
@@ -345,6 +354,7 @@ fun HomeDrawer(
                 scrollState = viewState.headerScroll,
                 modifier = Modifier.matchParentSize(),
             )
+            Column {
             Box(
                 Modifier
                     .fillMaxWidth()
@@ -372,6 +382,28 @@ fun HomeDrawer(
                         onEnd = viewState::endSearch,
                         keyboardHold = viewState.keyboardHold,
                     )
+                }
+            }
+                if (!selection.isActive) Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = DrawerMetrics.rowEdge)
+                        .padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    for ((value, label) in listOf(
+                        DrawerFilter.All to R.string.drawer_filter_all,
+                        DrawerFilter.Unread to R.string.drawer_filter_unread,
+                        DrawerFilter.Pinned to R.string.drawer_filter_pinned,
+                    )) {
+                        FilterChip(
+                            selected = filter == value,
+                            onClick = { filter = value },
+                            label = { Text(localized(label)) },
+                            shape = CircleShape,
+                        )
+                    }
                 }
             }
         }

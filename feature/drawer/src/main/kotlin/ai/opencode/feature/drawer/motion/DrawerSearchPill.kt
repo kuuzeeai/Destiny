@@ -321,14 +321,14 @@ private fun SearchCapsule(
             }
             // The field fades on the morph spring.
             Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-                AnimatedVisibility(
+                androidx.compose.animation.AnimatedVisibility(
                     !isSearching,
                     enter = fadeIn(DrawerSearchPillDefaults.morph(opening = false)),
                     exit = fadeOut(DrawerSearchPillDefaults.morph(opening = true)),
                 ) {
                     Text(stringResource(CoreR.string.common_search), style = OpenCodeTextStyles.body, color = OpenCodeTheme.colors.tertiaryText, maxLines = 1)
                 }
-                AnimatedVisibility(
+                androidx.compose.animation.AnimatedVisibility(
                     isSearching,
                     enter = fadeIn(DrawerSearchPillDefaults.morph(opening = true)),
                     exit = fadeOut(DrawerSearchPillDefaults.morph(opening = false)),

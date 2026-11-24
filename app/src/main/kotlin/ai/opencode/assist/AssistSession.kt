@@ -36,6 +36,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     private var working = false
     private var listening = false
     private var bars: AssistBars? = null
+    private var gen = 0
 
     private fun dp(v: Int): Int = (v * context.resources.displayMetrics.density).toInt()
 
@@ -143,7 +144,10 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     override fun onHide() {
         visible = false
         if (!working) AssistForegroundService.stop(context)
-        recognizer?.cancel()
+        gen++
+        listening = false
+        recognizer?.destroy()
+        recognizer = null
         super.onHide()
     }
 
@@ -193,7 +197,14 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             setStatus("Dale permiso de micrófono a Destiny")
             return
         }
-        recognizer?.destroy()
+        val stale = recognizer
+        recognizer = null
+        stale?.destroy()
+        val turn = ++gen
+        main.postDelayed({ if (turn == gen && visible) beginRecognizer() }, 300)
+    }
+
+    private fun beginRecognizer() {
         val r = createRecognizer()
         recognizer = r
         r.setRecognitionListener(object : RecognitionListener {
@@ -207,11 +218,18 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                 val quiet = error == SpeechRecognizer.ERROR_NO_MATCH || error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT
                 if (followUp && quiet) {
                     hide()
-                } else if (retries < 2 && (error == 5 || error == 8 || error == 11)) {
+                } else if (retries < 4 && (error == 5 || error == 8 || error == 11)) {
                     retries++
-                    main.postDelayed({ if (visible) startListening() }, 400)
+                    main.postDelayed({ if (visible) startListening() }, 500L * retries)
                 } else {
-                    setStatus(if (quiet) "No te escuché. Intenta otra vez." else "Error de voz ($error)")
+                    listening = false
+                    setStatus(
+                        when {
+                            quiet -> "No te escuché. Toca para reintentar."
+                            error == 8 -> "Reconocedor ocupado. Toca para reintentar."
+                            else -> "Error de voz ($error). Toca para reintentar."
+                        },
+                    )
                 }
             }
             override fun onPartialResults(partialResults: Bundle?) {
@@ -220,7 +238,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             override fun onResults(results: Bundle?) {
                 val text = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()?.trim().orEmpty()
                 if (text.isEmpty()) {
-                    if (followUp) hide() else setStatus("No te escuché. Intenta otra vez.")
+                    { listening = false; if (followUp) hide() else setStatus("No te escuché. Toca para reintentar.") }
                 } else {
                     retries = 0
                     send(text)

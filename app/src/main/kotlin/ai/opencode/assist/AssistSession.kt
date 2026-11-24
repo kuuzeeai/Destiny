@@ -110,6 +110,20 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         statusView?.text = text
     }
 
+    // Usa otro reconocedor (Google), no el de relleno de Destiny.
+    private fun createRecognizer(): SpeechRecognizer {
+        val list = context.packageManager
+            .queryIntentServices(Intent(android.speech.RecognitionService.SERVICE_INTERFACE), 0)
+            .map { it.serviceInfo }
+            .filter { it.packageName != context.packageName }
+        val svc = list.firstOrNull { it.packageName.contains("google") } ?: list.firstOrNull()
+        return if (svc != null) {
+            SpeechRecognizer.createSpeechRecognizer(context, android.content.ComponentName(svc.packageName, svc.name))
+        } else {
+            SpeechRecognizer.createSpeechRecognizer(context)
+        }
+    }
+
     private fun startListening() {
         if (!SpeechRecognizer.isRecognitionAvailable(context)) {
             setStatus("Este celular no tiene reconocimiento de voz")
@@ -120,7 +134,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             return
         }
         recognizer?.destroy()
-        val r = SpeechRecognizer.createSpeechRecognizer(context)
+        val r = createRecognizer()
         recognizer = r
         r.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {}

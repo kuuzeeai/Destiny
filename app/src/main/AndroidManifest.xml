@@ -6,6 +6,12 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
+
     <application
         android:name=".OpenCodeApplication"
         android:allowBackup="true"
@@ -71,6 +77,18 @@
             <intent-filter>
                 <action android:name="android.service.voice.VoiceInteractionService" />
             </intent-filter>
+        </service>
+        <service
+            android:name="ai.opencode.assist.AssistRecognitionService"
+            android:exported="true"
+            android:label="Destiny">
+            <intent-filter>
+                <action android:name="android.speech.RecognitionService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="android.speech"
+                android:resource="@xml/assist_recognition" />
         </service>
         <service
             android:name="ai.opencode.assist.AssistSessionService"

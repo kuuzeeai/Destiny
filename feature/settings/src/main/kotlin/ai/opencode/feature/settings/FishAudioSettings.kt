@@ -33,6 +33,8 @@ internal fun FishAudioRows() {
     val readsOn by reads.flow.collectAsState()
     val keyText by key.flow.collectAsState()
     val voiceText by voice.flow.collectAsState()
+    val groq = shared(SharedKeys.groqAPIKey)
+    val groqText by groq.flow.collectAsState()
     // The key is a credential.
     HidesFromScreenshots()
     SettingsToggleRow(
@@ -63,6 +65,15 @@ internal fun FishAudioRows() {
             placeholder = stringResource(R.string.settings_fish_voice_placeholder),
             singleLine = true,
             keyboardOptions = KeyboardOptions(autoCorrectEnabled = false),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        OpenCodeTextField(
+            value = groqText.orEmpty(),
+            onValueChange = { groq.set(it.trim().ifEmpty { null }) },
+            placeholder = "Clave de Groq (para entender tu voz)",
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false),
             modifier = Modifier.fillMaxWidth(),
         )
         FilledTonalButton(

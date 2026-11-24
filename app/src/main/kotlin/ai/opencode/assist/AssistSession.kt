@@ -33,6 +33,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     private var visible = false
     private var followUp = false
     private var retries = 0
+    private var working = false
 
     private fun dp(v: Int): Int = (v * context.resources.displayMetrics.density).toInt()
 
@@ -69,6 +70,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                 recognizer?.cancel()
                 FishSpeech.stop()
                 AssistRunner.cancel()
+                working = false
                 hide()
             }
         }
@@ -97,17 +99,20 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         visible = true
         followUp = false
         retries = 0
+        working = false
         setStatus("Escuchando…")
         startListening()
     }
 
     override fun onHide() {
         visible = false
+        if (!working) AssistForegroundService.stop(context)
         recognizer?.cancel()
         super.onHide()
     }
 
     override fun onDestroy() {
+        AssistForegroundService.stop(context)
         recognizer?.destroy()
         recognizer = null
         super.onDestroy()
@@ -133,6 +138,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     }
 
     private fun startListening() {
+        AssistForegroundService.update(context, "Escuchando…")
         if (!SpeechRecognizer.isRecognitionAvailable(context)) {
             setStatus("Este celular no tiene reconocimiento de voz")
             return
@@ -186,11 +192,14 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
 
     private fun send(text: String) {
         heardView?.text = text
+        working = true
         AssistRunner.send(
             text,
             speak = { reply ->
                 main.post {
                     FishSpeech.speak(reply) {
+                        working = false
+                        if (!visible) AssistForegroundService.stop(context)
                         if (visible) {
                             followUp = true
                             heardView?.text = ""
@@ -203,12 +212,24 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             onStage = { stage, message ->
                 main.post {
                     when (stage) {
-                        AssistRunner.Stage.Sending -> setStatus("Enviando…")
-                        AssistRunner.Stage.Waiting -> setStatus("Pensando…")
+                        AssistRunner.Stage.Sending -> {
+                            setStatus("Enviando…")
+                            AssistForegroundService.update(context, "Pensando…")
+                        }
+                        AssistRunner.Stage.Waiting -> {
+                            setStatus("Pensando…")
+                            AssistForegroundService.update(context, "Pensando…")
+                        }
                         AssistRunner.Stage.Reading -> {
                             setStatus("Leyendo la respuesta…")
+                            AssistForegroundService.update(context, "Hablando…")
                         }
-                        AssistRunner.Stage.Failed -> setStatus(message ?: "Algo falló")
+                        AssistRunner.Stage.Failed -> {
+                            working = false
+                            val msg = message ?: "Algo falló"
+                            setStatus(msg)
+                            FishSpeech.speak(msg) { if (!visible) AssistForegroundService.stop(context) }
+                        }
                     }
                 }
             },

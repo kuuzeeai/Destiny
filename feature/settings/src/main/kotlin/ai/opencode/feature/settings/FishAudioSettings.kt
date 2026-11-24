@@ -64,9 +64,11 @@ private fun LabeledField(
 @Composable
 internal fun VoiceConfigRows() {
     val key = shared(SharedKeys.fishAPIKey)
+    val extra = shared(SharedKeys.fishExtraKeys)
     val voice = shared(SharedKeys.fishVoiceID)
     val groq = shared(SharedKeys.groqAPIKey)
     val keyText by key.flow.collectAsState()
+    val extraText by extra.flow.collectAsState()
     val voiceText by voice.flow.collectAsState()
     val groqText by groq.flow.collectAsState()
     SettingsValueRow("Modelo", "Fish Audio")
@@ -74,6 +76,9 @@ internal fun VoiceConfigRows() {
     Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         LabeledField("Fish Audio", true, keyText.orEmpty(), stringResource(R.string.settings_fish_key_placeholder)) {
             key.set(it.trim().ifEmpty { null })
+        }
+        LabeledField("Fish Audio · claves de respaldo (separadas por coma)", true, extraText.orEmpty(), "Pega aquí las otras claves") {
+            extra.set(it.trim().ifEmpty { null })
         }
         LabeledField("ID de la voz", false, voiceText, "Pega aquí el ID de la voz") {
             voice.set(it.trim())

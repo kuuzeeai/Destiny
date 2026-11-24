@@ -380,7 +380,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                                 if (visible && working && FishSpeech.active) {
                                     val f = FishSpeech.firstSoundAt
                                     val fish = if (f > 0) secs(f - FishSpeech.startedAt) else "..."
-                                    diag("$timing · Fish $fish · voz ${VoiceBargeIn.level}/${VoiceBargeIn.threshold}")
+                                    diag("$timing · Fish $fish${FishSpeech.keyLabel} · voz ${VoiceBargeIn.level}/${VoiceBargeIn.threshold}")
                                     main.postDelayed(this, 400)
                                 }
                             }

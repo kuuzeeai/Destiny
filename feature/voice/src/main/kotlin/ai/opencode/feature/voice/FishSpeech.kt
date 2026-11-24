@@ -46,6 +46,17 @@ object FishSpeech {
     /** El último error de Fish (para mostrarlo en la burbuja); null si todo fue bien. */
     @Volatile var lastError: String? = null
 
+    /** Qué clave de Fish se usa (vacío si solo hay una), para la línea gris. */
+    @Volatile var keyLabel = ""
+    @Volatile private var keyIndex = 0
+
+    /** La clave principal y las de respaldo, sin repetir. */
+    private fun fishKeys(): List<String> {
+        val first = shared(SharedKeys.fishAPIKey).value?.trim().orEmpty()
+        val more = shared(SharedKeys.fishExtraKeys).value.orEmpty().split(Regex("[,;\\s]+"))
+        return (listOf(first) + more).map { it.trim() }.filter { it.isNotEmpty() }.distinct()
+    }
+
     /** Fish está preparando o reproduciendo sonido ahora mismo. */
     val active: Boolean
         get() = job?.isActive == true
@@ -123,20 +134,33 @@ object FishSpeech {
     private suspend fun synthesize(key: String, voice: String, text: String): File {
         val body = JSONObject().put("text", text).put("format", "mp3")
         if (voice.isNotEmpty()) body.put("reference_id", voice)
-        suspend fun call(m: String) = http.voiceSend(
+        suspend fun call(k: String, m: String) = http.voiceSend(
             Request.Builder()
                 .url("https://api.fish.audio/v1/tts")
-                .header("Authorization", "Bearer $key")
+                .header("Authorization", "Bearer $k")
                 .header("model", m)
                 .post(body.toString().toRequestBody(voiceJsonMediaType))
                 .build(),
         )
-        var response = call(fishModel)
-        if (response.statusCode == 402 && fishModel != "s2.1-pro-free") {
-            // Sin crédito para s2-pro: usa el modelo gratis de Fish y se queda con él.
-            fishModel = "s2.1-pro-free"
-            response = call(fishModel)
+        fun noCredit(code: Int) = code == 402 || code == 401
+        val keys = fishKeys().ifEmpty { listOf(key) }
+        var used = keyIndex.coerceIn(0, keys.lastIndex)
+        var response = call(keys[used], fishModel)
+        var tries = 1
+        // Si esta clave no tiene crédito (402) o no vale (401), prueba la siguiente.
+        while (noCredit(response.statusCode) && tries < keys.size) {
+            used = (used + 1) % keys.size
+            tries++
+            response = call(keys[used], fishModel)
         }
+        if (response.statusCode == 402 && fishModel != "s2.1-pro-free") {
+            // Ninguna clave tiene crédito para s2-pro: usa el modelo gratis y se queda con él.
+            fishModel = "s2.1-pro-free"
+            used = 0
+            response = call(keys[0], fishModel)
+        }
+        keyIndex = used
+        keyLabel = if (keys.size > 1) " · clave ${used + 1}/${keys.size}" else ""
         if (response.statusCode !in 200..299) throw IllegalStateException("HTTP ${response.statusCode}: " + String(response.body, Charsets.UTF_8).take(120))
         if (response.body.isEmpty()) throw IllegalStateException("empty audio")
         val file = File.createTempFile("fish-", ".mp3", dependency(AppContext).cacheDir)

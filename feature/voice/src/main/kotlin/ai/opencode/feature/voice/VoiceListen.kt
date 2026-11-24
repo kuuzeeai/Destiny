@@ -147,8 +147,17 @@ object VoiceListen {
             recorder.release()
             throw MicException()
         }
-        val pre = preroll
+        val head = preroll
         preroll = null
+        // Lo que se oyó mientras arrancaba esta escucha (sin huecos).
+        val tail = try {
+            VoiceBargeIn.takeTail()
+        } catch (e: CancellationException) {
+            recorder.release()
+            rec = null
+            throw e
+        }
+        val pre = if (head != null && tail != null) head + tail else head
         val out = ByteArrayOutputStream()
         if (pre != null) out.write(pre)
         val frame = ShortArray(FRAME)

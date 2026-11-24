@@ -36,15 +36,47 @@ object VoiceBargeIn {
     @Volatile var level = 0
     @Volatile var threshold = 0
 
+    // Después de detectar tu voz, sigue grabando hasta que arranca la escucha (así no hay hueco).
+    @Volatile private var tailing = false
+    @Volatile private var tailStop = false
+    @Volatile private var tailAt = 0L
+    private val tail = java.io.ByteArrayOutputStream()
+    private val tailLock = Any()
+
+    /** Para de escuchar; si ya oyó tu voz, la deja terminar sola para no perder lo que dices. */
     fun stop() {
+        if (tailing) return
+        cancelNow()
+    }
+
+    private fun cancelNow() {
         job?.cancel()
         job = null
+    }
+
+    /** Lo que se oyó entre detectar tu voz y que arrancara la escucha. Espera a que el micrófono se suelte. */
+    suspend fun takeTail(): ByteArray? {
+        val j = job
+        if (tailing && j != null) {
+            tailStop = true
+            kotlinx.coroutines.withTimeoutOrNull(1500) { j.join() }
+        }
+        val fresh = System.currentTimeMillis() - tailAt < 4000
+        val bytes = synchronized(tailLock) {
+            val b = tail.toByteArray()
+            tail.reset()
+            b
+        }
+        return if (fresh && bytes.isNotEmpty()) bytes else null
     }
 
     /** [onSpeech] corre en un hilo de fondo, una sola vez. Se detiene solo cuando Fish termina. */
     @SuppressLint("MissingPermission")
     fun start(onSpeech: () -> Unit) {
-        stop()
+        cancelNow()
+        tailing = false
+        tailAt = 0L
+        synchronized(tailLock) { tail.reset() }
         VoiceListen.preroll = null
         if (!shared(SharedKeys.assistBargeIn).value) return
         job = scope.launch {
@@ -116,7 +148,23 @@ object VoiceBargeIn {
                             val start = (pos - take + ring.size) % ring.size
                             for (k in 0 until take) snap[k] = ring[(start + k) % ring.size]
                             VoiceListen.preroll = snap
+                            tailAt = System.currentTimeMillis()
+                            tailStop = false
+                            tailing = true
                             onSpeech()
+                            val deadline = System.currentTimeMillis() + 2500
+                            while (!tailStop && System.currentTimeMillis() < deadline) {
+                                coroutineContext.ensureActive()
+                                val m = r.read(frame, 0, FRAME)
+                                if (m <= 0) break
+                                val chunk = ByteArray(m * 2)
+                                for (i in 0 until m) {
+                                    val s = frame[i].toInt()
+                                    chunk[2 * i] = (s and 0xFF).toByte()
+                                    chunk[2 * i + 1] = (s shr 8).toByte()
+                                }
+                                synchronized(tailLock) { tail.write(chunk, 0, chunk.size) }
+                            }
                             return@launch
                         }
                     } else {
@@ -129,6 +177,7 @@ object VoiceBargeIn {
             } catch (e: Exception) {
                 AppLog.voice.notice("Barge-in stopped: ${e.message ?: e.javaClass.simpleName}")
             } finally {
+                tailing = false
                 runCatching { recorder?.stop() }
                 recorder?.release()
                 runCatching { echo?.release() }

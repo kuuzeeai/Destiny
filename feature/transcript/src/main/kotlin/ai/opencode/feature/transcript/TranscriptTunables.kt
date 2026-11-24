@@ -50,7 +50,7 @@ object TranscriptTunables {
         val sectionHalf = Tunable("transcript.row.sectionHalf", "Section rule half-gap", default = 16f, range = 6.0..36.0, step = 1.0)
         val contentGutter = Tunable("transcript.row.contentGutter", "Horizontal gutter", default = 16f, range = 8.0..32.0, step = 1.0)
         val bubbleVertical = Tunable("transcript.bubble.verticalPadding", "Bubble vertical padding", default = 8f, range = 6.0..20.0, step = 1.0)
-        val bubbleCornerRadius = Tunable("transcript.bubble.cornerRadius", "Bubble corner radius", default = 10f, range = 8.0..28.0, step = 1.0)
+        val bubbleCornerRadius = Tunable("transcript.bubble.cornerRadius", "Bubble corner radius", default = 24f, range = 8.0..28.0, step = 1.0)
         val bubbleMaxFraction = Tunable("transcript.bubble.maxFraction", "Bubble max width", default = 0.82f, range = 0.55..0.95, step = 0.01)
         val cardCornerRadius = Tunable("transcript.card.cornerRadius", "Card corner radius", default = 8f, range = 6.0..24.0, step = 1.0)
 

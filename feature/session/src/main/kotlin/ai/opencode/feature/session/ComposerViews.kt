@@ -603,7 +603,7 @@ fun ComposerControlLabel(
             .offset(x = visualOffsetX.dp)
             .size(diameter.dp)
             // The desktop's submit button: a rounded square, not a circle.
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(percent = 50))
             .background(background),
         contentAlignment = Alignment.Center,
     ) {

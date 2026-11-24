@@ -259,13 +259,9 @@ object OpenCodeTextFieldDefaults {
         val colors = OpenCodeTheme.colors
         val scheme = MaterialTheme.colorScheme
         // Light: the page's own white with the desktop's soft lift. Dark: a step up from the sheet.
-        val container = if (colors.isDark) {
-            lerp(scheme.surfaceContainerLow, scheme.surfaceContainerHigh, 0.5f)
-        } else {
-            scheme.surfaceContainerLowest
-        }
-        val border = if (colors.strongBorders) colors.tertiaryText else scheme.outline
-        val shadow = if (colors.isDark) Color.Transparent else Color.Black.copy(alpha = 0.25f)
+        val container = scheme.surfaceContainerHigh
+        val border = if (colors.strongBorders) colors.tertiaryText else Color.Transparent
+        val shadow = Color.Transparent
         return OpenCodeTextFieldColors(
             container = container,
             border = border,

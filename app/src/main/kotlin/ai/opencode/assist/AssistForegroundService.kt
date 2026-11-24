@@ -35,7 +35,14 @@ class AssistForegroundService : Service() {
                 setShowBadge(false)
             },
         )
-        session = MediaSession(this, "DestinyAssistant").apply { isActive = true }
+        session = MediaSession(this, "DestinyAssistant").apply {
+            setCallback(object : MediaSession.Callback() {
+                override fun onPause() { onInterrupt?.invoke() }
+                override fun onStop() { onInterrupt?.invoke() }
+                override fun onPlay() { onInterrupt?.invoke() }
+            })
+            isActive = true
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -54,7 +61,10 @@ class AssistForegroundService : Service() {
                     .putString(MediaMetadata.METADATA_KEY_ARTIST, "Destiny")
                     .build(),
             )
-            s.setPlaybackState(PlaybackState.Builder().setState(PlaybackState.STATE_PLAYING, 0, 1f).build())
+            s.setPlaybackState(PlaybackState.Builder()
+                    .setState(PlaybackState.STATE_PLAYING, 0, 1f)
+                    .setActions(PlaybackState.ACTION_PAUSE or PlaybackState.ACTION_STOP or PlaybackState.ACTION_PLAY_PAUSE)
+                    .build())
             builder.setStyle(Notification.MediaStyle().setMediaSession(s.sessionToken))
         }
         startForeground(NOTIFICATION_ID, builder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
@@ -82,6 +92,9 @@ class AssistForegroundService : Service() {
         private const val EXTRA_LABEL = "label"
         private const val ACTION_STOP = "ai.opencode.assist.STOP"
         @Volatile private var running = false
+
+        /** Set by the panel: the media card's pause/stop button interrupts the assistant. */
+        @Volatile var onInterrupt: (() -> Unit)? = null
 
         /** Starts the service, or just changes the card's title. Never throws. */
         fun update(context: Context, label: String) {

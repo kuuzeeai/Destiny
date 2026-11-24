@@ -60,6 +60,33 @@
             </intent-filter>
         </activity>
 
+        <!-- Asistente digital (mantener el botón de encendido). -->
+        <service
+            android:name="ai.opencode.assist.AssistInteractionService"
+            android:exported="true"
+            android:permission="android.permission.BIND_VOICE_INTERACTION">
+            <meta-data
+                android:name="android.voice_interaction"
+                android:resource="@xml/assist_interaction" />
+            <intent-filter>
+                <action android:name="android.service.voice.VoiceInteractionService" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="ai.opencode.assist.AssistSessionService"
+            android:exported="true"
+            android:permission="android.permission.BIND_VOICE_INTERACTION" />
+        <activity
+            android:name="ai.opencode.assist.AssistActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.ASSIST" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <!-- WorkManager starts on demand with OpenCodeApplication's configuration. -->
         <provider
             android:name="androidx.startup.InitializationProvider"

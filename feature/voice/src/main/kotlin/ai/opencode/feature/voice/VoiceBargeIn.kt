@@ -113,6 +113,7 @@ object VoiceBargeIn {
                 var avg = 0.0
                 var frames = 0
                 var loud = 0
+                var onset = 0
                 val ring = ByteArray(RATE * 3)
                 var pos = 0
                 var filled = 0
@@ -141,9 +142,11 @@ object VoiceBargeIn {
                     level = rms.toInt()
                     threshold = thr.toInt()
                     if (rms > thr) {
+                        if (loud == 0) onset = frames
                         loud += 2
                         if (loud >= 20) {
-                            val take = min(filled, RATE * 3)
+                            // Solo desde un poco antes de que empezaras a hablar, para que no entre la voz de Fish.
+                            val take = min(filled, min(RATE * 3, (frames - onset + 1 + 30) * FRAME * 2))
                             val snap = ByteArray(take)
                             val start = (pos - take + ring.size) % ring.size
                             for (k in 0 until take) snap[k] = ring[(start + k) % ring.size]

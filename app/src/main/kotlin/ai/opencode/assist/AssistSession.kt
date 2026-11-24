@@ -19,6 +19,7 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.view.Gravity
 import android.view.View
+import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -108,7 +109,6 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         heardView = heard
         bars = barsView
         val root = FrameLayout(context)
-        root.setOnClickListener { hide() }
         val width = minOf(dp(340), context.resources.displayMetrics.widthPixels - dp(32))
         val params = FrameLayout.LayoutParams(width, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.TOP or Gravity.CENTER_HORIZONTAL)
         params.topMargin = dp(44)
@@ -135,8 +135,20 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         startListening()
     }
 
+    /** Prueba: la ventana mide solo lo que mide la burbuja y deja pasar los toques a la app de abajo. */
+    private fun makeTouchThrough() {
+        runCatching {
+            val w = window?.window ?: return
+            w.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+            w.setGravity(Gravity.TOP)
+            w.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT)
+        }
+    }
+
     override fun onShow(args: Bundle?, showFlags: Int) {
         super.onShow(args, showFlags)
+        makeTouchThrough()
+        main.post { makeTouchThrough() }
         FishSpeech.stop()
         AssistRunner.cancel()
         heardView?.text = ""
@@ -370,7 +382,8 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                             followUp = true
                             heardView?.text = ""
                             setStatus("Escuchando…")
-                            startListening()
+                            // Un momento para que se apague la cola del audio de Fish y no se escuche a sí mismo.
+                            main.postDelayed({ if (visible && !working && !listening) startListening() }, 450)
                         }
                     }
                     if (visible) {

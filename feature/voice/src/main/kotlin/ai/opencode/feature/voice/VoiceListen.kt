@@ -46,6 +46,7 @@ object VoiceListen {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val http: OkHttpClient by lazy { OkHttpClient().withVoiceTimeout(30) }
     private var job: Job? = null
+    @Volatile private var groqIndex = 0
 
     // Vigilante: en qué fase va la escucha y cuándo fue la última señal de vida.
     @Volatile private var phase = "preparando"
@@ -289,12 +290,25 @@ object VoiceListen {
             .addFormDataPart("temperature", "0")
         val lang = Locale.getDefault().language
         if (lang.length == 2) body.addFormDataPart("language", lang)
-        val request = Request.Builder()
+        val built = body.build()
+        fun request(k: String) = Request.Builder()
             .url("https://api.groq.com/openai/v1/audio/transcriptions")
-            .header("Authorization", "Bearer $key")
-            .post(body.build())
+            .header("Authorization", "Bearer $k")
+            .post(built)
             .build()
-        val response = http.voiceSend(request)
+        val keys = (listOf(key) + shared(SharedKeys.groqExtraKeys).value.orEmpty().split(Regex("[,;\\s]+")))
+            .map { it.trim() }.filter { it.isNotEmpty() }.distinct()
+            .ifEmpty { listOf(key) }
+        var used = groqIndex.coerceIn(0, keys.lastIndex)
+        var response = http.voiceSend(request(keys[used]))
+        var tries = 1
+        // Si esta clave no vale o se quedó sin crédito o sin cupo (401, 402, 403, 429), prueba la siguiente.
+        while (response.statusCode in listOf(401, 402, 403, 429) && tries < keys.size) {
+            used = (used + 1) % keys.size
+            tries++
+            response = http.voiceSend(request(keys[used]))
+        }
+        groqIndex = used
         if (response.statusCode !in 200..299) throw IllegalStateException("HTTP ${response.statusCode}")
         val text = JSONObject(String(response.body, Charsets.UTF_8)).optString("text", "")
         return Regex("\\s+").replace(Regex("\\[[^\\]]*]").replace(text, " "), " ").trim()

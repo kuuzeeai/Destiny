@@ -321,7 +321,7 @@ fun DrawerListView(
             pinnedIDs = sessions.pinned.map { it.id },
             recentIDs = sessions.recents.map { it.id },
             unpinnedRecentsIndex = unpinnedOrder.indexOf(id).coerceAtLeast(0),
-            showsShortcuts = state.search.isEmpty() && (model.shortcuts.showsCatchUp || model.shortcuts.showsWhatsNew),
+            showsShortcuts = state.search.isEmpty() && currentInputs.value.filter == DrawerFilter.All && (model.shortcuts.showsCatchUp || model.shortcuts.showsWhatsNew),
             reducedMotion = currentInputs.value.reducedMotion,
             fingerY = fingerY,
             onZoneCrossed = { store.send(HomeFeature.Action.DrawerPinZoneCrossed(it)) },

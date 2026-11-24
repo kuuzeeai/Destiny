@@ -114,6 +114,9 @@ data class DrawerListShortcuts(
     val showsCatchUp: Boolean get() = catchUpCount > 0 || catchUpFinished
 }
 
+/** The filter chips' choice: which sessions the list shows. */
+enum class DrawerFilter { All, Unread, Pinned }
+
 /** The list's view-local inputs beyond Home's state. */
 data class DrawerListInputs(
     val selectedSessionID: String?,
@@ -125,6 +128,8 @@ data class DrawerListInputs(
     val serverSwap: ServerSwapTarget? = null,
     /** The rows chosen in selection mode ([DrawerSelection]). */
     val checkedIDs: Set<String> = emptySet(),
+    /** The filter chips' choice. */
+    val filter: DrawerFilter = DrawerFilter.All,
 )
 
 data class DrawerListModel(
@@ -191,12 +196,13 @@ data class DrawerListModel(
                 canMarkAllRead = catchUpSessions.any { status.indicator(it) == Indicator.unread },
                 showsWhatsNew = state.showsWhatsNewButton,
             )
-            val archivedCount = if (state.search.isEmpty()) state.inboxSidebarStatus.archived.size else 0
-            val showsShortcuts = state.search.isEmpty() && (shortcuts.showsCatchUp || shortcuts.showsWhatsNew) || archivedCount > 0
+            val plain = state.search.isEmpty() && inputs.filter == DrawerFilter.All
+            val archivedCount = if (plain) state.inboxSidebarStatus.archived.size else 0
+            val showsShortcuts = plain && (shortcuts.showsCatchUp || shortcuts.showsWhatsNew) || archivedCount > 0
 
             val top = buildList {
-                if (serverNote != null && state.search.isEmpty()) add(DrawerListItem.ServerNote)
-                if (state.search.isEmpty()) {
+                if (serverNote != null && plain) add(DrawerListItem.ServerNote)
+                if (plain) {
                     add(DrawerListItem.CatchUp)
                     add(DrawerListItem.WhatsNew)
                 }
@@ -205,8 +211,12 @@ data class DrawerListModel(
 
             // One pass for both lists.
             val sessions = state.drawerSessions
-            val pinned = sessions.pinned
-            val recents = sessions.recents
+            val pinned = if (inputs.filter == DrawerFilter.Unread) sessions.pinned.filter { status.isUnread(it) } else sessions.pinned
+            val recents = when (inputs.filter) {
+                DrawerFilter.All -> sessions.recents
+                DrawerFilter.Unread -> sessions.recents.filter { status.isUnread(it) }
+                DrawerFilter.Pinned -> emptyList()
+            }
             val rows = LinkedHashMap<String, DrawerListRow>()
             val headerFollows = HashMap<DrawerSectionHeaderKind, Boolean>()
             val hiddenIDs = state.hiddenSessionIDs
@@ -244,7 +254,7 @@ data class DrawerListModel(
             // Unsent sessions lead Recents: they wait on you, and the server can't order them.
             val open = if (state.catchUp == null) state.sessionDetail else null
             val unsentRows = mutableListOf<DrawerListRow>()
-            for (draft in state.unsentDrafts) {
+            for (draft in (if (inputs.filter == DrawerFilter.All) state.unsentDrafts else emptyList())) {
                 val session = draft.placeholderSession
                 if (session.id in rows || state.sessions.any { it.id == session.id }) continue
                 if (state.search.isNotEmpty() && !session.title.contains(state.search.trim(), ignoreCase = true)) continue

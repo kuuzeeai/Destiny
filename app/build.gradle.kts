@@ -76,6 +76,8 @@ dependencies {
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.work.runtime)
+    implementation("net.java.dev.jna:jna:5.13.0@aar")
+    implementation("com.alphacephei:vosk-android:0.3.47")
     debugImplementation(libs.compose.ui.tooling)
     constraints {
         implementation(libs.androidx.fragment) {

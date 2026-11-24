@@ -164,6 +164,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         AssistRunner.cancel()
         heardView?.text = ""
         visible = true
+        WakeWord.paused = true
         AssistForegroundService.onInterrupt = {
             main.post {
                 if (visible) {
@@ -185,6 +186,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
 
     override fun onHide() {
         visible = false
+        main.postDelayed({ WakeWord.paused = false }, 1500)
         if (!working) AssistForegroundService.stop(context)
         gen++
         listening = false

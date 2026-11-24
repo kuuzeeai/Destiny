@@ -84,6 +84,12 @@ object SharedKeys {
     val assistKeepAlive = SharedKey.appStorage("assist-keep-alive", true)
     /** Interrumpir a Fish hablando encima (el micrófono escucha mientras responde). */
     val assistBargeIn = SharedKey.appStorage("assist-barge-in", true)
+    /** Activar el asistente diciendo una palabra (Vosk, sin internet una vez descargado el modelo). */
+    val assistWakeOn = SharedKey.appStorage("assist-wake-on", false)
+    /** Palabras de activacion, separadas por coma. */
+    val assistWakeWords = SharedKey.appStorage("assist-wake-words", "destino, alia")
+    /** Estado de la escucha de la palabra, para mostrarlo en Ajustes. */
+    val assistWakeStatus = SharedKey.appStorage("assist-wake-status", "")
     /** Oculta el recuadro del asistente: solo se ve la isla. */
     val assistIslandOnly = SharedKey.appStorage("assist-island-only", false)
 

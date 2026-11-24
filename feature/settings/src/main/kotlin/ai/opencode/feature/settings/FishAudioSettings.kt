@@ -146,6 +146,35 @@ internal fun VoiceConfigRows() {
     }
 }
 
+/** Activar el asistente diciendo una palabra, con las palabras editables y el estado de la escucha. */
+@Composable
+private fun WakeWordSection() {
+    val on = shared(SharedKeys.assistWakeOn)
+    val words = shared(SharedKeys.assistWakeWords)
+    val status = shared(SharedKeys.assistWakeStatus)
+    val onValue by on.flow.collectAsState()
+    val wordsValue by words.flow.collectAsState()
+    val statusValue by status.flow.collectAsState()
+    SettingsToggleRow(
+        "Activar con la voz (di la palabra, incluso con la pantalla apagada)",
+        checked = onValue,
+        onCheckedChange = { on.set(it) },
+    )
+    if (onValue) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Palabras de activación (separadas por coma)", style = SettingsText.title, color = OpenCodeTheme.colors.text)
+            OpenCodeTextField(
+                value = wordsValue,
+                onValueChange = { words.set(it) },
+                placeholder = "destino, alia",
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text(statusValue, style = SettingsText.summary, color = OpenCodeTheme.colors.secondaryText)
+        }
+    }
+}
+
 /** Ajustes › Voz › Interruptores: leer respuestas en voz alta y asistente listo con la app cerrada. */
 @Composable
 internal fun VoiceToggleRows() {
@@ -172,4 +201,6 @@ internal fun VoiceToggleRows() {
         checked = islandOnlyOn,
         onCheckedChange = { islandOnly.set(it) },
     )
+    SettingsDivider()
+    WakeWordSection()
 }

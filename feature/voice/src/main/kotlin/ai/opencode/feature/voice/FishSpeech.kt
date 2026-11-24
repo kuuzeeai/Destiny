@@ -15,7 +15,10 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -47,7 +50,8 @@ object FishSpeech {
     /** Settings' Test voice button. */
     fun test() = speak("Hola, esta es tu voz de Fish Audio.")
 
-    fun speak(markdown: String) {
+    /** Reads [markdown] sentence by sentence (the next one is made while the last plays); [onDone] runs when it ends. */
+    fun speak(markdown: String, onDone: () -> Unit = {}) {
         val key = shared(SharedKeys.fishAPIKey).value?.trim().orEmpty()
         if (key.isEmpty()) return
         val text = spokenText(markdown)
@@ -55,18 +59,45 @@ object FishSpeech {
         val voice = shared(SharedKeys.fishVoiceID).value.trim()
         stop()
         job = scope.launch {
-            var file: File? = null
             try {
-                file = withContext(Dispatchers.IO) { synthesize(key, voice, text) }
-                play(file)
+                coroutineScope {
+                    val parts = chunks(text)
+                    var next: Deferred<File>? = async(Dispatchers.IO) { synthesize(key, voice, parts[0]) }
+                    for (i in parts.indices) {
+                        val file = next!!.await()
+                        next = if (i + 1 < parts.size) async(Dispatchers.IO) { synthesize(key, voice, parts[i + 1]) } else null
+                        try {
+                            play(file)
+                        } finally {
+                            file.delete()
+                        }
+                    }
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 AppLog.voice.notice("Fish Audio couldn’t read the reply: ${e.message ?: e.javaClass.simpleName}")
-            } finally {
-                file?.delete()
             }
+            onDone()
         }
+    }
+
+    /** First sentence alone (so sound starts fast), then groups of about 350 characters. */
+    private fun chunks(text: String): List<String> {
+        val sentences = Regex("(?<=[.!?…])\\s+").split(text).filter { it.isNotBlank() }
+        if (sentences.isEmpty()) return listOf(text)
+        val out = mutableListOf(sentences[0])
+        var cur = StringBuilder()
+        for (sentence in sentences.drop(1)) {
+            if (cur.isNotEmpty() && cur.length + sentence.length > 350) {
+                out += cur.toString()
+                cur = StringBuilder()
+            }
+            if (cur.isNotEmpty()) cur.append(' ')
+            cur.append(sentence)
+        }
+        if (cur.isNotEmpty()) out += cur.toString()
+        return out
     }
 
     fun stop() {

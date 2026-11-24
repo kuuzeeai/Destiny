@@ -71,8 +71,8 @@ object AssistRunner {
         var signature = ""
         var stable = 0
         var waited = 0
-        while (waited < 240) {
-            delay(1500)
+        while (waited < 600) {
+            delay(600)
             waited++
             val items = replies(server, session.id)
             if (items.isEmpty()) continue
@@ -88,7 +88,7 @@ object AssistRunner {
             val reply = fresh.filter { !it.inProgress }.maxByOrNull { it.id } ?: continue
             if (fresh.any { it.inProgress }) continue
             val toolAfter = items.any { it is OpenCodeTranscriptItem.Tool && it.id > reply.id }
-            if ((stable >= 4 && !toolAfter) || stable >= 20) {
+            if ((stable >= 3 && !toolAfter) || stable >= 12) {
                 onStage(Stage.Reading, null)
                 speak(reply.text)
                 return

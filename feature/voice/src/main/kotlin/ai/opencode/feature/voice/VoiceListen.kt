@@ -55,12 +55,17 @@ object VoiceListen {
     }
 
     /** Callbacks run on a background thread. */
-    fun listen(onTranscribing: () -> Unit, onText: (String) -> Unit, onFail: (Failure, String?) -> Unit) {
+    fun listen(
+        onTranscribing: () -> Unit,
+        onText: (String) -> Unit,
+        onFail: (Failure, String?) -> Unit,
+        onReady: () -> Unit = {},
+    ) {
         cancel()
         val key = shared(SharedKeys.groqAPIKey).value?.trim().orEmpty()
         job = scope.launch {
             try {
-                val pcm = record()
+                val pcm = record(onReady)
                 if (pcm == null) {
                     onFail(Failure.Silence, null)
                     return@launch
@@ -83,7 +88,7 @@ object VoiceListen {
 
     /** Records until about a second of silence after speech; null if nobody spoke for 7 seconds. */
     @SuppressLint("MissingPermission")
-    private suspend fun record(): ByteArray? {
+    private suspend fun record(onReady: () -> Unit): ByteArray? {
         val minBuffer = AudioRecord.getMinBufferSize(RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
         if (minBuffer <= 0) throw MicException()
         val recorder = AudioRecord(
@@ -104,7 +109,7 @@ object VoiceListen {
             recorder.startRecording()
             if (recorder.recordingState != AudioRecord.RECORDSTATE_RECORDING) throw MicException()
             var frames = 0
-            var noise = 0.0
+            var noise = Double.MAX_VALUE
             var threshold = 450.0
             var loud = 0
             var loudFrames = 0
@@ -126,9 +131,10 @@ object VoiceListen {
                 out.write(bytes, 0, n * 2)
                 val rms = sqrt(sum / n)
                 frames++
-                if (frames <= 15) {
-                    noise += rms / 15
-                    if (frames == 15) threshold = max(min(noise, 400.0) * 3, 450.0)
+                if (frames == 1) onReady()
+                if (frames <= 8) {
+                    noise = min(noise, rms)
+                    if (frames == 8) threshold = min(max(noise * 2.5, 220.0), 700.0)
                     continue
                 }
                 if (rms > threshold) {
@@ -155,11 +161,33 @@ object VoiceListen {
             val all = out.toByteArray()
             val from = max(0, (firstLoud - 15) * FRAME * 2)
             val to = min(all.size, (lastLoud + 10) * FRAME * 2)
-            return if (to > from) all.copyOfRange(from, to) else null
+            return if (to > from) boost(all.copyOfRange(from, to)) else null
         } finally {
             runCatching { recorder.stop() }
             recorder.release()
         }
+    }
+
+    /** Raises quiet speech (up to 8x) so Whisper hears it well. */
+    private fun boost(pcm: ByteArray): ByteArray {
+        var peak = 1
+        var i = 0
+        while (i + 1 < pcm.size) {
+            val s = (pcm[i + 1].toInt() shl 8) or (pcm[i].toInt() and 0xFF)
+            peak = max(peak, kotlin.math.abs(s))
+            i += 2
+        }
+        val gain = min(8.0, 20000.0 / peak)
+        if (gain <= 1.2) return pcm
+        i = 0
+        while (i + 1 < pcm.size) {
+            val s = (pcm[i + 1].toInt() shl 8) or (pcm[i].toInt() and 0xFF)
+            val v = (s * gain).toInt().coerceIn(-32768, 32767)
+            pcm[i] = (v and 0xFF).toByte()
+            pcm[i + 1] = (v shr 8).toByte()
+            i += 2
+        }
+        return pcm
     }
 
     private fun wav(pcm: ByteArray): ByteArray {

@@ -192,7 +192,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     }
 
     private fun startListening() {
-        AssistForegroundService.update(context, "Escuchando…")
+        AssistForegroundService.update(context, "Preparando…")
         listening = true
         if (!SpeechRecognizer.isRecognitionAvailable(context)) {
             setStatus("Este celular no tiene reconocimiento de voz")
@@ -217,7 +217,16 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     }
 
     private fun listenWithGroq() {
+        setStatus("Preparando…")
         VoiceListen.listen(
+            onReady = {
+                main.post {
+                    if (visible) {
+                        setStatus("Escuchando…")
+                        AssistForegroundService.update(context, "Escuchando…")
+                    }
+                }
+            },
             onTranscribing = { main.post { if (visible) setStatus("Transcribiendo…") } },
             onText = { text ->
                 main.post {

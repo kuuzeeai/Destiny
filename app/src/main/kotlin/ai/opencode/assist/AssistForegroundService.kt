@@ -56,12 +56,50 @@ class AssistForegroundService : Service() {
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setColor(tint)
-        if (Build.VERSION.SDK_INT >= 36) {
-            // Actualizacion en vivo (Android 16): HyperOS puede mostrarla en la isla.
-            runCatching {
-                builder.setRequestPromotedOngoing(true)
-                builder.setShortCriticalText(short)
-            }
+        // Super Isla de HyperOS 3 (focus notification): icono del color de la fase.
+        runCatching {
+            val protocol = android.provider.Settings.System.getInt(contentResolver, "notification_focus_protocol", 0)
+            val allowed = runCatching {
+                val extras = android.os.Bundle().apply { putString("package", packageName) }
+                contentResolver.call(
+                    android.net.Uri.parse("content://miui.statusbar.notification.public"),
+                    "canShowFocus", null, extras,
+                )?.getBoolean("canShowFocus", false) ?: false
+            }.getOrDefault(false)
+            islandInfo = "p$protocol " + if (allowed) "permiso sí" else "permiso no"
+            val text = org.json.JSONObject().put("title", label).put("content", body).put("useHighLight", true)
+            val pic = org.json.JSONObject().put("type", 1).put("pic", "miui.focus.pic_island_icon")
+            val json = org.json.JSONObject().put(
+                "param_v2",
+                org.json.JSONObject()
+                    .put("protocol", 1)
+                    .put("business", "assistant")
+                    .put("enableFloat", false)
+                    .put("updatable", true)
+                    .put("ticker", label)
+                    .put("tickerPic", "miui.focus.pic_island_icon")
+                    .put(
+                        "param_island",
+                        org.json.JSONObject()
+                            .put("islandProperty", 1)
+                            .put(
+                                "bigIslandArea",
+                                org.json.JSONObject().put(
+                                    "imageTextInfoLeft",
+                                    org.json.JSONObject().put("type", 1).put("picInfo", pic).put("textInfo", text),
+                                ),
+                            )
+                            .put("smallIslandArea", org.json.JSONObject().put("picInfo", pic)),
+                    )
+                    .put("baseInfo", org.json.JSONObject().put("title", label).put("content", body).put("type", 2)),
+            )
+            val pics = android.os.Bundle().apply { putParcelable("miui.focus.pic_island_icon", dotIcon(tint)) }
+            builder.addExtras(
+                android.os.Bundle().apply {
+                    putString("miui.focus.param", json.toString())
+                    putBundle("miui.focus.pics", pics)
+                },
+            )
         }
         val notification = builder.build()
         startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
@@ -95,6 +133,9 @@ class AssistForegroundService : Service() {
         private const val NOTIFICATION_ID = 7319
         private const val EXTRA_LABEL = "label"
         private const val EXTRA_HEARD = "heard"
+
+        /** Estado de la Super Isla, para la linea gris (protocolo y permiso). */
+        @Volatile var islandInfo = ""
         private val ui = Handler(Looper.getMainLooper())
         @Volatile private var currentLabel = ""
         @Volatile private var pendingHeard = ""

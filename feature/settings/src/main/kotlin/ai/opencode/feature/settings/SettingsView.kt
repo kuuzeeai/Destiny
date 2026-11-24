@@ -309,7 +309,7 @@ private fun SettingsRootPage(store: SettingsStore) {
                     SettingsRow(stringResource(R.string.settings_models_title), "cpu", SettingsTint.Teal, modifier = returnFocus.on(SettingsPage.Models)) { push(SettingsPage.Models) }
                 }
                 SettingsDivider(inset = true)
-                SettingsRow(stringResource(R.string.settings_voice_title), "waveform", SettingsTint.Indigo, modifier = returnFocus.on(SettingsPage.Voice), badge = if (voiceModeEnabled) stringResource(R.string.settings_value_on) else null) {
+                SettingsRow(stringResource(R.string.settings_voice_title), "waveform", SettingsTint.Indigo, modifier = returnFocus.on(SettingsPage.Voice), badge = null) {
                     push(SettingsPage.Voice)
                 }
                 if (notificationPermission != null) {

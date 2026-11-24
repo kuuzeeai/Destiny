@@ -353,7 +353,8 @@ val State.voiceRoute: VoiceRoute
         )
     }
 
-val State.isVoiceAvailable: Boolean get() = voiceLabOverride || (voiceModeEnabled.value && voiceRoute.isAvailable)
+// Las llamadas de voz ya no existen: el botón de llamada nunca se muestra.
+val State.isVoiceAvailable: Boolean get() = false
 
 /**
  * A scripted call, a stand-in server, or the lab's key make the call button available.

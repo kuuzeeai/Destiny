@@ -124,35 +124,15 @@ internal fun rememberVoiceState(voice: VoiceStore): VoiceSettingsFeature.State {
     return remember(local, revision) { local.copy() }
 }
 
-/**
- * Settings › Voice. 1. Enable Voice; 2. the Voice Provider row and Model; for Grok, Model (provider
- * plus model) and its xAI Key row. Then Voice; 3. Raise to Talk and Call History.
- */
+/** Ajustes › Voz: Fish (hablar), Groq (entenderte) y el asistente del botón de encendido. */
 @Composable
 fun VoiceSettingsView(store: SettingsStore) {
-    val voice = rememberVoiceStore(store)
-    val state = rememberVoiceState(voice)
-    val reduceMotion = rememberReduceMotion()
-    val settings = { action: HomeSettingsFeature.Action -> store.send(SettingsFeature.Action.Settings(action)) }
-    LaunchedEffect(voice) { voice.send(VoiceSettingsFeature.Action.Task) }
-    // The server that brokers calls, asked again when it changes.
-    val brokerID = state.broker.server?.persistenceID
-    LaunchedEffect(brokerID) {
-        if (brokerID != null) settings(HomeSettingsFeature.Action.CheckServerVoiceSupport)
-    }
-    val keySource = state.keySource
-    LaunchedEffect(keySource) { voice.send(VoiceSettingsFeature.Action.RouteChanged) }
-    val showsRaiseToTalk = remember { ai.opencode.core.dependencies.dependency(ai.opencode.feature.voice.RaiseToEarClient).isSupported() }
-    val callSetupHeader = stringResource(R.string.settings_voice_call_setup_header)
-    val callsHeader = stringResource(R.string.settings_voice_calls_header)
-    val raiseToTalkHint = stringResource(R.string.settings_voice_raise_to_talk_hint)
-    val fishHeader = stringResource(R.string.settings_fish_header)
-    val fishFooter = stringResource(R.string.settings_fish_footer)
-
     SettingsPageScaffold(title = stringResource(R.string.settings_voice_title), store = store) {
         item(key = "scope") {
+            // Las claves son credenciales.
+            ai.opencode.core.diagnostics.HidesFromScreenshots()
             ai.opencode.feature.voice.DotScopeView(
-                mode = ai.opencode.feature.voice.DotScopeMode.Preview(active = state.voiceModeEnabled),
+                mode = ai.opencode.feature.voice.DotScopeMode.Preview(active = true),
                 modifier = Modifier
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .fillMaxWidth()
@@ -161,109 +141,14 @@ fun VoiceSettingsView(store: SettingsStore) {
                     .clearAndSetSemantics {},
             )
         }
-        settingsSection(
-            key = "enable",
-            footer = if (!state.voiceModeEnabled) footerText(keySource.footer) else null,
-        ) {
-            SettingsToggleRow(
-                stringResource(R.string.settings_voice_enable),
-                checked = state.voiceModeEnabled,
-                onCheckedChange = {
-                    voice.send(VoiceSettingsFeature.Action.VoiceModeEnabledChanged(it))
-                    settings(HomeSettingsFeature.Action.VoiceModeEnabledChanged(it))
-                },
-            )
+        settingsSection(key = "config", header = "Configuración de voz", footer = footerText("Fish habla con la voz que elijas y Groq entiende lo que dices. Las claves se quedan en este teléfono.")) {
+            VoiceConfigRows()
         }
-        if (state.voiceModeEnabled) {
-            settingsSection(
-                key = "configuration",
-                header = callSetupHeader,
-                description = keySource.footer.removeSuffix("."),
-            ) {
-                var first = true
-                fun divider() = if (first) { first = false; false } else true
-                if (state.showsProviderRow) {
-                    divider()
-                    VoiceProviderSettingsRow(state) { store.send(SettingsFeature.Action.PagePushed(SettingsPage.VoiceProvider())) }
-                }
-                val route = state.route
-                if (route != VoiceRoute.Server(VoiceRoute.ServerRoute.GeminiLive)) {
-                    if (divider()) SettingsDivider()
-                    SettingsMenuRow(
-                        title = stringResource(R.string.settings_voice_model),
-                        value = state.modelRowValue,
-                        selection = state.voiceEngine,
-                        sections = VoiceProvider.allCases.map { provider ->
-                            provider.displayName to provider.engines.map { SettingsMenuOption(it, it.title) }
-                        },
-                        onSelect = {
-                            voice.send(VoiceSettingsFeature.Action.VoiceEngineChanged(it))
-                            settings(HomeSettingsFeature.Action.VoiceEngineChanged(it))
-                        },
-                        accessibilityLabel = stringResource(R.string.settings_voice_model_description),
-                    )
-                }
-                if (!state.showsProviderRow) {
-                    if (divider()) SettingsDivider()
-                    KeyRow(state, reduceMotion) { voice.send(VoiceSettingsFeature.Action.KeyRowTapped) }
-                    // Under Reduce Motion it fades in place.
-                    AnimatedVisibility(
-                        visible = state.isEditingKey && keySource.isPhoneKey,
-                        enter = keyEditorEnter(reduceMotion),
-                        exit = keyEditorExit(reduceMotion),
-                    ) {
-                        Column {
-                            SettingsDivider()
-                            VoiceKeyEditor(state, voice, settings)
-                        }
-                    }
-                }
-                if (divider()) SettingsDivider()
-                SettingsChoiceRow(
-                    stringResource(R.string.settings_voice_call_voice),
-                    value = CallVoicePicker.rowValue(state.callVoice, state.voiceEngine),
-                ) { store.send(SettingsFeature.Action.PagePushed(SettingsPage.CallVoicePicker)) }
-                if (state.showsDelegatorRow) {
-                    SettingsDivider()
-                    VoiceDelegatorSettingsRow(state) { store.send(SettingsFeature.Action.PagePushed(SettingsPage.VoiceDelegator)) }
-                }
-            }
+        settingsSection(key = "toggles") {
+            VoiceToggleRows()
         }
-        settingsSection(key = "fish", header = fishHeader, footer = footerText(fishFooter)) {
-            FishAudioRows()
-        }
-        settingsSection(key = "options", header = callsHeader) {
-            if (state.voiceModeEnabled && showsRaiseToTalk) {
-                SettingsToggleRow(
-                    stringResource(R.string.settings_voice_raise_to_talk),
-                    checked = state.raiseToTalk,
-                    onCheckedChange = {
-                        voice.send(VoiceSettingsFeature.Action.RaiseToTalkChanged(it))
-                        settings(HomeSettingsFeature.Action.RaiseToTalkChanged(it))
-                    },
-                    // TalkBack's click label (“Double tap to …”).
-                    modifier = Modifier.semantics {
-                        onClick(label = raiseToTalkHint) {
-                            val on = !state.raiseToTalk
-                            voice.send(VoiceSettingsFeature.Action.RaiseToTalkChanged(on))
-                            settings(HomeSettingsFeature.Action.RaiseToTalkChanged(on))
-                            true
-                        }
-                    },
-                )
-                SettingsDivider()
-            }
-            if (state.voiceModeEnabled) {
-                SettingsMenuRow(
-                    title = stringResource(R.string.settings_voice_call_sounds),
-                    value = state.callSoundPack.title,
-                    selection = state.callSoundPack,
-                    sections = listOf(null to VoiceCallSoundPack.entries.map { SettingsMenuOption(it, it.title) }),
-                    onSelect = { voice.send(VoiceSettingsFeature.Action.CallSoundPackSelected(it)) },
-                )
-                SettingsDivider()
-            }
-            SettingsRow(stringResource(R.string.settings_voice_call_history), symbol = null) { store.send(SettingsFeature.Action.PagePushed(SettingsPage.CallHistory)) }
+        settingsSection(key = "assistant", header = "Asistente", footer = footerText("Elegir un modelo lo deja puesto en ese chat. Si no eliges chat, usa el último que viste.")) {
+            AssistantRows()
         }
     }
 }

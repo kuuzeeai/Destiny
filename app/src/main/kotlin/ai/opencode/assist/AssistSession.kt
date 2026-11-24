@@ -34,38 +34,35 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     private var followUp = false
     private var retries = 0
     private var working = false
+    private var listening = false
+    private var bars: AssistBars? = null
 
     private fun dp(v: Int): Int = (v * context.resources.displayMetrics.density).toInt()
 
     override fun onCreateContentView(): View {
-        val dark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-        val bg = if (dark) 0xFF26262B.toInt() else 0xFFF1F1F4.toInt()
-        val fg = if (dark) 0xFFFFFFFF.toInt() else 0xFF1B1B1F.toInt()
-        val soft = if (dark) 0xFFB8B8C0.toInt() else 0xFF5F5F66.toInt()
-        val card = LinearLayout(context).apply {
+        val pill = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(24), dp(20), dp(24), dp(20))
+            setPadding(dp(18), dp(12), dp(18), dp(14))
             background = GradientDrawable().apply {
-                setColor(bg)
-                cornerRadius = dp(28).toFloat()
+                setColor(0xFF000000.toInt())
+                cornerRadius = dp(26).toFloat()
             }
+            elevation = dp(8).toFloat()
             isClickable = true
+            setOnClickListener { if (!listening) interrupt() }
         }
+        val barsView = AssistBars(context)
         val status = TextView(context).apply {
-            textSize = 18f
-            setTextColor(fg)
+            textSize = 17f
+            setTextColor(0xFFFFFFFF.toInt())
+            setPadding(dp(12), 0, 0, 0)
             text = "Escuchando…"
         }
-        val heard = TextView(context).apply {
-            textSize = 15f
-            setTextColor(soft)
-            setPadding(0, dp(8), 0, 0)
-        }
         val close = TextView(context).apply {
-            text = "Cerrar"
-            textSize = 15f
-            setTextColor(fg)
-            setPadding(0, dp(16), 0, 0)
+            text = "✕"
+            textSize = 18f
+            setTextColor(0xFF9A9AA2.toInt())
+            setPadding(dp(10), dp(4), 0, dp(4))
             setOnClickListener {
                 recognizer?.cancel()
                 FishSpeech.stop()
@@ -74,21 +71,48 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                 hide()
             }
         }
-        card.addView(status)
-        card.addView(heard)
-        card.addView(close)
+        val row = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            addView(barsView, LinearLayout.LayoutParams(dp(34), dp(26)))
+            addView(status, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            addView(close)
+        }
+        val heard = TextView(context).apply {
+            textSize = 14f
+            maxLines = 2
+            setTextColor(0xFFB0B0B8.toInt())
+            setPadding(dp(46), dp(4), 0, 0)
+        }
+        pill.addView(row)
+        pill.addView(heard)
         statusView = status
         heardView = heard
+        bars = barsView
         val root = FrameLayout(context)
         root.setOnClickListener { hide() }
-        val params = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.WRAP_CONTENT,
-            Gravity.BOTTOM,
-        )
-        params.setMargins(dp(12), dp(12), dp(12), dp(24))
-        root.addView(card, params)
+        val width = minOf(dp(340), context.resources.displayMetrics.widthPixels - dp(32))
+        val params = FrameLayout.LayoutParams(width, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.TOP or Gravity.CENTER_HORIZONTAL)
+        params.topMargin = dp(44)
+        root.setOnApplyWindowInsetsListener { _, insets ->
+            params.topMargin = insets.systemWindowInsetTop + dp(6)
+            pill.layoutParams = params
+            insets
+        }
+        root.addView(pill, params)
         return root
+    }
+
+    /** Cuts the answer (or the wait) and listens again right away. */
+    private fun interrupt() {
+        recognizer?.cancel()
+        FishSpeech.stop()
+        AssistRunner.cancel()
+        working = false
+        followUp = true
+        retries = 0
+        heardView?.text = ""
+        startListening()
     }
 
     override fun onShow(args: Bundle?, showFlags: Int) {
@@ -97,6 +121,18 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         AssistRunner.cancel()
         heardView?.text = ""
         visible = true
+        AssistForegroundService.onInterrupt = {
+            main.post {
+                if (visible) {
+                    if (!listening) interrupt()
+                } else {
+                    FishSpeech.stop()
+                    AssistRunner.cancel()
+                    working = false
+                    AssistForegroundService.stop(context)
+                }
+            }
+        }
         followUp = false
         retries = 0
         working = false
@@ -112,6 +148,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     }
 
     override fun onDestroy() {
+        AssistForegroundService.onInterrupt = null
         AssistForegroundService.stop(context)
         recognizer?.destroy()
         recognizer = null
@@ -120,6 +157,14 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
 
     private fun setStatus(text: String) {
         statusView?.text = text
+        bars?.setMode(
+            when {
+                text.startsWith("Escuchando") -> AssistBars.Mode.Listening
+                text.startsWith("Pensando") || text.startsWith("Enviando") -> AssistBars.Mode.Thinking
+                text.startsWith("Respondiendo") -> AssistBars.Mode.Speaking
+                else -> AssistBars.Mode.Idle
+            },
+        )
     }
 
     // Usa otro reconocedor (Google), no el de relleno de Destiny.
@@ -139,6 +184,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
 
     private fun startListening() {
         AssistForegroundService.update(context, "Escuchando…")
+        listening = true
         if (!SpeechRecognizer.isRecognitionAvailable(context)) {
             setStatus("Este celular no tiene reconocimiento de voz")
             return
@@ -193,6 +239,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     private fun send(text: String) {
         heardView?.text = text
         working = true
+        listening = false
         AssistRunner.send(
             text,
             speak = { reply ->
@@ -203,7 +250,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                         if (visible) {
                             followUp = true
                             heardView?.text = ""
-                            setStatus("Te escucho… (o espera para cerrar)")
+                            setStatus("Escuchando…")
                             startListening()
                         }
                     }
@@ -221,8 +268,8 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                             AssistForegroundService.update(context, "Pensando…")
                         }
                         AssistRunner.Stage.Reading -> {
-                            setStatus("Leyendo la respuesta…")
-                            AssistForegroundService.update(context, "Hablando…")
+                            setStatus("Respondiendo…")
+                            AssistForegroundService.update(context, "Respondiendo…")
                         }
                         AssistRunner.Stage.Failed -> {
                             working = false

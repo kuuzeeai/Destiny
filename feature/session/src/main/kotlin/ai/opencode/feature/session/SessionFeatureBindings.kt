@@ -125,9 +125,10 @@ internal fun SessionFeature.reduceCallAndBindings(state: State, action: Action):
         }
     }
 
+    // Llamadas en tiempo real desactivadas: la voz va por dictado + Fish Audio.
     Action.VoiceTapped ->
         if (state.voice != null) Reduced(state, Effect.send(Action.voicePresented(VoiceFeature.Action.EndTapped)))
-        else callAfterDictation(state, atEar = false) ?: startCall(state)
+        else Reduced(state)
 
     is Action.CallAudioYielded -> {
         if (state.voice != null) {

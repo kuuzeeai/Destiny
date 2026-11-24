@@ -2,6 +2,7 @@ package ai.opencode.feature.settings.connection
 
 import ai.opencode.core.motion.MotionTransition
 import ai.opencode.core.motion.MotionTunables
+import ai.opencode.core.motion.motionPress
 import ai.opencode.core.ui.OpenCodeRadius
 import ai.opencode.core.ui.OpenCodeTextField
 import ai.opencode.core.ui.OpenCodeShape
@@ -232,6 +233,7 @@ private fun ConnectionCardContent(
         Column(
             Modifier
                 .fillMaxWidth()
+                .motionPress(interaction)
                 .clip(cardShape)
                 .background(MaterialTheme.colorScheme.surfaceContainer)
                 .clickable(interactionSource = interaction, indication = ripple(), role = Role.Button, onClick = onOpen)

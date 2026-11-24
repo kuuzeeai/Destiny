@@ -592,6 +592,7 @@ fun ComposerControlLabel(
     visualOffsetX: Float = 0f,
     glyphRise: Float = 0f,
     faceDiameter: Float = ComposerTunables.buttonDiameter,
+    cornerPercent: Int = 50,
 ) {
     val reduceMotion = rememberReduceMotion()
     val fontScale = LocalDensity.current.fontScale
@@ -604,7 +605,7 @@ fun ComposerControlLabel(
             .offset(x = visualOffsetX.dp)
             .size(diameter.dp)
             // The desktop's submit button: a rounded square, not a circle.
-            .clip(RoundedCornerShape(percent = 50))
+            .clip(RoundedCornerShape(percent = cornerPercent.coerceIn(0, 100)))
             .background(background),
         contentAlignment = Alignment.Center,
     ) {
@@ -682,6 +683,12 @@ fun ComposerTrailingLabel(
         Motion.layout.animation(MotionPhase.Enter, reduceMotion),
         label = "trailingDiameter",
     )
+    // Shape morph: the circle squares off into Stop and springs back to a circle.
+    val corner by androidx.compose.animation.core.animateIntAsState(
+        targetValue = if (control == ComposerTrailingControl.Stop) 30 else 50,
+        animationSpec = if (reduceMotion) androidx.compose.animation.core.tween(0) else androidx.compose.animation.core.spring(dampingRatio = 0.55f, stiffness = 300f),
+        label = "trailingCorner",
+    )
     val press = remember { Animatable(1f) }
     val symbol = control.symbolName
     var shown by remember { mutableStateOf(symbol) }
@@ -710,6 +717,7 @@ fun ComposerTrailingLabel(
         // The mic's stand and base weigh its mass low: lifted, its optical centre sits on the end-cap's centre.
         glyphRise = if (isMic) ComposerTunables.micInkRise else 0f,
         faceDiameter = diameter,
+        cornerPercent = corner,
     )
 }
 

@@ -30,6 +30,9 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     private var recognizer: SpeechRecognizer? = null
     private var statusView: TextView? = null
     private var heardView: TextView? = null
+    private var visible = false
+    private var followUp = false
+    private var retries = 0
 
     private fun dp(v: Int): Int = (v * context.resources.displayMetrics.density).toInt()
 
@@ -91,11 +94,15 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         FishSpeech.stop()
         AssistRunner.cancel()
         heardView?.text = ""
+        visible = true
+        followUp = false
+        retries = 0
         setStatus("Escuchando…")
         startListening()
     }
 
     override fun onHide() {
+        visible = false
         recognizer?.cancel()
         super.onHide()
     }
@@ -146,20 +153,33 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             override fun onEvent(eventType: Int, params: Bundle?) {}
             override fun onError(error: Int) {
                 val quiet = error == SpeechRecognizer.ERROR_NO_MATCH || error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT
-                setStatus(if (quiet) "No te escuché. Intenta otra vez." else "Error de voz ($error)")
+                if (followUp && quiet) {
+                    hide()
+                } else if (retries < 2 && (error == 5 || error == 8 || error == 11)) {
+                    retries++
+                    main.postDelayed({ if (visible) startListening() }, 400)
+                } else {
+                    setStatus(if (quiet) "No te escuché. Intenta otra vez." else "Error de voz ($error)")
+                }
             }
             override fun onPartialResults(partialResults: Bundle?) {
                 heardView?.text = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty()
             }
             override fun onResults(results: Bundle?) {
                 val text = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()?.trim().orEmpty()
-                if (text.isEmpty()) setStatus("No te escuché. Intenta otra vez.") else send(text)
+                if (text.isEmpty()) {
+                    if (followUp) hide() else setStatus("No te escuché. Intenta otra vez.")
+                } else {
+                    retries = 0
+                    send(text)
+                }
             }
         })
         r.startListening(
             Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
                 .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                 .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+                .putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 1000L)
                 .putExtra(RecognizerIntent.EXTRA_LANGUAGE, java.util.Locale.getDefault().toLanguageTag()),
         )
     }
@@ -168,7 +188,18 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         heardView?.text = text
         AssistRunner.send(
             text,
-            speak = { reply -> main.post { FishSpeech.speak(reply) } },
+            speak = { reply ->
+                main.post {
+                    FishSpeech.speak(reply) {
+                        if (visible) {
+                            followUp = true
+                            heardView?.text = ""
+                            setStatus("Te escucho… (o espera para cerrar)")
+                            startListening()
+                        }
+                    }
+                }
+            },
             onStage = { stage, message ->
                 main.post {
                     when (stage) {
@@ -176,7 +207,6 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                         AssistRunner.Stage.Waiting -> setStatus("Pensando…")
                         AssistRunner.Stage.Reading -> {
                             setStatus("Leyendo la respuesta…")
-                            main.postDelayed({ hide() }, 1500)
                         }
                         AssistRunner.Stage.Failed -> setStatus(message ?: "Algo falló")
                     }

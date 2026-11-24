@@ -14,7 +14,6 @@ dependencies {
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.process)
-    implementation(libs.firebase.messaging)
     implementation(libs.androidx.datastore.preferences)
     // Share encoder pixels, AppSearch documents, MimeTypeMap and the live inbox's Context in the ported JVM tests.
     testImplementation(libs.robolectric)

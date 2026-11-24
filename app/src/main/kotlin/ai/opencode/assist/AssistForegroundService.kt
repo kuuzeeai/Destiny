@@ -43,8 +43,8 @@ class AssistForegroundService : Service() {
             else -> "Piensa"
         }
         val tint = when {
-            label.startsWith("Escuchando") -> 0xFF34C759.toInt()
-            label.startsWith("Respondiendo") -> 0xFF2196F3.toInt()
+            label.startsWith("Escuchando") -> 0xFF2196F3.toInt()
+            label.startsWith("Respondiendo") -> 0xFF34C759.toInt()
             else -> 0xFFFFB300.toInt()
         }
         val heardText = intent?.getStringExtra(EXTRA_HEARD)?.trim().orEmpty()
@@ -94,12 +94,7 @@ class AssistForegroundService : Service() {
                     .put("baseInfo", org.json.JSONObject().put("title", label).put("content", body).put("type", 2)),
             )
             val pics = android.os.Bundle().apply { putParcelable("miui.focus.pic_island_icon", dotIcon(tint)) }
-            builder.addExtras(
-                android.os.Bundle().apply {
-                    putString("miui.focus.param", json.toString())
-                    putBundle("miui.focus.pics", pics)
-                },
-            )
+            // Sin extras de la Super Isla: dos tipos de isla a la vez hacian que se estirara.
         }
         // Modo reproductor: sesion de medios "reproduciendo" con portada del color de la fase.
         // Asi HyperOS la muestra en la isla igual que a un reproductor de musica.

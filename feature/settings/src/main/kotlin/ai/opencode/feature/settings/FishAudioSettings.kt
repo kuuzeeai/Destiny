@@ -151,8 +151,10 @@ internal fun VoiceConfigRows() {
 internal fun VoiceToggleRows() {
     val reads = shared(SharedKeys.fishReadsReplies)
     val keepAlive = shared(SharedKeys.assistKeepAlive)
+    val islandOnly = shared(SharedKeys.assistIslandOnly)
     val readsOn by reads.flow.collectAsState()
     val keepAliveOn by keepAlive.flow.collectAsState()
+    val islandOnlyOn by islandOnly.flow.collectAsState()
     SettingsToggleRow(
         stringResource(R.string.settings_fish_read_replies),
         checked = readsOn,
@@ -163,5 +165,11 @@ internal fun VoiceToggleRows() {
         "Asistente listo (botón de encendido con la app cerrada)",
         checked = keepAliveOn,
         onCheckedChange = { keepAlive.set(it) },
+    )
+    SettingsDivider()
+    SettingsToggleRow(
+        "Solo isla (ocultar el recuadro del asistente)",
+        checked = islandOnlyOn,
+        onCheckedChange = { islandOnly.set(it) },
     )
 }

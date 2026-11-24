@@ -33,6 +33,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     private var recognizer: SpeechRecognizer? = null
     private var statusView: TextView? = null
     private var heardView: TextView? = null
+    private var pillView: View? = null
     private var visible = false
     private var followUp = false
     private var retries = 0
@@ -125,6 +126,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             insets
         }
         root.addView(pill, params)
+        pillView = pill
         return root
     }
 
@@ -156,6 +158,8 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         super.onShow(args, showFlags)
         makeTouchThrough()
         main.post { makeTouchThrough() }
+        pillView?.visibility =
+            if (ai.opencode.core.sharing.shared(ai.opencode.core.sharing.SharedKeys.assistIslandOnly).value) View.GONE else View.VISIBLE
         FishSpeech.stop()
         AssistRunner.cancel()
         heardView?.text = ""

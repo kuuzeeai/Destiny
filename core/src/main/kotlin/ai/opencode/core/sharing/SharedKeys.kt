@@ -84,6 +84,8 @@ object SharedKeys {
     val assistKeepAlive = SharedKey.appStorage("assist-keep-alive", true)
     /** Interrumpir a Fish hablando encima (el micrófono escucha mientras responde). */
     val assistBargeIn = SharedKey.appStorage("assist-barge-in", true)
+    /** Oculta el recuadro del asistente: solo se ve la isla. */
+    val assistIslandOnly = SharedKey.appStorage("assist-island-only", false)
 
     /** El chat fijo del asistente (ID de sesión); vacío usa el último chat visto. */
     val assistSessionID = SharedKey.appStorage("assist-session-id", "")

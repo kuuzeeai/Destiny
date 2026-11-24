@@ -18,6 +18,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sqrt
 
 /**
@@ -44,6 +45,7 @@ object VoiceBargeIn {
     @SuppressLint("MissingPermission")
     fun start(onSpeech: () -> Unit) {
         stop()
+        VoiceListen.preroll = null
         if (!shared(SharedKeys.assistBargeIn).value) return
         job = scope.launch {
             var recorder: AudioRecord? = null
@@ -79,13 +81,23 @@ object VoiceBargeIn {
                 var avg = 0.0
                 var frames = 0
                 var loud = 0
+                val ring = ByteArray(RATE * 3)
+                var pos = 0
+                var filled = 0
                 while (true) {
                     coroutineContext.ensureActive()
                     if (!FishSpeech.active) return@launch
                     val n = r.read(frame, 0, FRAME)
                     if (n <= 0) return@launch
                     var sum = 0.0
-                    for (i in 0 until n) sum += frame[i].toDouble() * frame[i]
+                    for (i in 0 until n) {
+                        val s = frame[i].toInt()
+                        sum += s.toDouble() * s
+                        ring[pos] = (s and 0xFF).toByte()
+                        ring[pos + 1] = (s shr 8).toByte()
+                        pos = (pos + 2) % ring.size
+                    }
+                    filled = min(ring.size, filled + n * 2)
                     val rms = sqrt(sum / n)
                     frames++
                     if (frames == 1) avg = rms
@@ -99,6 +111,11 @@ object VoiceBargeIn {
                     if (rms > thr) {
                         loud += 2
                         if (loud >= 20) {
+                            val take = min(filled, RATE * 2 * 6 / 5)
+                            val snap = ByteArray(take)
+                            val start = (pos - take + ring.size) % ring.size
+                            for (k in 0 until take) snap[k] = ring[(start + k) % ring.size]
+                            VoiceListen.preroll = snap
                             onSpeech()
                             return@launch
                         }

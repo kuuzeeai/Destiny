@@ -374,7 +374,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                         }
                     }
                     if (visible) {
-                        VoiceBargeIn.start { main.post { if (visible && working && !listening) interrupt() } }
+                        VoiceBargeIn.start { main.post { if (visible && working && !listening) { interrupt(); followUp = false } } }
                         main.post(object : Runnable {
                             override fun run() {
                                 if (visible && working && FishSpeech.active) {

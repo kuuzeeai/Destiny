@@ -53,6 +53,9 @@ object VoiceListen {
     @Volatile private var tick = 0L
     @Volatile private var rec: AudioRecord? = null
 
+    /** Lo que ya dijiste al interrumpir (lo deja VoiceBargeIn); la próxima escucha lo incluye. */
+    @Volatile var preroll: ByteArray? = null
+
     private fun mark(p: String) {
         phase = p
         phaseAt = System.currentTimeMillis()
@@ -144,7 +147,10 @@ object VoiceListen {
             recorder.release()
             throw MicException()
         }
+        val pre = preroll
+        preroll = null
         val out = ByteArrayOutputStream()
+        if (pre != null) out.write(pre)
         val frame = ShortArray(FRAME)
         val bytes = ByteArray(FRAME * 2)
         try {
@@ -160,6 +166,10 @@ object VoiceListen {
             var speechLevel = 0.0
             var lastLoud = 0
             var waitStart = 0
+            if (pre != null) {
+                speaking = true
+                loudFrames = 6
+            }
             while (true) {
                 coroutineContext.ensureActive()
                 val n = recorder.read(frame, 0, FRAME)
@@ -213,8 +223,8 @@ object VoiceListen {
                 if (frames * 20 >= 20000) break
             }
             val all = out.toByteArray()
-            val from = max(0, (firstLoud - 15) * FRAME * 2)
-            val to = min(all.size, (lastLoud + 10) * FRAME * 2)
+            val from = if (pre != null) 0 else max(0, (firstLoud - 15) * FRAME * 2)
+            val to = min(all.size, (lastLoud + 10) * FRAME * 2 + (pre?.size ?: 0))
             return if (to > from) boost(all.copyOfRange(from, to)) else null
         } finally {
             rec = null

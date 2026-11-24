@@ -39,6 +39,8 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     private var listening = false
     private var bars: AssistBars? = null
     private var gen = 0
+    private var diagView: TextView? = null
+    private var startCount = 0
     private var listenToken = 0
 
     private fun dp(v: Int): Int = (v * context.resources.displayMetrics.density).toInt()
@@ -90,7 +92,14 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             setPadding(dp(46), dp(4), 0, 0)
         }
         pill.addView(row)
+        val diagText = TextView(context).apply {
+            textSize = 11f
+            setTextColor(0xFF6E6E76.toInt())
+            setPadding(dp(46), dp(2), 0, 0)
+        }
         pill.addView(heard)
+        pill.addView(diagText)
+        diagView = diagText
         statusView = status
         heardView = heard
         bars = barsView
@@ -169,6 +178,10 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         super.onDestroy()
     }
 
+    private fun diag(text: String) {
+        diagView?.text = text
+    }
+
     private fun setStatus(text: String) {
         statusView?.text = text
         bars?.setMode(
@@ -197,6 +210,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     }
 
     private fun startListening() {
+        startCount++
         AssistForegroundService.update(context, "Preparando…")
         listening = true
         if (!SpeechRecognizer.isRecognitionAvailable(context)) {
@@ -211,12 +225,14 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             gen++
             recognizer?.destroy()
             recognizer = null
+            diag("Groq · intento $startCount · preparando")
             listenWithGroq()
             return
         }
         val stale = recognizer
         recognizer = null
         stale?.destroy()
+        diag("Google · intento $startCount · preparando")
         val turn = ++gen
         main.postDelayed({ if (turn == gen && visible) beginRecognizer() }, 300)
     }
@@ -236,15 +252,17 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                 main.post {
                     if (visible) {
                         setStatus("Escuchando…")
+                        diag("Groq · intento $startCount · grabando")
                         AssistForegroundService.update(context, "Escuchando…")
                     }
                 }
             },
-            onTranscribing = { main.post { if (visible) setStatus("Transcribiendo…") } },
+            onTranscribing = { main.post { if (visible) { setStatus("Transcribiendo…"); diag("Groq · intento $startCount · transcribiendo") } } },
             onText = { text ->
                 main.post {
                     if (visible) {
                         retries = 0
+                        diag("Groq · intento $startCount · texto recibido")
                         send(text)
                     }
                 }
@@ -253,6 +271,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                 main.post {
                     if (!visible) return@post
                     listening = false
+                    diag("Groq · intento $startCount · fallo: $kind")
                     when (kind) {
                         VoiceListen.Failure.Silence ->
                             if (followUp) hide() else setStatus("No te escuché. Toca para reintentar.")
@@ -268,13 +287,14 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         val r = createRecognizer()
         recognizer = r
         r.setRecognitionListener(object : RecognitionListener {
-            override fun onReadyForSpeech(params: Bundle?) {}
-            override fun onBeginningOfSpeech() {}
+            override fun onReadyForSpeech(params: Bundle?) { diag("Google · intento $startCount · listo, habla") }
+            override fun onBeginningOfSpeech() { diag("Google · intento $startCount · oyendo voz") }
             override fun onRmsChanged(rmsdB: Float) {}
             override fun onBufferReceived(buffer: ByteArray?) {}
-            override fun onEndOfSpeech() {}
+            override fun onEndOfSpeech() { diag("Google · intento $startCount · fin de voz") }
             override fun onEvent(eventType: Int, params: Bundle?) {}
             override fun onError(error: Int) {
+                diag("Google · intento $startCount · error $error")
                 val quiet = error == SpeechRecognizer.ERROR_NO_MATCH || error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT
                 if (followUp && quiet) {
                     hide()

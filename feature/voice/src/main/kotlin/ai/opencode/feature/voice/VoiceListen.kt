@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaType
@@ -45,6 +46,18 @@ object VoiceListen {
     private val http: OkHttpClient by lazy { OkHttpClient().withVoiceTimeout(30) }
     private var job: Job? = null
 
+    // Vigilante: en qué fase va la escucha y cuándo fue la última señal de vida.
+    @Volatile private var phase = "preparando"
+    @Volatile private var phaseAt = 0L
+    @Volatile private var tick = 0L
+    @Volatile private var rec: AudioRecord? = null
+
+    private fun mark(p: String) {
+        phase = p
+        phaseAt = System.currentTimeMillis()
+        tick = phaseAt
+    }
+
     /** A Groq key is saved. */
     val available: Boolean
         get() = !shared(SharedKeys.groqAPIKey).value.isNullOrBlank()
@@ -63,25 +76,52 @@ object VoiceListen {
     ) {
         cancel()
         val key = shared(SharedKeys.groqAPIKey).value?.trim().orEmpty()
-        job = scope.launch {
+        mark("preparando")
+        val mine = scope.launch {
             try {
                 val pcm = record(onReady)
                 if (pcm == null) {
                     onFail(Failure.Silence, null)
                     return@launch
                 }
+                mark("transcribiendo")
                 onTranscribing()
                 val text = transcribe(key, wav(pcm))
                 if (text.isEmpty()) onFail(Failure.Silence, null) else onText(text)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: MicException) {
-                onFail(Failure.Mic, null)
+                if (isActive) onFail(Failure.Mic, null)
             } catch (e: SecurityException) {
                 onFail(Failure.Mic, null)
             } catch (e: Exception) {
                 AppLog.voice.notice("Groq couldn’t understand the audio: ${e.message ?: e.javaClass.simpleName}")
                 onFail(Failure.Network, e.message)
+            }
+        }
+        job = mine
+        scope.launch {
+            while (mine.isActive) {
+                delay(500)
+                val now = System.currentTimeMillis()
+                val why: String? = when (phase) {
+                    "preparando" -> if (now - phaseAt > 4000) "el micrófono no arrancó" else null
+                    "grabando" -> when {
+                        now - tick > 3000 -> "el micrófono no da audio"
+                        now - phaseAt > 35000 -> "la grabación no terminó"
+                        else -> null
+                    }
+                    "transcribiendo" -> if (now - phaseAt > 40000) "Groq no respondió" else null
+                    else -> null
+                }
+                if (why != null) {
+                    AppLog.voice.notice("Listen stuck: $why")
+                    mine.cancel()
+                    runCatching { rec?.stop() }
+                    runCatching { rec?.release() }
+                    onFail(Failure.Mic, why)
+                    return@launch
+                }
             }
         }
     }
@@ -98,6 +138,7 @@ object VoiceListen {
             AudioFormat.ENCODING_PCM_16BIT,
             max(minBuffer, RATE),
         )
+        rec = recorder
         if (recorder.state != AudioRecord.STATE_INITIALIZED) {
             recorder.release()
             throw MicException()
@@ -121,6 +162,7 @@ object VoiceListen {
                 coroutineContext.ensureActive()
                 val n = recorder.read(frame, 0, FRAME)
                 if (n <= 0) throw MicException()
+                tick = System.currentTimeMillis()
                 var sum = 0.0
                 for (i in 0 until n) {
                     val s = frame[i].toInt()
@@ -131,7 +173,10 @@ object VoiceListen {
                 out.write(bytes, 0, n * 2)
                 val rms = sqrt(sum / n)
                 frames++
-                if (frames == 1) onReady()
+                if (frames == 1) {
+                    mark("grabando")
+                    onReady()
+                }
                 if (frames <= 8) {
                     noise = min(noise, rms)
                     if (frames == 8) threshold = min(max(noise * 2.5, 220.0), 700.0)
@@ -163,8 +208,9 @@ object VoiceListen {
             val to = min(all.size, (lastLoud + 10) * FRAME * 2)
             return if (to > from) boost(all.copyOfRange(from, to)) else null
         } finally {
+            rec = null
             runCatching { recorder.stop() }
-            recorder.release()
+            runCatching { recorder.release() }
         }
     }
 

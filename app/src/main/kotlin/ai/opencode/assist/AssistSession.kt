@@ -39,6 +39,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     private var listening = false
     private var bars: AssistBars? = null
     private var gen = 0
+    private var listenToken = 0
 
     private fun dp(v: Int): Int = (v * context.resources.displayMetrics.density).toInt()
 
@@ -221,6 +222,14 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     }
 
     private fun listenWithGroq() {
+        val token = ++listenToken
+        main.postDelayed({
+            if (token == listenToken && visible && listening) {
+                VoiceListen.cancel()
+                listening = false
+                setStatus("No te escuché (se trabó). Toca para reintentar.")
+            }
+        }, 45000L)
         setStatus("Preparando…")
         VoiceListen.listen(
             onReady = {
@@ -240,14 +249,14 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                     }
                 }
             },
-            onFail = { kind, _ ->
+            onFail = { kind, why ->
                 main.post {
                     if (!visible) return@post
                     listening = false
                     when (kind) {
                         VoiceListen.Failure.Silence ->
                             if (followUp) hide() else setStatus("No te escuché. Toca para reintentar.")
-                        VoiceListen.Failure.Mic -> setStatus("No pude usar el micrófono. Toca para reintentar.")
+                        VoiceListen.Failure.Mic -> setStatus("No pude usar el micrófono" + (if (why != null) " ($why)" else "") + ". Toca para reintentar.")
                         VoiceListen.Failure.Network -> setStatus("No pude entender el audio. Toca para reintentar.")
                     }
                 }

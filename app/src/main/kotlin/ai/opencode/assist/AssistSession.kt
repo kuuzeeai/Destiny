@@ -350,8 +350,20 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             text,
             speak = { reply ->
                 main.post {
+                    FishSpeech.lastError = null
                     FishSpeech.speak(reply) {
                         VoiceBargeIn.stop()
+                        val fishErr = FishSpeech.lastError
+                        if (fishErr != null) {
+                            working = false
+                            listening = false
+                            if (!visible) AssistForegroundService.stop(context)
+                            if (visible) {
+                                setStatus("Fish falló. Toca para reintentar.")
+                                diag(fishErr.take(140))
+                            }
+                            return@speak
+                        }
                         working = false
                         if (!visible) AssistForegroundService.stop(context)
                         if (visible) {

@@ -42,6 +42,9 @@ object FishSpeech {
     @Volatile var startedAt = 0L
     @Volatile var firstSoundAt = 0L
 
+    /** El último error de Fish (para mostrarlo en la burbuja); null si todo fue bien. */
+    @Volatile var lastError: String? = null
+
     /** Fish está preparando o reproduciendo sonido ahora mismo. */
     val active: Boolean
         get() = job?.isActive == true
@@ -86,6 +89,7 @@ object FishSpeech {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                lastError = e.message ?: e.javaClass.simpleName
                 AppLog.voice.notice("Fish Audio couldn’t read the reply: ${e.message ?: e.javaClass.simpleName}")
             }
             onDone()
@@ -125,7 +129,7 @@ object FishSpeech {
             .post(body.toString().toRequestBody(voiceJsonMediaType))
             .build()
         val response = http.voiceSend(request)
-        if (response.statusCode !in 200..299) throw IllegalStateException("HTTP ${response.statusCode}")
+        if (response.statusCode !in 200..299) throw IllegalStateException("HTTP ${response.statusCode}: " + String(response.body, Charsets.UTF_8).take(120))
         if (response.body.isEmpty()) throw IllegalStateException("empty audio")
         val file = File.createTempFile("fish-", ".mp3", dependency(AppContext).cacheDir)
         file.writeBytes(response.body)

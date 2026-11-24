@@ -31,6 +31,10 @@ object VoiceBargeIn {
     @Volatile
     private var job: Job? = null
 
+    /** Para el diagnóstico: el nivel de tu voz y el umbral que debe superar. */
+    @Volatile var level = 0
+    @Volatile var threshold = 0
+
     fun stop() {
         job?.cancel()
         job = null
@@ -89,14 +93,17 @@ object VoiceBargeIn {
                         avg = avg * 0.9 + rms * 0.1
                         continue
                     }
-                    if (rms > max(avg * 2.5, 1400.0)) {
-                        loud++
-                        if (loud >= 12) {
+                    val thr = max(avg * 2.0, 700.0)
+                    level = rms.toInt()
+                    threshold = thr.toInt()
+                    if (rms > thr) {
+                        loud += 2
+                        if (loud >= 20) {
                             onSpeech()
                             return@launch
                         }
                     } else {
-                        loud = 0
+                        if (loud > 0) loud--
                         avg = avg * 0.98 + rms * 0.02
                     }
                 }

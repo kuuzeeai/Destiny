@@ -39,6 +39,9 @@ object FishSpeech {
     @Volatile
     private var job: Job? = null
 
+    @Volatile var startedAt = 0L
+    @Volatile var firstSoundAt = 0L
+
     /** Fish está preparando o reproduciendo sonido ahora mismo. */
     val active: Boolean
         get() = job?.isActive == true
@@ -63,6 +66,8 @@ object FishSpeech {
         if (text.isEmpty()) return
         val voice = shared(SharedKeys.fishVoiceID).value.trim()
         stop()
+        startedAt = System.currentTimeMillis()
+        firstSoundAt = 0L
         job = scope.launch {
             try {
                 coroutineScope {
@@ -144,7 +149,10 @@ object FishSpeech {
             player.setAudioAttributes(attributes)
             player.setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK)
             player.setDataSource(file.absolutePath)
-            player.setOnPreparedListener { it.start() }
+            player.setOnPreparedListener {
+                if (firstSoundAt == 0L) firstSoundAt = System.currentTimeMillis()
+                it.start()
+            }
             player.setOnCompletionListener { finished.complete(Unit) }
             player.setOnErrorListener { _, what, _ ->
                 finished.completeExceptionally(IllegalStateException("playback error $what"))

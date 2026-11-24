@@ -41,6 +41,10 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
     private var gen = 0
     private var diagView: TextView? = null
     private var startCount = 0
+    private var timing = ""
+    private var tReady = 0L
+    private var tRecEnd = 0L
+    private var tText = 0L
     private var listenToken = 0
 
     private fun dp(v: Int): Int = (v * context.resources.displayMetrics.density).toInt()
@@ -178,6 +182,8 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         super.onDestroy()
     }
 
+    private fun secs(ms: Long): String = String.format(java.util.Locale.US, "%.1fs", ms / 1000.0)
+
     private fun diag(text: String) {
         diagView?.text = text
     }
@@ -252,16 +258,18 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                 main.post {
                     if (visible) {
                         setStatus("Escuchando…")
+                        tReady = android.os.SystemClock.elapsedRealtime()
                         diag("Groq · intento $startCount · grabando")
                         AssistForegroundService.update(context, "Escuchando…")
                     }
                 }
             },
-            onTranscribing = { main.post { if (visible) { setStatus("Transcribiendo…"); diag("Groq · intento $startCount · transcribiendo") } } },
+            onTranscribing = { main.post { if (visible) { setStatus("Transcribiendo…"); tRecEnd = android.os.SystemClock.elapsedRealtime(); diag("Groq · intento $startCount · transcribiendo") } } },
             onText = { text ->
                 main.post {
                     if (visible) {
                         retries = 0
+                        tText = android.os.SystemClock.elapsedRealtime()
                         diag("Groq · intento $startCount · texto recibido")
                         send(text)
                     }
@@ -353,7 +361,19 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                             startListening()
                         }
                     }
-                    if (visible) VoiceBargeIn.start { main.post { if (visible && working && !listening) interrupt() } }
+                    if (visible) {
+                        VoiceBargeIn.start { main.post { if (visible && working && !listening) interrupt() } }
+                        main.post(object : Runnable {
+                            override fun run() {
+                                if (visible && working && FishSpeech.active) {
+                                    val f = FishSpeech.firstSoundAt
+                                    val fish = if (f > 0) secs(f - FishSpeech.startedAt) else "..."
+                                    diag("$timing · Fish $fish · voz ${VoiceBargeIn.level}/${VoiceBargeIn.threshold}")
+                                    main.postDelayed(this, 400)
+                                }
+                            }
+                        })
+                    }
                 }
             },
             onStage = { stage, message ->
@@ -368,6 +388,9 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                             AssistForegroundService.update(context, "Pensando…")
                         }
                         AssistRunner.Stage.Reading -> {
+                            val nowT = android.os.SystemClock.elapsedRealtime()
+                            timing = "grabó ${secs(tRecEnd - tReady)} · Groq ${secs(tText - tRecEnd)} · modelo ${secs(nowT - tText)}"
+                            diag(timing)
                             setStatus("Respondiendo…")
                             AssistForegroundService.update(context, "Respondiendo…")
                         }

@@ -201,7 +201,7 @@ object VoiceListen {
                 } else if (!speaking) {
                     loud = 0
                 }
-                if (speaking && (frames - lastLoud) * 20 >= 900) {
+                if (speaking && (frames - lastLoud) * 20 >= 800) {
                     if (loudFrames >= 6) break
                     speaking = false
                     speechLevel = 0.0

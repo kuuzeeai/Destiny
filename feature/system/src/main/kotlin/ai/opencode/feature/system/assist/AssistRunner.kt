@@ -118,7 +118,7 @@ object AssistRunner {
         var stable = 0
         var waited = 0
         while (waited < 600) {
-            delay(600)
+            delay(400)
             waited++
             val items = replies(server, session.id)
             if (items.isEmpty()) continue

@@ -1,11 +1,16 @@
 package ai.opencode.feature.system.assist
 
+import ai.opencode.core.dependencies.dependency
 import ai.opencode.core.log.AppLog
+import ai.opencode.core.sharing.SharedKeys
+import ai.opencode.core.sharing.shared
 import ai.opencode.feature.system.share.ShareCredentialStore
 import ai.opencode.feature.system.share.ShareSendRequest
 import ai.opencode.feature.system.share.ShareSender
 import ai.opencode.feature.system.share.ShareTargets
+import ai.opencode.server.OpenCodeClient
 import ai.opencode.server.OpenCodeServer
+import ai.opencode.server.model.OpenCodeModelRef
 import ai.opencode.server.live.fetchRecentTranscript
 import ai.opencode.server.model.OpenCodeTranscriptItem
 import kotlinx.coroutines.CancellationException
@@ -64,19 +69,40 @@ object AssistRunner {
         }
     }
 
+    /** Pone en el chat el modelo fijo del asistente, si hay uno. Si falla, sigue con el que tenga. */
+    private suspend fun applyModel(server: OpenCodeServer, sessionID: String) {
+        val spec = shared(SharedKeys.assistModel).value
+        val cut = spec.indexOf('|')
+        if (cut <= 0) return
+        try {
+            val ref = OpenCodeModelRef(spec.substring(cut + 1), spec.substring(0, cut))
+            dependency(OpenCodeClient).switchModel(server, sessionID, ref)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppLog.voice.notice("Assistant model failed: ${e.message ?: e.javaClass.simpleName}")
+        }
+    }
+
     private suspend fun replies(server: OpenCodeServer, sessionID: String): List<OpenCodeTranscriptItem> =
         runCatching { fetchRecentTranscript(server, sessionID, 12) }.getOrNull() ?: emptyList()
 
     private suspend fun run(text: String, speak: (String) -> Unit, onStage: (Stage, String?) -> Unit) {
         val credentials = ShareCredentialStore.live.load()
         val targets = ShareTargets.load()
-        val session = targets?.let { t -> t.sessions.firstOrNull { it.id == t.lastViewedSessionID } ?: t.sessions.firstOrNull() }
+        val pinnedID = shared(SharedKeys.assistSessionID).value
+        val session = targets?.let { t ->
+            t.sessions.firstOrNull { pinnedID.isNotEmpty() && it.id == pinnedID }
+                ?: t.sessions.firstOrNull { it.id == t.lastViewedSessionID }
+                ?: t.sessions.firstOrNull()
+        }
         if (credentials == null || session == null) {
             onStage(Stage.Failed, "Abre Destiny una vez y entra a un chat")
             return
         }
         val server = credentials.server
         onStage(Stage.Sending, null)
+        applyModel(server, session.id)
         val baseline = replies(server, session.id)
         val known = baseline.filterIsInstance<OpenCodeTranscriptItem.AssistantMarkdown>().map { it.id }.toSet()
         val knownErrors = baseline.filter { isFailure(it) }.map { it.id }.toSet()

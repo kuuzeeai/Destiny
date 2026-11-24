@@ -77,6 +77,12 @@ object SharedKeys {
     /** Keeps Destiny alive (silent notification) so the power-button assistant works with the app closed. */
     val assistKeepAlive = SharedKey.appStorage("assist-keep-alive", true)
 
+    /** El chat fijo del asistente (ID de sesión); vacío usa el último chat visto. */
+    val assistSessionID = SharedKey.appStorage("assist-session-id", "")
+
+    /** El modelo fijo del asistente ("proveedor|modelo"); vacío deja el que ya tiene el chat. */
+    val assistModel = SharedKey.appStorage("assist-model", "")
+
     /** Whether the agent's replies are read aloud with Fish Audio. Off by default. */
     val fishReadsReplies = SharedKey.appStorage("fish-reads-replies", false)
 

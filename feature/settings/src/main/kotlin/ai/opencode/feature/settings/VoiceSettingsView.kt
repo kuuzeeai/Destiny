@@ -141,14 +141,17 @@ fun VoiceSettingsView(store: SettingsStore) {
                     .clearAndSetSemantics {},
             )
         }
-        settingsSection(key = "config", header = "Configuración de voz", footer = footerText("Fish habla con la voz que elijas y Groq entiende lo que dices. Las claves se quedan en este teléfono.")) {
-            VoiceConfigRows()
-        }
-        settingsSection(key = "toggles") {
-            VoiceToggleRows()
-        }
-        settingsSection(key = "assistant", header = "Asistente", footer = footerText("Elegir un modelo lo deja puesto en ese chat. Si no eliges chat, usa el último que viste.")) {
+        settingsSection(key = "assistant", header = "Asistente (botón de encendido)", footer = footerText("Elegir un modelo lo deja puesto en ese chat. Si no eliges chat, usa el último que viste.")) {
             AssistantRows()
+        }
+        settingsSection(key = "behavior", header = "Comportamiento", footer = footerText("«Asistente listo» deja Destiny vivo para que el botón de encendido funcione con la app cerrada. «Solo isla» oculta el recuadro y deja solo la isla.")) {
+            BehaviorRows()
+        }
+        settingsSection(key = "fish", header = "Voz · Fish Audio", footer = footerText("Fish convierte las respuestas en voz. Si una clave falla o se agota, se usan las de respaldo en orden. Las claves se quedan en este teléfono.")) {
+            FishRows()
+        }
+        settingsSection(key = "groq", header = "Escucha · Groq", footer = footerText("Groq convierte lo que dices en texto. También usa las claves de respaldo en orden.")) {
+            GroqRows()
         }
     }
 }

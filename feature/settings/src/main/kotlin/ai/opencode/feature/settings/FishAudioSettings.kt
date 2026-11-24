@@ -111,33 +111,23 @@ private fun KeyListSection(title: String, stored: String?, onSave: (String?) -> 
     }
 }
 
-/** Ajustes › Voz › Configuración: el modelo (Fish), la clave de Fish, el ID de la voz, la clave de Groq y una prueba. */
+/** Ajustes › Voz › Fish Audio: la voz que habla (clave, claves de respaldo, ID de la voz y una prueba). */
 @Composable
-internal fun VoiceConfigRows() {
+internal fun FishRows() {
     val key = shared(SharedKeys.fishAPIKey)
     val extra = shared(SharedKeys.fishExtraKeys)
     val voice = shared(SharedKeys.fishVoiceID)
-    val groq = shared(SharedKeys.groqAPIKey)
-    val groqExtra = shared(SharedKeys.groqExtraKeys)
     val keyText by key.flow.collectAsState()
     val extraText by extra.flow.collectAsState()
     val voiceText by voice.flow.collectAsState()
-    val groqText by groq.flow.collectAsState()
-    val groqExtraText by groqExtra.flow.collectAsState()
-    SettingsValueRow("Modelo", "Fish Audio")
-    SettingsDivider()
     Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        LabeledField("Fish Audio", true, keyText.orEmpty(), stringResource(R.string.settings_fish_key_placeholder)) {
+        LabeledField("Clave de Fish Audio", true, keyText.orEmpty(), stringResource(R.string.settings_fish_key_placeholder)) {
             key.set(it.trim().ifEmpty { null })
         }
-        KeyListSection("Fish Audio · claves de respaldo", extraText) { extra.set(it) }
+        KeyListSection("Claves de respaldo", extraText) { extra.set(it) }
         LabeledField("ID de la voz", false, voiceText, "Pega aquí el ID de la voz") {
             voice.set(it.trim())
         }
-        LabeledField("Groq (para que te escuche)", true, groqText.orEmpty(), "Pega aquí la clave de Groq") {
-            groq.set(it.trim().ifEmpty { null })
-        }
-        KeyListSection("Groq · claves de respaldo", groqExtraText) { groqExtra.set(it) }
         FilledTonalButton(
             onClick = { FishSpeech.test() },
             enabled = !keyText.isNullOrBlank(),
@@ -146,38 +136,24 @@ internal fun VoiceConfigRows() {
     }
 }
 
-/** Activar el asistente diciendo una palabra, con las palabras editables y el estado de la escucha. */
+/** Ajustes › Voz › Groq: lo que te entiende (clave y claves de respaldo). */
 @Composable
-private fun WakeWordSection() {
-    val on = shared(SharedKeys.assistWakeOn)
-    val words = shared(SharedKeys.assistWakeWords)
-    val status = shared(SharedKeys.assistWakeStatus)
-    val onValue by on.flow.collectAsState()
-    val wordsValue by words.flow.collectAsState()
-    val statusValue by status.flow.collectAsState()
-    SettingsToggleRow(
-        "Activar con la voz (di la palabra, incluso con la pantalla apagada)",
-        checked = onValue,
-        onCheckedChange = { on.set(it) },
-    )
-    if (onValue) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Palabras de activación (separadas por coma)", style = SettingsText.title, color = OpenCodeTheme.colors.text)
-            OpenCodeTextField(
-                value = wordsValue,
-                onValueChange = { words.set(it) },
-                placeholder = "destino, alia",
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text(statusValue, style = SettingsText.summary, color = OpenCodeTheme.colors.secondaryText)
+internal fun GroqRows() {
+    val groq = shared(SharedKeys.groqAPIKey)
+    val groqExtra = shared(SharedKeys.groqExtraKeys)
+    val groqText by groq.flow.collectAsState()
+    val groqExtraText by groqExtra.flow.collectAsState()
+    Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        LabeledField("Clave de Groq", true, groqText.orEmpty(), "Pega aquí la clave de Groq") {
+            groq.set(it.trim().ifEmpty { null })
         }
+        KeyListSection("Claves de respaldo", groqExtraText) { groqExtra.set(it) }
     }
 }
 
-/** Ajustes › Voz › Interruptores: leer respuestas en voz alta y asistente listo con la app cerrada. */
+/** Ajustes › Voz › Comportamiento: leer respuestas, asistente listo con la app cerrada y solo isla. */
 @Composable
-internal fun VoiceToggleRows() {
+internal fun BehaviorRows() {
     val reads = shared(SharedKeys.fishReadsReplies)
     val keepAlive = shared(SharedKeys.assistKeepAlive)
     val islandOnly = shared(SharedKeys.assistIslandOnly)
@@ -201,6 +177,4 @@ internal fun VoiceToggleRows() {
         checked = islandOnlyOn,
         onCheckedChange = { islandOnly.set(it) },
     )
-    SettingsDivider()
-    WakeWordSection()
 }

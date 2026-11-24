@@ -8,30 +8,7 @@ import android.service.voice.VoiceInteractionSession
 import android.service.voice.VoiceInteractionSessionService
 
 /** Makes Destiny pickable as the digital assistant (power-button hold). */
-class AssistInteractionService : VoiceInteractionService() {
-    override fun onReady() {
-        super.onReady()
-        instance = this
-    }
-
-    override fun onShutdown() {
-        if (instance === this) instance = null
-        super.onShutdown()
-    }
-
-    companion object {
-        @Volatile private var instance: AssistInteractionService? = null
-
-        /** Abre el asistente como si mantuvieras el boton de encendido. */
-        fun show(): Boolean {
-            val s = instance ?: return false
-            return runCatching {
-                s.showSession(Bundle(), VoiceInteractionSession.SHOW_WITH_ASSIST)
-                true
-            }.getOrDefault(false)
-        }
-    }
-}
+class AssistInteractionService : VoiceInteractionService()
 
 /** Android exige un RecognitionService para aceptar un asistente; el real es el de Google. */
 class AssistRecognitionService : android.speech.RecognitionService() {

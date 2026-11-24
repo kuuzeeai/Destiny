@@ -1,7 +1,6 @@
 package ai.opencode.assist
 
 import ai.opencode.feature.system.assist.AssistRunner
-import ai.opencode.feature.voice.VoiceBargeIn
 import ai.opencode.feature.voice.VoiceListen
 import ai.opencode.feature.voice.FishSpeech
 import android.Manifest
@@ -132,7 +131,6 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
 
     /** Cuts the answer (or the wait) and listens again right away. */
     private fun interrupt() {
-        VoiceBargeIn.stop()
         recognizer?.cancel()
         VoiceListen.cancel()
         FishSpeech.stop()
@@ -164,7 +162,6 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         AssistRunner.cancel()
         heardView?.text = ""
         visible = true
-        WakeWord.paused = true
         AssistForegroundService.onInterrupt = {
             main.post {
                 if (visible) {
@@ -186,11 +183,9 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
 
     override fun onHide() {
         visible = false
-        main.postDelayed({ WakeWord.paused = false }, 1500)
         if (!working) AssistForegroundService.stop(context)
         gen++
         listening = false
-        VoiceBargeIn.stop()
         VoiceListen.cancel()
         recognizer?.destroy()
         recognizer = null
@@ -199,7 +194,6 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
 
     override fun onDestroy() {
         AssistForegroundService.onInterrupt = null
-        VoiceBargeIn.stop()
         AssistForegroundService.stop(context)
         VoiceListen.cancel()
         recognizer?.destroy()
@@ -377,7 +371,6 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                 main.post {
                     FishSpeech.lastError = null
                     FishSpeech.speak(reply) {
-                        VoiceBargeIn.stop()
                         val fishErr = FishSpeech.lastError
                         if (fishErr != null) {
                             working = false
@@ -400,13 +393,12 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                         }
                     }
                     if (visible) {
-                        VoiceBargeIn.start { main.post { if (visible && working && !listening) { interrupt(); followUp = false } } }
                         main.post(object : Runnable {
                             override fun run() {
                                 if (visible && working && FishSpeech.active) {
                                     val f = FishSpeech.firstSoundAt
                                     val fish = if (f > 0) secs(f - FishSpeech.startedAt) else "..."
-                                    diag("$timing · Fish $fish${FishSpeech.keyLabel} · voz ${VoiceBargeIn.level}/${VoiceBargeIn.threshold} · isla ${AssistForegroundService.islandInfo}")
+                                    diag("$timing · Fish $fish${FishSpeech.keyLabel} · isla ${AssistForegroundService.islandInfo}")
                                     main.postDelayed(this, 400)
                                 }
                             }

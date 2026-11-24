@@ -23,8 +23,6 @@ private const val CHAT_MODEL = "El que ya tiene el chat"
 /** Ajustes › Voz › Asistente: chat fijo y modelo fijo. */
 @Composable
 internal fun AssistantRows() {
-    val barge = shared(SharedKeys.assistBargeIn)
-    val bargeOn by barge.flow.collectAsState()
     val chat = shared(SharedKeys.assistSessionID)
     val chatID by chat.flow.collectAsState()
     val model = shared(SharedKeys.assistModel)
@@ -42,12 +40,6 @@ internal fun AssistantRows() {
             }
         }
     }
-    SettingsToggleRow(
-        "Interrumpir hablando mientras responde",
-        checked = bargeOn,
-        onCheckedChange = { barge.set(it) },
-    )
-    SettingsDivider()
     val chatValue = when {
         chatID.isEmpty() -> LAST_CHAT
         else -> sessions.firstOrNull { it.id == chatID }?.title?.ifBlank { "Sin título" } ?: "Chat guardado"

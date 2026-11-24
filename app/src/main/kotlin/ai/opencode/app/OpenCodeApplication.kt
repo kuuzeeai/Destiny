@@ -103,17 +103,6 @@ class OpenCodeApplication : Application(), Configuration.Provider {
                 else AssistKeepAliveService.stop(this@OpenCodeApplication)
             }
         }
-        // Palabra de activacion (Vosk): vive dentro del servicio "Asistente listo".
-        launchScope.launch {
-            shared(SharedKeys.assistWakeOn).flow.collect { on ->
-                if (on) {
-                    AssistKeepAliveService.start(this@OpenCodeApplication)
-                    ai.opencode.assist.WakeWord.start(this@OpenCodeApplication)
-                } else {
-                    ai.opencode.assist.WakeWord.stop()
-                }
-            }
-        }
         // Remembered image shapes are read off the main thread.
         AgentImageSizeCache.live.warm()
         launchScope.launch {

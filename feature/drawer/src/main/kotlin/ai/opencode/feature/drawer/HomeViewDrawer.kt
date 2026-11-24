@@ -469,16 +469,25 @@ fun HomeDrawer(
                     // Their band takes its own touches, the disabled pill's included.
                     .swallowingTouches(),
             ) {
-            Row(
-                Modifier
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                shadowElevation = 6.dp,
+                modifier = Modifier
                     .fillMaxWidth()
                     .onSizeChanged { controlsHeight = it.height / density.density },
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
             ) {
-                DrawerNewSessionButton(enabled = !disconnected, onClick = viewState::startNewSessionFromDrawer)
-                Spacer(Modifier.weight(1f))
-                DrawerFooterTrailing(store, disconnected, reducedMotion, onOpenSettings = viewState::openSettings)
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    DrawerNewSessionButton(enabled = !disconnected, onClick = viewState::startNewSessionFromDrawer)
+                    Spacer(Modifier.weight(1f))
+                    DrawerFooterTrailing(store, disconnected, reducedMotion, onOpenSettings = viewState::openSettings)
+                }
             }
             }
         }

@@ -36,7 +36,12 @@ import java.io.File
 object FishSpeech {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val http: OkHttpClient by lazy { OkHttpClient().withVoiceTimeout(60) }
+    @Volatile
     private var job: Job? = null
+
+    /** Fish está preparando o reproduciendo sonido ahora mismo. */
+    val active: Boolean
+        get() = job?.isActive == true
 
     /** Replies are read aloud: the switch is on and a key is saved. */
     val readsReplies: Boolean

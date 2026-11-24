@@ -1,6 +1,7 @@
 package ai.opencode.assist
 
 import ai.opencode.feature.system.assist.AssistRunner
+import ai.opencode.feature.voice.VoiceBargeIn
 import ai.opencode.feature.voice.VoiceListen
 import ai.opencode.feature.voice.FishSpeech
 import android.Manifest
@@ -108,6 +109,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
 
     /** Cuts the answer (or the wait) and listens again right away. */
     private fun interrupt() {
+        VoiceBargeIn.stop()
         recognizer?.cancel()
         VoiceListen.cancel()
         FishSpeech.stop()
@@ -149,6 +151,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
         if (!working) AssistForegroundService.stop(context)
         gen++
         listening = false
+        VoiceBargeIn.stop()
         VoiceListen.cancel()
         recognizer?.destroy()
         recognizer = null
@@ -157,6 +160,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
 
     override fun onDestroy() {
         AssistForegroundService.onInterrupt = null
+        VoiceBargeIn.stop()
         AssistForegroundService.stop(context)
         VoiceListen.cancel()
         recognizer?.destroy()
@@ -310,6 +314,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             speak = { reply ->
                 main.post {
                     FishSpeech.speak(reply) {
+                        VoiceBargeIn.stop()
                         working = false
                         if (!visible) AssistForegroundService.stop(context)
                         if (visible) {
@@ -319,6 +324,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                             startListening()
                         }
                     }
+                    if (visible) VoiceBargeIn.start { main.post { if (visible && working && !listening) interrupt() } }
                 }
             },
             onStage = { stage, message ->

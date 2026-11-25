@@ -453,7 +453,7 @@ private class SshShell(
             if (c == '\u001B') {
                 val m = sshCsiParts.matchAt(text, i)
                 if (m != null) {
-                    csi(m.groupValues[1], m.groupValues[3])
+                    csi(m.groupValues[1], m.groupValues[3][0])
                     i = m.range.last + 1
                 } else {
                     i++
@@ -913,7 +913,7 @@ private fun ColumnScope.SshTerminalPane(shell: SshShell) {
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.None,
                 autoCorrectEnabled = false,
-                keyboardType = KeyboardType.VisiblePassword,
+                keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Send,
             ),
             keyboardActions = KeyboardActions(onSend = { shell.send("\r") }),

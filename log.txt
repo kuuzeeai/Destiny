@@ -1,0 +1,611 @@
+build	Compilar release	﻿2026-11-25T05:18:26.8041874Z ##[group]Run ./gradlew :app:assembleRelease --stacktrace
+build	Compilar release	2026-11-25T05:18:26.8042754Z ^[[36;1m./gradlew :app:assembleRelease --stacktrace^[[0m
+build	Compilar release	2026-11-25T05:18:26.8064876Z shell: /usr/bin/bash -e {0}
+build	Compilar release	2026-11-25T05:18:26.8065487Z env:
+build	Compilar release	2026-11-25T05:18:26.8066020Z   OC_VERSION_CODE: 66
+build	Compilar release	2026-11-25T05:18:26.8068918Z   GH_TOKEN: ***
+build	Compilar release	2026-11-25T05:18:26.8069377Z   GH_REPO: kuuzeeai/Destiny
+build	Compilar release	2026-11-25T05:18:26.8070071Z   OC_VERSION_SUFFIX: 30a68f5
+build	Compilar release	2026-11-25T05:18:26.8070725Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-9/x64
+build	Compilar release	2026-11-25T05:18:26.8071625Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-9/x64
+build	Compilar release	2026-11-25T05:18:26.8072442Z   ANDROID_HOME: /usr/local/lib/android/sdk
+build	Compilar release	2026-11-25T05:18:26.8072971Z   ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+build	Compilar release	2026-11-25T05:18:26.8073463Z   GRADLE_ACTION_ID: gradle/actions/setup-gradle
+build	Compilar release	2026-11-25T05:18:26.8073941Z   GRADLE_USER_HOME: /home/runner/.gradle
+build	Compilar release	2026-11-25T05:18:26.8074597Z   GRADLE_BUILD_ACTION_SETUP_COMPLETED: true
+build	Compilar release	2026-11-25T05:18:26.8075286Z   GRADLE_BUILD_ACTION_CACHE_RESTORED: true
+build	Compilar release	2026-11-25T05:18:26.8076114Z   DEVELOCITY_INJECTION_INIT_SCRIPT_NAME: gradle-actions.inject-develocity.init.gradle
+build	Compilar release	2026-11-25T05:18:26.8077149Z   DEVELOCITY_INJECTION_CUSTOM_VALUE: gradle-actions
+build	Compilar release	2026-11-25T05:18:26.8077647Z   GITHUB_DEPENDENCY_GRAPH_ENABLED: false
+build	Compilar release	2026-11-25T05:18:26.8078242Z   KEYSTORE_FILE: /home/runner/work/_temp/***.jks
+build	Compilar release	2026-11-25T05:18:26.8078739Z   KEYSTORE_PASSWORD: ***
+build	Compilar release	2026-11-25T05:18:26.8079246Z   KEY_ALIAS: ***
+build	Compilar release	2026-11-25T05:18:26.8079653Z   KEY_PASSWORD: ***
+build	Compilar release	2026-11-25T05:18:26.8080066Z ##[endgroup]
+build	Compilar release	2026-11-25T05:18:27.5671594Z Starting a Gradle Daemon (subsequent builds will be faster)
+build	Compilar release	2026-11-25T05:18:29.3683875Z Parallel Configuration Cache is an incubating feature.
+build	Compilar release	2026-11-25T05:18:30.5667782Z Calculating task graph as no cached configuration is available for tasks: :app:assembleRelease
+build	Compilar release	2026-11-25T05:18:35.7687914Z > Task :build-logic:checkKotlinGradlePluginConfigurationErrors SKIPPED
+build	Compilar release	2026-11-25T05:18:36.0674294Z > Task :build-logic:compileKotlin FROM-CACHE
+build	Compilar release	2026-11-25T05:18:36.0675888Z > Task :build-logic:compileJava NO-SOURCE
+build	Compilar release	2026-11-25T05:18:36.0677358Z > Task :build-logic:pluginDescriptors
+build	Compilar release	2026-11-25T05:18:36.0678505Z > Task :build-logic:processResources
+build	Compilar release	2026-11-25T05:18:36.0679505Z > Task :build-logic:classes
+build	Compilar release	2026-11-25T05:18:36.1688246Z > Task :build-logic:jar
+build	Compilar release	2026-11-25T05:18:43.5666731Z > Task :server:preBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.5668088Z > Task :core:preBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.5669313Z > Task :server:preReleaseBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.5670415Z > Task :core:preReleaseBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.5671381Z > Task :app:preBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.5672396Z > Task :app:preReleaseBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.5673431Z > Task :devtools:preBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.5674401Z > Task :devtools:preReleaseBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.6713502Z > Task :devtools:mergeReleaseJniLibFolders
+build	Compilar release	2026-11-25T05:18:43.6714744Z > Task :server:mergeReleaseJniLibFolders
+build	Compilar release	2026-11-25T05:18:43.6750296Z > Task :app:mergeReleaseJniLibFolders
+build	Compilar release	2026-11-25T05:18:43.6785041Z > Task :feature:composer:preBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.6817946Z > Task :feature:composer:preReleaseBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.6847787Z > Task :core:mergeReleaseJniLibFolders
+build	Compilar release	2026-11-25T05:18:43.6867637Z > Task :devtools:mergeReleaseNativeLibs NO-SOURCE
+build	Compilar release	2026-11-25T05:18:43.6877744Z > Task :server:mergeReleaseNativeLibs NO-SOURCE
+build	Compilar release	2026-11-25T05:18:43.6907665Z > Task :core:mergeReleaseNativeLibs NO-SOURCE
+build	Compilar release	2026-11-25T05:18:43.6937965Z > Task :feature:composer:mergeReleaseJniLibFolders
+build	Compilar release	2026-11-25T05:18:43.6957976Z > Task :feature:composer:mergeReleaseNativeLibs NO-SOURCE
+build	Compilar release	2026-11-25T05:18:43.7666346Z > Task :server:copyReleaseJniLibsProjectOnly
+build	Compilar release	2026-11-25T05:18:43.7678359Z > Task :feature:drawer:preBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.7679547Z > Task :core:copyReleaseJniLibsProjectOnly
+build	Compilar release	2026-11-25T05:18:43.7680776Z > Task :feature:media:preBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.7682367Z > Task :feature:drawer:preReleaseBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.7683888Z > Task :devtools:copyReleaseJniLibsProjectOnly
+build	Compilar release	2026-11-25T05:18:43.7685141Z > Task :feature:composer:copyReleaseJniLibsProjectOnly
+build	Compilar release	2026-11-25T05:18:43.7686135Z > Task :feature:media:preReleaseBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.7687330Z > Task :feature:session:preBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.7688237Z > Task :feature:session:preReleaseBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.7689245Z > Task :feature:settings:preBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.7690250Z > Task :feature:settings:preReleaseBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.7691250Z > Task :feature:drawer:mergeReleaseJniLibFolders
+build	Compilar release	2026-11-25T05:18:43.7692210Z > Task :feature:media:mergeReleaseJniLibFolders
+build	Compilar release	2026-11-25T05:18:43.7693227Z > Task :feature:session:mergeReleaseJniLibFolders
+build	Compilar release	2026-11-25T05:18:43.7694334Z > Task :feature:settings:mergeReleaseJniLibFolders
+build	Compilar release	2026-11-25T05:18:43.7695367Z > Task :feature:settings:mergeReleaseNativeLibs NO-SOURCE
+build	Compilar release	2026-11-25T05:18:43.7696984Z > Task :feature:media:mergeReleaseNativeLibs NO-SOURCE
+build	Compilar release	2026-11-25T05:18:43.7698173Z > Task :feature:session:mergeReleaseNativeLibs NO-SOURCE
+build	Compilar release	2026-11-25T05:18:43.7699191Z > Task :feature:drawer:mergeReleaseNativeLibs NO-SOURCE
+build	Compilar release	2026-11-25T05:18:43.7700250Z > Task :feature:drawer:copyReleaseJniLibsProjectOnly
+build	Compilar release	2026-11-25T05:18:43.7701197Z > Task :feature:system:preBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.7702167Z > Task :feature:system:preReleaseBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.7703151Z > Task :feature:media:copyReleaseJniLibsProjectOnly
+build	Compilar release	2026-11-25T05:18:43.7704260Z > Task :feature:transcript:preBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.7758469Z > Task :feature:transcript:preReleaseBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.7767801Z > Task :feature:session:copyReleaseJniLibsProjectOnly
+build	Compilar release	2026-11-25T05:18:43.7768951Z > Task :feature:settings:copyReleaseJniLibsProjectOnly
+build	Compilar release	2026-11-25T05:18:43.7769803Z > Task :feature:voice:preBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.7770763Z > Task :feature:voice:preReleaseBuild UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:43.7773536Z > Task :feature:system:mergeReleaseJniLibFolders
+build	Compilar release	2026-11-25T05:18:43.7774706Z > Task :feature:transcript:mergeReleaseJniLibFolders
+build	Compilar release	2026-11-25T05:18:43.7775565Z > Task :feature:system:mergeReleaseNativeLibs NO-SOURCE
+build	Compilar release	2026-11-25T05:18:43.7776776Z > Task :feature:transcript:mergeReleaseNativeLibs NO-SOURCE
+build	Compilar release	2026-11-25T05:18:43.7777658Z > Task :feature:voice:mergeReleaseJniLibFolders
+build	Compilar release	2026-11-25T05:18:43.7778577Z > Task :feature:voice:mergeReleaseNativeLibs NO-SOURCE
+build	Compilar release	2026-11-25T05:18:43.7779546Z > Task :feature:transcript:copyReleaseJniLibsProjectOnly
+build	Compilar release	2026-11-25T05:18:43.7780478Z > Task :feature:system:copyReleaseJniLibsProjectOnly
+build	Compilar release	2026-11-25T05:18:43.7781339Z > Task :core:javaPreCompileRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:43.7782226Z > Task :feature:voice:copyReleaseJniLibsProjectOnly
+build	Compilar release	2026-11-25T05:18:43.7783090Z > Task :devtools:generateReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:43.8667030Z > Task :core:generateReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:43.8668121Z > Task :core:processReleaseNavigationResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:43.8700277Z > Task :devtools:processReleaseNavigationResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:43.8705008Z > Task :devtools:packageReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:43.8706793Z > Task :core:packageReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.0672272Z > Task :server:generateReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.1668319Z > Task :server:packageReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.1679108Z > Task :server:processReleaseNavigationResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.6678242Z > Task :app:mergeReleaseNativeLibs
+build	Compilar release	2026-11-25T05:18:45.7718317Z > Task :core:parseReleaseLocalResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.7788269Z > Task :devtools:parseReleaseLocalResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.7808198Z > Task :core:generateReleaseRFile FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.7837802Z > Task :devtools:generateReleaseRFile FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.7867699Z > Task :server:javaPreCompileRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.7905446Z > Task :devtools:javaPreCompileRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.8668690Z > Task :server:parseReleaseLocalResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.9711148Z 
+build	Compilar release	2026-11-25T05:18:45.9730423Z > Task :app:stripReleaseDebugSymbols
+build	Compilar release	2026-11-25T05:18:45.9760423Z Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so, libdatastore_shared_counter.so, libimage_processing_util_jni.so, libjingle_peerconnection_so.so, libsurface_util_jni.so. Run with --info option to learn more.
+build	Compilar release	2026-11-25T05:18:45.9793398Z 
+build	Compilar release	2026-11-25T05:18:45.9838371Z > Task :app:extractReleaseNativeSymbolTables FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.9891920Z > Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
+build	Compilar release	2026-11-25T05:18:45.9900962Z > Task :feature:composer:processReleaseNavigationResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.9902241Z > Task :feature:composer:generateReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.9903407Z > Task :server:generateReleaseRFile FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.9904720Z > Task :feature:media:generateReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.9914335Z > Task :feature:media:processReleaseNavigationResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.9917083Z > Task :feature:media:javaPreCompileRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.9918471Z > Task :feature:media:packageReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.9948067Z > Task :feature:composer:packageReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:45.9977944Z > Task :feature:voice:generateReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0008319Z > Task :feature:media:parseReleaseLocalResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0037499Z > Task :feature:composer:parseReleaseLocalResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0057081Z > Task :feature:media:generateReleaseRFile FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0067604Z > Task :feature:composer:generateReleaseRFile FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0097722Z > Task :feature:voice:packageReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0126807Z > Task :feature:voice:processReleaseNavigationResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0129144Z > Task :feature:voice:javaPreCompileRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0130387Z > Task :feature:composer:javaPreCompileRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0131634Z > Task :feature:voice:parseReleaseLocalResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0132839Z > Task :feature:drawer:generateReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0134136Z > Task :feature:drawer:processReleaseNavigationResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0135285Z > Task :feature:session:generateReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0136484Z > Task :feature:voice:generateReleaseRFile FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0137769Z > Task :feature:drawer:packageReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0688303Z > Task :feature:session:processReleaseNavigationResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0689900Z > Task :feature:drawer:parseReleaseLocalResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0718062Z > Task :feature:system:generateReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0747950Z > Task :feature:drawer:generateReleaseRFile FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0776742Z > Task :feature:session:packageReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0807738Z > Task :feature:system:processReleaseNavigationResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0809063Z > Task :feature:session:parseReleaseLocalResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0838688Z > Task :feature:system:javaPreCompileRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0863062Z > Task :feature:system:packageReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0887320Z > Task :feature:system:parseReleaseLocalResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0927617Z > Task :feature:transcript:generateReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0928895Z > Task :feature:system:generateReleaseRFile FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0957836Z > Task :feature:transcript:processReleaseNavigationResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0975795Z > Task :feature:session:generateReleaseRFile FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0977411Z > Task :feature:transcript:packageReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0979622Z > Task :feature:transcript:javaPreCompileRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0980957Z > Task :feature:session:javaPreCompileRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0982153Z > Task :feature:transcript:parseReleaseLocalResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0983305Z > Task :feature:settings:generateReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0984506Z > Task :feature:settings:processReleaseNavigationResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0985695Z > Task :feature:settings:javaPreCompileRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.0986963Z > Task :feature:transcript:generateReleaseRFile FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.1416217Z > Task :feature:drawer:javaPreCompileRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.1688185Z > Task :feature:settings:packageReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.1689632Z > Task :feature:settings:parseReleaseLocalResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.1747883Z > Task :feature:settings:generateReleaseRFile FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.1752835Z > Task :core:compileReleaseKotlin FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.1753803Z > Task :core:compileReleaseJavaWithJavac NO-SOURCE
+build	Compilar release	2026-11-25T05:18:46.1754605Z > Task :app:generateReleaseBuildConfig
+build	Compilar release	2026-11-25T05:18:46.1755347Z > Task :core:mergeReleaseGeneratedProguardFiles
+build	Compilar release	2026-11-25T05:18:46.1757663Z > Task :app:extractReleaseSupportedLocales FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.1777399Z > Task :app:mapReleaseSourceSetPaths
+build	Compilar release	2026-11-25T05:18:46.1796509Z > Task :core:extractReleaseSupportedLocales FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.1837434Z > Task :devtools:extractReleaseSupportedLocales FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.1852856Z > Task :server:extractReleaseSupportedLocales FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.1877502Z > Task :feature:composer:extractReleaseSupportedLocales FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.1882600Z > Task :feature:drawer:extractReleaseSupportedLocales FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.1883717Z > Task :feature:media:extractReleaseSupportedLocales FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.2667972Z > Task :feature:session:extractReleaseSupportedLocales FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.2681867Z > Task :feature:settings:extractReleaseSupportedLocales FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.2699082Z > Task :feature:system:extractReleaseSupportedLocales FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.2706189Z > Task :feature:transcript:extractReleaseSupportedLocales FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.2732342Z > Task :feature:voice:extractReleaseSupportedLocales FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.2741503Z > Task :app:generateReleaseLocaleConfig FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.2747973Z > Task :app:generateReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.2754163Z > Task :app:packageReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.3700115Z > Task :core:exportReleaseConsumerProguardFiles
+build	Compilar release	2026-11-25T05:18:46.3718567Z > Task :app:processReleaseNavigationResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.3719934Z > Task :app:parseReleaseLocalResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.3720793Z > Task :app:javaPreCompileRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.3721639Z > Task :core:prepareReleaseArtProfile
+build	Compilar release	2026-11-25T05:18:46.3722445Z > Task :devtools:prepareReleaseArtProfile
+build	Compilar release	2026-11-25T05:18:46.3723215Z > Task :server:prepareReleaseArtProfile
+build	Compilar release	2026-11-25T05:18:46.3723939Z > Task :app:generateReleaseRFile FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.3724641Z > Task :feature:composer:prepareReleaseArtProfile
+build	Compilar release	2026-11-25T05:18:46.3725379Z > Task :feature:drawer:prepareReleaseArtProfile
+build	Compilar release	2026-11-25T05:18:46.3726092Z > Task :feature:media:prepareReleaseArtProfile
+build	Compilar release	2026-11-25T05:18:46.3726915Z > Task :feature:session:prepareReleaseArtProfile
+build	Compilar release	2026-11-25T05:18:46.3727686Z > Task :feature:system:prepareReleaseArtProfile
+build	Compilar release	2026-11-25T05:18:46.3728408Z > Task :feature:settings:prepareReleaseArtProfile
+build	Compilar release	2026-11-25T05:18:46.3729122Z > Task :feature:voice:prepareReleaseArtProfile
+build	Compilar release	2026-11-25T05:18:46.3729859Z > Task :feature:transcript:prepareReleaseArtProfile
+build	Compilar release	2026-11-25T05:18:46.3730553Z > Task :app:checkReleaseDuplicateClasses
+build	Compilar release	2026-11-25T05:18:46.4711578Z > Task :devtools:writeReleaseAarMetadata
+build	Compilar release	2026-11-25T05:18:46.4763992Z > Task :core:writeReleaseAarMetadata
+build	Compilar release	2026-11-25T05:18:46.4799783Z > Task :feature:composer:writeReleaseAarMetadata
+build	Compilar release	2026-11-25T05:18:46.4864081Z > Task :server:writeReleaseAarMetadata
+build	Compilar release	2026-11-25T05:18:46.4987328Z > Task :feature:media:writeReleaseAarMetadata
+build	Compilar release	2026-11-25T05:18:46.4995397Z > Task :feature:drawer:writeReleaseAarMetadata
+build	Compilar release	2026-11-25T05:18:46.5055366Z > Task :core:bundleLibCompileToJarRelease
+build	Compilar release	2026-11-25T05:18:46.5077957Z > Task :app:mergeReleaseArtProfile
+build	Compilar release	2026-11-25T05:18:46.5107639Z > Task :feature:session:writeReleaseAarMetadata
+build	Compilar release	2026-11-25T05:18:46.5108495Z > Task :feature:settings:writeReleaseAarMetadata
+build	Compilar release	2026-11-25T05:18:46.5109218Z > Task :feature:voice:writeReleaseAarMetadata
+build	Compilar release	2026-11-25T05:18:46.5109920Z > Task :feature:system:writeReleaseAarMetadata
+build	Compilar release	2026-11-25T05:18:46.5110664Z > Task :feature:transcript:writeReleaseAarMetadata
+build	Compilar release	2026-11-25T05:18:46.5111547Z > Task :app:compileReleaseNavigationResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.5112675Z > Task :app:createReleaseCompatibleScreenManifests
+build	Compilar release	2026-11-25T05:18:46.5113831Z > Task :app:extractDeepLinksRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.5708006Z > Task :core:extractDeepLinksRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.5729164Z > Task :core:processReleaseManifest FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.5747502Z > Task :devtools:extractDeepLinksRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.5767839Z > Task :devtools:processReleaseManifest FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.5787939Z > Task :server:extractDeepLinksRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.5802281Z > Task :server:processReleaseManifest FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.5840351Z > Task :feature:composer:extractDeepLinksRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.5845426Z > Task :feature:composer:processReleaseManifest FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.5847558Z > Task :feature:drawer:extractDeepLinksRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.6698484Z > Task :feature:drawer:processReleaseManifest FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.6738197Z > Task :feature:media:extractDeepLinksRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.6797688Z > Task :feature:media:processReleaseManifest FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.6821800Z > Task :feature:session:extractDeepLinksRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.6847409Z > Task :feature:session:processReleaseManifest FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.6877453Z > Task :feature:settings:extractDeepLinksRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.6907722Z > Task :feature:settings:processReleaseManifest FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.6938338Z > Task :feature:system:extractDeepLinksRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.6967270Z > Task :feature:system:processReleaseManifest FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.6968115Z > Task :feature:transcript:extractDeepLinksRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.6968981Z > Task :feature:transcript:processReleaseManifest FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.7668453Z > Task :feature:voice:extractDeepLinksRelease FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.7698049Z > Task :feature:voice:processReleaseManifest FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.8677799Z > Task :app:checkReleaseAarMetadata
+build	Compilar release	2026-11-25T05:18:46.8698888Z > Task :core:mapReleaseSourceSetPaths
+build	Compilar release	2026-11-25T05:18:46.9682235Z > Task :core:compileReleaseLibraryResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.9707701Z > Task :app:mergeReleaseResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.9737667Z > Task :server:compileReleaseKotlin FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.9797655Z > Task :server:compileReleaseJavaWithJavac NO-SOURCE
+build	Compilar release	2026-11-25T05:18:46.9828094Z > Task :server:mapReleaseSourceSetPaths
+build	Compilar release	2026-11-25T05:18:46.9857279Z > Task :devtools:mapReleaseSourceSetPaths
+build	Compilar release	2026-11-25T05:18:46.9887357Z > Task :server:mergeReleaseGeneratedProguardFiles
+build	Compilar release	2026-11-25T05:18:46.9917349Z > Task :devtools:compileReleaseLibraryResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.9947391Z > Task :server:compileReleaseLibraryResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:46.9977342Z > Task :server:exportReleaseConsumerProguardFiles
+build	Compilar release	2026-11-25T05:18:47.0007329Z > Task :feature:composer:mapReleaseSourceSetPaths
+build	Compilar release	2026-11-25T05:18:47.0037300Z > Task :feature:drawer:mapReleaseSourceSetPaths
+build	Compilar release	2026-11-25T05:18:47.0067379Z > Task :feature:drawer:compileReleaseLibraryResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:47.0097413Z > Task :feature:composer:compileReleaseLibraryResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:47.3700440Z > Task :feature:media:mapReleaseSourceSetPaths
+build	Compilar release	2026-11-25T05:18:47.3749326Z > Task :feature:session:mapReleaseSourceSetPaths
+build	Compilar release	2026-11-25T05:18:47.3778019Z > Task :feature:media:compileReleaseLibraryResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:47.3807626Z > Task :feature:session:compileReleaseLibraryResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:47.3815706Z > Task :feature:settings:mapReleaseSourceSetPaths
+build	Compilar release	2026-11-25T05:18:47.4700676Z > Task :feature:system:mapReleaseSourceSetPaths
+build	Compilar release	2026-11-25T05:18:47.4757996Z > Task :feature:settings:compileReleaseLibraryResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:47.4767953Z > Task :feature:system:compileReleaseLibraryResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:47.4768847Z > Task :feature:transcript:mapReleaseSourceSetPaths
+build	Compilar release	2026-11-25T05:18:47.4769582Z > Task :feature:transcript:compileReleaseLibraryResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:47.4770467Z > Task :feature:voice:mapReleaseSourceSetPaths
+build	Compilar release	2026-11-25T05:18:47.4771137Z > Task :feature:voice:compileReleaseLibraryResources FROM-CACHE
+build	Compilar release	2026-11-25T05:18:47.4771727Z > Task :server:bundleLibCompileToJarRelease
+build	Compilar release	2026-11-25T05:18:47.5693175Z > Task :core:bundleLibRuntimeToJarRelease
+build	Compilar release	2026-11-25T05:18:47.5719068Z > Task :server:bundleLibRuntimeToJarRelease
+build	Compilar release	2026-11-25T05:18:47.6676324Z > Task :devtools:compileReleaseKotlin FROM-CACHE
+build	Compilar release	2026-11-25T05:18:47.6677437Z > Task :devtools:compileReleaseJavaWithJavac NO-SOURCE
+build	Compilar release	2026-11-25T05:18:47.6693552Z > Task :devtools:bundleLibCompileToJarRelease
+build	Compilar release	2026-11-25T05:18:47.9693137Z > Task :feature:system:compileReleaseKotlin FROM-CACHE
+build	Compilar release	2026-11-25T05:18:47.9721062Z > Task :feature:system:compileReleaseJavaWithJavac NO-SOURCE
+build	Compilar release	2026-11-25T05:18:47.9747803Z > Task :feature:media:compileReleaseKotlin FROM-CACHE
+build	Compilar release	2026-11-25T05:18:47.9777853Z > Task :app:processReleaseMainManifest
+build	Compilar release	2026-11-25T05:18:47.9807600Z > Task :feature:media:compileReleaseJavaWithJavac NO-SOURCE
+build	Compilar release	2026-11-25T05:18:47.9808620Z > Task :feature:system:mergeReleaseGeneratedProguardFiles
+build	Compilar release	2026-11-25T05:18:47.9837714Z > Task :feature:media:mergeReleaseGeneratedProguardFiles
+build	Compilar release	2026-11-25T05:18:47.9867917Z > Task :feature:media:exportReleaseConsumerProguardFiles
+build	Compilar release	2026-11-25T05:18:47.9869075Z > Task :feature:system:exportReleaseConsumerProguardFiles
+build	Compilar release	2026-11-25T05:18:47.9897610Z > Task :feature:system:bundleLibCompileToJarRelease
+build	Compilar release	2026-11-25T05:18:47.9927603Z > Task :devtools:mergeReleaseGeneratedProguardFiles
+build	Compilar release	2026-11-25T05:18:47.9957439Z > Task :devtools:exportReleaseConsumerProguardFiles
+build	Compilar release	2026-11-25T05:18:48.0678247Z > Task :devtools:bundleLibRuntimeToJarRelease
+build	Compilar release	2026-11-25T05:18:48.0718848Z > Task :feature:media:bundleLibCompileToJarRelease
+build	Compilar release	2026-11-25T05:18:48.1688060Z > Task :feature:media:bundleLibRuntimeToJarRelease
+build	Compilar release	2026-11-25T05:18:48.1707068Z > Task :feature:system:bundleLibRuntimeToJarRelease
+build	Compilar release	2026-11-25T05:18:48.2667933Z > Task :app:extractProguardFiles
+build	Compilar release	2026-11-25T05:18:48.2707772Z > Task :core:processReleaseJavaRes
+build	Compilar release	2026-11-25T05:18:48.2737617Z > Task :devtools:processReleaseJavaRes
+build	Compilar release	2026-11-25T05:18:48.2767750Z > Task :feature:voice:compileReleaseKotlin FROM-CACHE
+build	Compilar release	2026-11-25T05:18:48.2797461Z > Task :app:processReleaseManifest
+build	Compilar release	2026-11-25T05:18:48.2827468Z > Task :feature:voice:compileReleaseJavaWithJavac NO-SOURCE
+build	Compilar release	2026-11-25T05:18:48.2857373Z > Task :server:processReleaseJavaRes
+build	Compilar release	2026-11-25T05:18:48.2887566Z > Task :feature:voice:mergeReleaseGeneratedProguardFiles
+build	Compilar release	2026-11-25T05:18:48.2917462Z > Task :feature:voice:exportReleaseConsumerProguardFiles
+build	Compilar release	2026-11-25T05:18:48.3688083Z > Task :feature:voice:bundleLibCompileToJarRelease
+build	Compilar release	2026-11-25T05:18:48.3692487Z > Task :app:processReleaseManifestForPackage
+build	Compilar release	2026-11-25T05:18:48.3717796Z > Task :feature:transcript:compileReleaseKotlin FROM-CACHE
+build	Compilar release	2026-11-25T05:18:48.3747672Z > Task :feature:transcript:compileReleaseJavaWithJavac NO-SOURCE
+build	Compilar release	2026-11-25T05:18:48.4687853Z > Task :feature:voice:bundleLibRuntimeToJarRelease
+build	Compilar release	2026-11-25T05:18:48.4717783Z > Task :feature:transcript:bundleLibCompileToJarRelease
+build	Compilar release	2026-11-25T05:18:48.4747809Z > Task :feature:transcript:mergeReleaseGeneratedProguardFiles
+build	Compilar release	2026-11-25T05:18:48.4777710Z > Task :feature:transcript:exportReleaseConsumerProguardFiles
+build	Compilar release	2026-11-25T05:18:48.6665699Z > Task :feature:transcript:bundleLibRuntimeToJarRelease
+build	Compilar release	2026-11-25T05:18:48.7678173Z > Task :feature:media:processReleaseJavaRes
+build	Compilar release	2026-11-25T05:18:48.7705550Z > Task :feature:system:processReleaseJavaRes
+build	Compilar release	2026-11-25T05:18:48.7724207Z > Task :feature:transcript:processReleaseJavaRes
+build	Compilar release	2026-11-25T05:18:48.8687910Z > Task :feature:voice:processReleaseJavaRes
+build	Compilar release	2026-11-25T05:18:48.8688647Z > Task :app:mergeReleaseStartupProfile
+build	Compilar release	2026-11-25T05:18:48.8689226Z > Task :app:generateReleaseAssets UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:48.8689910Z > Task :core:generateReleaseAssets UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:48.9676971Z > Task :core:mergeReleaseAssets
+build	Compilar release	2026-11-25T05:18:48.9734382Z > Task :devtools:generateReleaseAssets UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:48.9764673Z > Task :devtools:mergeReleaseAssets
+build	Compilar release	2026-11-25T05:18:48.9794524Z > Task :server:generateReleaseAssets UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:48.9828560Z > Task :server:mergeReleaseAssets
+build	Compilar release	2026-11-25T05:18:48.9857717Z > Task :feature:composer:generateReleaseAssets UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:48.9881921Z > Task :feature:composer:mergeReleaseAssets
+build	Compilar release	2026-11-25T05:18:48.9887201Z > Task :feature:drawer:generateReleaseAssets UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:48.9927515Z > Task :feature:drawer:mergeReleaseAssets
+build	Compilar release	2026-11-25T05:18:48.9951798Z > Task :feature:media:generateReleaseAssets UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:49.0687870Z > Task :feature:media:mergeReleaseAssets
+build	Compilar release	2026-11-25T05:18:49.0737999Z > Task :feature:session:generateReleaseAssets UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:49.0777778Z > Task :feature:composer:compileReleaseKotlin FROM-CACHE
+build	Compilar release	2026-11-25T05:18:49.0807363Z > Task :feature:session:mergeReleaseAssets
+build	Compilar release	2026-11-25T05:18:49.0837576Z > Task :feature:composer:compileReleaseJavaWithJavac NO-SOURCE
+build	Compilar release	2026-11-25T05:18:49.0865688Z > Task :feature:settings:compileReleaseKotlin FROM-CACHE
+build	Compilar release	2026-11-25T05:18:49.0897539Z > Task :feature:composer:processReleaseJavaRes
+build	Compilar release	2026-11-25T05:18:49.0907496Z > Task :feature:composer:mergeReleaseGeneratedProguardFiles
+build	Compilar release	2026-11-25T05:18:49.0937416Z > Task :feature:settings:compileReleaseJavaWithJavac NO-SOURCE
+build	Compilar release	2026-11-25T05:18:49.0957542Z > Task :feature:composer:exportReleaseConsumerProguardFiles
+build	Compilar release	2026-11-25T05:18:49.0977370Z > Task :feature:settings:mergeReleaseGeneratedProguardFiles
+build	Compilar release	2026-11-25T05:18:49.0991670Z > Task :feature:settings:exportReleaseConsumerProguardFiles
+build	Compilar release	2026-11-25T05:18:49.1673914Z > Task :feature:settings:bundleLibCompileToJarRelease
+build	Compilar release	2026-11-25T05:18:49.1699389Z > Task :feature:composer:bundleLibRuntimeToJarRelease
+build	Compilar release	2026-11-25T05:18:49.1720461Z > Task :feature:composer:bundleLibCompileToJarRelease
+build	Compilar release	2026-11-25T05:18:49.1751330Z > Task :feature:settings:processReleaseJavaRes
+build	Compilar release	2026-11-25T05:18:49.1770241Z > Task :feature:settings:generateReleaseAssets UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:49.2677816Z > Task :feature:settings:mergeReleaseAssets
+build	Compilar release	2026-11-25T05:18:49.2690436Z > Task :feature:system:generateReleaseAssets UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:49.2707739Z > Task :feature:system:mergeReleaseAssets
+build	Compilar release	2026-11-25T05:18:49.2737526Z > Task :feature:transcript:generateReleaseAssets UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:49.2767484Z > Task :feature:transcript:mergeReleaseAssets
+build	Compilar release	2026-11-25T05:18:49.2797856Z > Task :feature:voice:generateReleaseAssets UP-TO-DATE
+build	Compilar release	2026-11-25T05:18:49.2827544Z > Task :feature:voice:mergeReleaseAssets
+build	Compilar release	2026-11-25T05:18:49.2828536Z > Task :feature:settings:bundleLibRuntimeToJarRelease
+build	Compilar release	2026-11-25T05:18:49.4668016Z > Task :app:extractReleaseVersionControlInfo
+build	Compilar release	2026-11-25T05:18:49.4727687Z > Task :app:mergeReleaseAssets
+build	Compilar release	2026-11-25T05:18:49.5698133Z > Task :app:compressReleaseAssets FROM-CACHE
+build	Compilar release	2026-11-25T05:18:49.5718064Z > Task :app:validateSigningRelease
+build	Compilar release	2026-11-25T05:18:49.5719082Z > Task :app:writeReleaseAppMetadata
+build	Compilar release	2026-11-25T05:18:49.5719985Z > Task :app:writeReleaseSigningConfigVersions
+build	Compilar release	2026-11-25T05:18:49.6667643Z > Task :app:collectReleaseDependencies
+build	Compilar release	2026-11-25T05:18:49.8665745Z > Task :app:sdkReleaseDependencyData
+build	Compilar release	2026-11-25T05:18:50.5668928Z > Task :app:processReleaseResources
+build	Compilar release	2026-11-25T05:19:17.9670383Z 
+build	Compilar release	2026-11-25T05:19:17.9671543Z > Task :feature:session:compileReleaseKotlin
+build	Compilar release	2026-11-25T05:19:17.9672834Z w: The argument '-Xcontext-parameters' is redundant for the current language version 2.4.
+build	Compilar release	2026-11-25T05:19:18.0719054Z e: file:///home/runner/work/Destiny/Destiny/feature/session/src/main/kotlin/ai/opencode/feature/session/SshTerminalSheet.kt:456:43 Argument type mismatch: actual type is 'String', but 'Char' was expected.
+build	Compilar release	2026-11-25T05:19:18.0720438Z 
+build	Compilar release	2026-11-25T05:19:18.0721866Z e: file:///home/runner/work/Destiny/Destiny/feature/session/src/main/kotlin/ai/opencode/feature/session/SshTerminalSheet.kt:916:45 Unresolved reference 'VisiblePassword'.
+build	Compilar release	2026-11-25T05:19:18.0723362Z > Task :feature:session:compileReleaseKotlin FAILED
+build	Compilar release	2026-11-25T05:19:18.0724643Z gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_5-1795583911432.json
+build	Compilar release	2026-11-25T05:19:18.1737997Z 
+build	Compilar release	2026-11-25T05:19:18.1738123Z 
+build	Compilar release	2026-11-25T05:19:18.1807762Z FAILURE: Build failed with an exception.
+build	Compilar release	2026-11-25T05:19:18.1809243Z [Incubating] Problems report is available at: file:///home/runner/work/Destiny/Destiny/build/reports/problems/problems-report.html
+build	Compilar release	2026-11-25T05:19:18.1870235Z 
+build	Compilar release	2026-11-25T05:19:18.1870334Z 
+build	Compilar release	2026-11-25T05:19:18.1877594Z * What went wrong:
+build	Compilar release	2026-11-25T05:19:18.1878666Z Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+build	Compilar release	2026-11-25T05:19:18.1928504Z Execution failed for task ':feature:session:compileReleaseKotlin' (registered by plugin 'com.android.internal.library').
+build	Compilar release	2026-11-25T05:19:18.1929382Z 
+build	Compilar release	2026-11-25T05:19:18.1930475Z > A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
+build	Compilar release	2026-11-25T05:19:18.1932198Z You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+build	Compilar release	2026-11-25T05:19:18.1941388Z    > Kotlin compiler: ARGUMENT_TYPE_MISMATCH
+build	Compilar release	2026-11-25T05:19:18.1942088Z        Kotlin compiler error
+build	Compilar release	2026-11-25T05:19:18.1942944Z          Argument type mismatch: actual type is 'String', but 'Char' was expected.
+build	Compilar release	2026-11-25T05:19:18.1944257Z          Location: /home/runner/work/Destiny/Destiny/feature/session/src/main/kotlin/ai/opencode/feature/session/SshTerminalSheet.kt:456
+build	Compilar release	2026-11-25T05:19:18.1945101Z 
+build	Compilar release	2026-11-25T05:19:18.1945262Z * Try:
+build	Compilar release	2026-11-25T05:19:18.1945829Z > Run with --info or --debug option to get more log output.
+build	Compilar release	2026-11-25T05:19:18.1946939Z > Run with --scan to get full insights from a Build Scan (powered by Develocity).
+build	Compilar release	2026-11-25T05:19:18.1947617Z > Get more help at https://help.gradle.org.
+build	Compilar release	2026-11-25T05:19:18.1947943Z 
+build	Compilar release	2026-11-25T05:19:18.1948107Z * Exception is:
+build	Compilar release	2026-11-25T05:19:18.1949244Z org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':feature:session:compileReleaseKotlin' (registered by plugin 'com.android.internal.library').
+build	Compilar release	2026-11-25T05:19:18.1951317Z 	at org.gradle.api.internal.tasks.execution.DefaultTaskNodeExecutor.lambda$doExecute$1(DefaultTaskNodeExecutor.java:367)
+build	Compilar release	2026-11-25T05:19:18.1952460Z 	at org.gradle.internal.Try$Failure.ifSuccessfulOrElse(Try.java:288)
+build	Compilar release	2026-11-25T05:19:18.1953587Z 	at org.gradle.api.internal.tasks.execution.DefaultTaskNodeExecutor.doExecute(DefaultTaskNodeExecutor.java:365)
+build	Compilar release	2026-11-25T05:19:18.1955173Z 	at org.gradle.api.internal.tasks.execution.DefaultTaskNodeExecutor.executeTrackingTaskIdentity(DefaultTaskNodeExecutor.java:332)
+build	Compilar release	2026-11-25T05:19:18.1957057Z 	at org.gradle.api.internal.tasks.execution.DefaultTaskNodeExecutor.executeFinalizingProperties(DefaultTaskNodeExecutor.java:318)
+build	Compilar release	2026-11-25T05:19:18.1958867Z 	at org.gradle.api.internal.tasks.execution.DefaultTaskNodeExecutor.executeSkippingWithNoActions(DefaultTaskNodeExecutor.java:289)
+build	Compilar release	2026-11-25T05:19:18.1960634Z 	at org.gradle.api.internal.tasks.execution.DefaultTaskNodeExecutor.executeSkippingOnlyIf(DefaultTaskNodeExecutor.java:272)
+build	Compilar release	2026-11-25T05:19:18.1962368Z 	at org.gradle.api.internal.tasks.execution.DefaultTaskNodeExecutor.executeCatchingFailures(DefaultTaskNodeExecutor.java:228)
+build	Compilar release	2026-11-25T05:19:18.1964611Z 	at org.gradle.api.internal.tasks.execution.DefaultTaskNodeExecutor.executeWithFallbackOperationId(DefaultTaskNodeExecutor.java:197)
+build	Compilar release	2026-11-25T05:19:18.1966359Z 	at org.gradle.api.internal.tasks.execution.DefaultTaskNodeExecutor.executeWithLifecycle(DefaultTaskNodeExecutor.java:171)
+build	Compilar release	2026-11-25T05:19:18.1968109Z 	at org.gradle.api.internal.tasks.execution.DefaultTaskNodeExecutor.access$000(DefaultTaskNodeExecutor.java:67)
+build	Compilar release	2026-11-25T05:19:18.1969380Z 	at org.gradle.api.internal.tasks.execution.DefaultTaskNodeExecutor$1.run(DefaultTaskNodeExecutor.java:136)
+build	Compilar release	2026-11-25T05:19:18.1970572Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:30)
+build	Compilar release	2026-11-25T05:19:18.1971797Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:27)
+build	Compilar release	2026-11-25T05:19:18.1973417Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+build	Compilar release	2026-11-25T05:19:18.1974846Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+build	Compilar release	2026-11-25T05:19:18.1976232Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+build	Compilar release	2026-11-25T05:19:18.1997636Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+build	Compilar release	2026-11-25T05:19:18.1999187Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:48)
+build	Compilar release	2026-11-25T05:19:18.2000608Z 	at org.gradle.api.internal.tasks.execution.DefaultTaskNodeExecutor.execute(DefaultTaskNodeExecutor.java:133)
+build	Compilar release	2026-11-25T05:19:18.2001942Z 	at org.gradle.execution.plan.LocalTaskNode.execute(LocalTaskNode.java:229)
+build	Compilar release	2026-11-25T05:19:18.2003227Z 	at org.gradle.execution.DefaultBuildWorkExecutor.lambda$executePlan$0(DefaultBuildWorkExecutor.java:153)
+build	Compilar release	2026-11-25T05:19:18.2004797Z 	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.lambda$execute$0(DefaultPlanExecutor.java:476)
+build	Compilar release	2026-11-25T05:19:18.2006132Z 	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:85)
+build	Compilar release	2026-11-25T05:19:18.2007733Z 	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:475)
+build	Compilar release	2026-11-25T05:19:18.2009053Z 	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:392)
+build	Compilar release	2026-11-25T05:19:18.2010304Z 	at org.gradle.execution.plan.DefaultPlanExecutor.process(DefaultPlanExecutor.java:118)
+build	Compilar release	2026-11-25T05:19:18.2011543Z 	at org.gradle.execution.DefaultBuildWorkExecutor.executePlan(DefaultBuildWorkExecutor.java:143)
+build	Compilar release	2026-11-25T05:19:18.2012899Z 	at org.gradle.execution.DefaultBuildWorkExecutor.displayOrExecutePlan(DefaultBuildWorkExecutor.java:128)
+build	Compilar release	2026-11-25T05:19:18.2014192Z 	at org.gradle.execution.DefaultBuildWorkExecutor$1.call(DefaultBuildWorkExecutor.java:79)
+build	Compilar release	2026-11-25T05:19:18.2015392Z 	at org.gradle.execution.DefaultBuildWorkExecutor$1.call(DefaultBuildWorkExecutor.java:75)
+build	Compilar release	2026-11-25T05:19:18.2017005Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+build	Compilar release	2026-11-25T05:19:18.2018726Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+build	Compilar release	2026-11-25T05:19:18.2020337Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+build	Compilar release	2026-11-25T05:19:18.2021848Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+build	Compilar release	2026-11-25T05:19:18.2023288Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+build	Compilar release	2026-11-25T05:19:18.2024712Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+build	Compilar release	2026-11-25T05:19:18.2026402Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+build	Compilar release	2026-11-25T05:19:18.2027651Z 	at org.gradle.execution.DefaultBuildWorkExecutor.execute(DefaultBuildWorkExecutor.java:75)
+build	Compilar release	2026-11-25T05:19:18.2028933Z 	at org.gradle.internal.build.DefaultBuildLifecycleController.lambda$executeTasks$0(DefaultBuildLifecycleController.java:323)
+build	Compilar release	2026-11-25T05:19:18.2030408Z 	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:324)
+build	Compilar release	2026-11-25T05:19:18.2031780Z 	at org.gradle.internal.model.StateTransitionController.lambda$tryTransition$0(StateTransitionController.java:235)
+build	Compilar release	2026-11-25T05:19:18.2032969Z 	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:45)
+build	Compilar release	2026-11-25T05:19:18.2034168Z 	at org.gradle.internal.model.StateTransitionController.tryTransition(StateTransitionController.java:235)
+build	Compilar release	2026-11-25T05:19:18.2035607Z 	at org.gradle.internal.build.DefaultBuildLifecycleController.executeTasks(DefaultBuildLifecycleController.java:314)
+build	Compilar release	2026-11-25T05:19:18.2037842Z 	at org.gradle.internal.build.DefaultBuildWorkGraphController$DefaultBuildWorkGraph.runWork(DefaultBuildWorkGraphController.java:207)
+build	Compilar release	2026-11-25T05:19:18.2039435Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$runAndReleaseLocks$0(DefaultWorkerLeaseService.java:296)
+build	Compilar release	2026-11-25T05:19:18.2040641Z 	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
+build	Compilar release	2026-11-25T05:19:18.2041867Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.runAndReleaseLocks(DefaultWorkerLeaseService.java:294)
+build	Compilar release	2026-11-25T05:19:18.2043267Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:290)
+build	Compilar release	2026-11-25T05:19:18.2044661Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:282)
+build	Compilar release	2026-11-25T05:19:18.2046077Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:132)
+build	Compilar release	2026-11-25T05:19:18.2047675Z 	at org.gradle.composite.internal.DefaultBuildController.doRun(DefaultBuildController.java:182)
+build	Compilar release	2026-11-25T05:19:18.2049112Z 	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.lambda$run$0(DefaultBuildController.java:199)
+build	Compilar release	2026-11-25T05:19:18.2050500Z 	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:85)
+build	Compilar release	2026-11-25T05:19:18.2051873Z 	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.run(DefaultBuildController.java:199)
+build	Compilar release	2026-11-25T05:19:18.2053272Z 	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:65)
+build	Compilar release	2026-11-25T05:19:18.2054603Z 	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+build	Compilar release	2026-11-25T05:19:18.2056757Z Caused by: org.gradle.workers.internal.DefaultWorkerExecutor$WorkExecutionException: A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
+build	Compilar release	2026-11-25T05:19:18.2058739Z 	at org.gradle.workers.internal.DefaultWorkerExecutor$WorkItemExecution.waitForCompletion(DefaultWorkerExecutor.java:273)
+build	Compilar release	2026-11-25T05:19:18.2060481Z 	at org.gradle.internal.work.DefaultAsyncWorkTracker.lambda$waitForItemsAndGatherFailures$2(DefaultAsyncWorkTracker.java:132)
+build	Compilar release	2026-11-25T05:19:18.2061660Z 	at org.gradle.internal.Factories$1.create(Factories.java:30)
+build	Compilar release	2026-11-25T05:19:18.2063065Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withoutLocksBlocking$0(DefaultWorkerLeaseService.java:406)
+build	Compilar release	2026-11-25T05:19:18.2064423Z 	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
+build	Compilar release	2026-11-25T05:19:18.2065810Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.withoutLocksBlocking(DefaultWorkerLeaseService.java:401)
+build	Compilar release	2026-11-25T05:19:18.2067235Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.blocking(DefaultWorkerLeaseService.java:261)
+build	Compilar release	2026-11-25T05:19:18.2068538Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.blocking(DefaultWorkerLeaseService.java:243)
+build	Compilar release	2026-11-25T05:19:18.2070346Z 	at org.gradle.internal.work.DefaultAsyncWorkTracker.lambda$waitForItemsAndGatherFailures$1(DefaultAsyncWorkTracker.java:128)
+build	Compilar release	2026-11-25T05:19:18.2071542Z 	at org.gradle.internal.Factories$1.create(Factories.java:30)
+build	Compilar release	2026-11-25T05:19:18.2072892Z 	at org.gradle.internal.resources.AbstractResourceLockRegistry.whileDisallowingLockChanges(AbstractResourceLockRegistry.java:51)
+build	Compilar release	2026-11-25T05:19:18.2074677Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.whileDisallowingProjectLockChanges(DefaultWorkerLeaseService.java:266)
+build	Compilar release	2026-11-25T05:19:18.2076342Z 	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForItemsAndGatherFailures(DefaultAsyncWorkTracker.java:127)
+build	Compilar release	2026-11-25T05:19:18.2078068Z 	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForItemsAndGatherFailures(DefaultAsyncWorkTracker.java:93)
+build	Compilar release	2026-11-25T05:19:18.2079522Z 	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForAll(DefaultAsyncWorkTracker.java:79)
+build	Compilar release	2026-11-25T05:19:18.2081057Z 	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForCompletion(DefaultAsyncWorkTracker.java:67)
+build	Compilar release	2026-11-25T05:19:18.2082251Z 	at org.gradle.api.internal.tasks.execution.TaskExecution$3.run(TaskExecution.java:276)
+build	Compilar release	2026-11-25T05:19:18.2083576Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:30)
+build	Compilar release	2026-11-25T05:19:18.2085014Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:27)
+build	Compilar release	2026-11-25T05:19:18.2086458Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+build	Compilar release	2026-11-25T05:19:18.2088088Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+build	Compilar release	2026-11-25T05:19:18.2089564Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+build	Compilar release	2026-11-25T05:19:18.2091051Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+build	Compilar release	2026-11-25T05:19:18.2092498Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:48)
+build	Compilar release	2026-11-25T05:19:18.2093843Z 	at org.gradle.api.internal.tasks.execution.TaskExecution.executeAction(TaskExecution.java:253)
+build	Compilar release	2026-11-25T05:19:18.2095142Z 	at org.gradle.api.internal.tasks.execution.TaskExecution.executeActions(TaskExecution.java:236)
+build	Compilar release	2026-11-25T05:19:18.2096656Z 	at org.gradle.api.internal.tasks.execution.TaskExecution.executeWithPreviousOutputFiles(TaskExecution.java:219)
+build	Compilar release	2026-11-25T05:19:18.2097852Z 	at org.gradle.api.internal.tasks.execution.TaskExecution.execute(TaskExecution.java:185)
+build	Compilar release	2026-11-25T05:19:18.2099004Z 	at org.gradle.internal.execution.steps.ExecuteStep.executeInternal(ExecuteStep.java:167)
+build	Compilar release	2026-11-25T05:19:18.2100084Z 	at org.gradle.internal.execution.steps.ExecuteStep.access$000(ExecuteStep.java:47)
+build	Compilar release	2026-11-25T05:19:18.2101133Z 	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:137)
+build	Compilar release	2026-11-25T05:19:18.2102172Z 	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:134)
+build	Compilar release	2026-11-25T05:19:18.2103472Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+build	Compilar release	2026-11-25T05:19:18.2105255Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+build	Compilar release	2026-11-25T05:19:18.2107006Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+build	Compilar release	2026-11-25T05:19:18.2108469Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+build	Compilar release	2026-11-25T05:19:18.2109910Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+build	Compilar release	2026-11-25T05:19:18.2111344Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+build	Compilar release	2026-11-25T05:19:18.2113036Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+build	Compilar release	2026-11-25T05:19:18.2114272Z 	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:134)
+build	Compilar release	2026-11-25T05:19:18.2115359Z 	at org.gradle.internal.execution.steps.ExecuteStep$Mutable.execute(ExecuteStep.java:80)
+build	Compilar release	2026-11-25T05:19:18.2116717Z 	at org.gradle.internal.execution.steps.CancelExecutionStep.execute(CancelExecutionStep.java:42)
+build	Compilar release	2026-11-25T05:19:18.2117919Z 	at org.gradle.internal.execution.steps.TimeoutStep.executeWithoutTimeout(TimeoutStep.java:75)
+build	Compilar release	2026-11-25T05:19:18.2119132Z 	at org.gradle.internal.execution.steps.TimeoutStep.execute(TimeoutStep.java:55)
+build	Compilar release	2026-11-25T05:19:18.2120401Z 	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:51)
+build	Compilar release	2026-11-25T05:19:18.2121881Z 	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:29)
+build	Compilar release	2026-11-25T05:19:18.2123681Z 	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.executeMutable(RemovePreviousOutputsStep.java:67)
+build	Compilar release	2026-11-25T05:19:18.2125267Z 	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.executeMutable(RemovePreviousOutputsStep.java:39)
+build	Compilar release	2026-11-25T05:19:18.2126739Z 	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+build	Compilar release	2026-11-25T05:19:18.2128048Z 	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:42)
+build	Compilar release	2026-11-25T05:19:18.2129684Z 	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:24)
+build	Compilar release	2026-11-25T05:19:18.2131627Z 	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:69)
+build	Compilar release	2026-11-25T05:19:18.2133645Z 	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:46)
+build	Compilar release	2026-11-25T05:19:18.2135472Z 	at org.gradle.internal.execution.steps.ResolveInputChangesStep.executeMutable(ResolveInputChangesStep.java:39)
+build	Compilar release	2026-11-25T05:19:18.2137328Z 	at org.gradle.internal.execution.steps.ResolveInputChangesStep.executeMutable(ResolveInputChangesStep.java:28)
+build	Compilar release	2026-11-25T05:19:18.2138787Z 	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+build	Compilar release	2026-11-25T05:19:18.2140249Z 	at org.gradle.internal.execution.steps.BuildCacheStep.executeWithoutCache(BuildCacheStep.java:189)
+build	Compilar release	2026-11-25T05:19:18.2141868Z 	at org.gradle.internal.execution.steps.BuildCacheStep.executeAndStoreInCache(BuildCacheStep.java:145)
+build	Compilar release	2026-11-25T05:19:18.2143415Z 	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$executeWithCache$3(BuildCacheStep.java:104)
+build	Compilar release	2026-11-25T05:19:18.2144836Z 	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$executeWithCache$1(BuildCacheStep.java:104)
+build	Compilar release	2026-11-25T05:19:18.2145922Z 	at org.gradle.internal.Try$Success.map(Try.java:170)
+build	Compilar release	2026-11-25T05:19:18.2147040Z 	at org.gradle.internal.execution.steps.BuildCacheStep.executeWithCache(BuildCacheStep.java:88)
+build	Compilar release	2026-11-25T05:19:18.2148277Z 	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$execute$0(BuildCacheStep.java:75)
+build	Compilar release	2026-11-25T05:19:18.2149277Z 	at org.gradle.internal.Either$Left.fold(Either.java:116)
+build	Compilar release	2026-11-25T05:19:18.2150183Z 	at org.gradle.internal.execution.caching.CachingState.fold(CachingState.java:62)
+build	Compilar release	2026-11-25T05:19:18.2151291Z 	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:74)
+build	Compilar release	2026-11-25T05:19:18.2152494Z 	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:49)
+build	Compilar release	2026-11-25T05:19:18.2153837Z 	at org.gradle.internal.execution.steps.StoreExecutionStateStep.executeMutable(StoreExecutionStateStep.java:46)
+build	Compilar release	2026-11-25T05:19:18.2155409Z 	at org.gradle.internal.execution.steps.StoreExecutionStateStep.executeMutable(StoreExecutionStateStep.java:35)
+build	Compilar release	2026-11-25T05:19:18.2156845Z 	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+build	Compilar release	2026-11-25T05:19:18.2158124Z 	at org.gradle.internal.execution.steps.SkipUpToDateStep.executeBecause(SkipUpToDateStep.java:75)
+build	Compilar release	2026-11-25T05:19:18.2159721Z 	at org.gradle.internal.execution.steps.SkipUpToDateStep.lambda$execute$2(SkipUpToDateStep.java:53)
+build	Compilar release	2026-11-25T05:19:18.2161024Z 	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:53)
+build	Compilar release	2026-11-25T05:19:18.2162249Z 	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:35)
+build	Compilar release	2026-11-25T05:19:18.2163823Z 	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:37)
+build	Compilar release	2026-11-25T05:19:18.2165703Z 	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:27)
+build	Compilar release	2026-11-25T05:19:18.2167659Z 	at org.gradle.internal.execution.steps.ResolveMutableCachingStateStep.executeDelegate(ResolveMutableCachingStateStep.java:70)
+build	Compilar release	2026-11-25T05:19:18.2169564Z 	at org.gradle.internal.execution.steps.ResolveMutableCachingStateStep.executeDelegate(ResolveMutableCachingStateStep.java:32)
+build	Compilar release	2026-11-25T05:19:18.2171309Z 	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:69)
+build	Compilar release	2026-11-25T05:19:18.2172990Z 	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:37)
+build	Compilar release	2026-11-25T05:19:18.2174522Z 	at org.gradle.internal.execution.steps.ResolveChangesStep.executeMutable(ResolveChangesStep.java:63)
+build	Compilar release	2026-11-25T05:19:18.2175913Z 	at org.gradle.internal.execution.steps.ResolveChangesStep.executeMutable(ResolveChangesStep.java:34)
+build	Compilar release	2026-11-25T05:19:18.2177148Z 	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+build	Compilar release	2026-11-25T05:19:18.2178242Z 	at org.gradle.internal.execution.steps.ValidateStep$Mutable.executeDelegate(ValidateStep.java:79)
+build	Compilar release	2026-11-25T05:19:18.2179430Z 	at org.gradle.internal.execution.steps.ValidateStep$Mutable.executeDelegate(ValidateStep.java:65)
+build	Compilar release	2026-11-25T05:19:18.2180590Z 	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:105)
+build	Compilar release	2026-11-25T05:19:18.2181607Z 	at org.gradle.internal.execution.steps.ValidateStep$Mutable.execute(ValidateStep.java:65)
+build	Compilar release	2026-11-25T05:19:18.2183189Z 	at org.gradle.internal.execution.steps.CaptureMutableStateBeforeExecutionStep.executeMutable(CaptureMutableStateBeforeExecutionStep.java:86)
+build	Compilar release	2026-11-25T05:19:18.2185079Z 	at org.gradle.internal.execution.steps.CaptureMutableStateBeforeExecutionStep.execute(CaptureMutableStateBeforeExecutionStep.java:65)
+build	Compilar release	2026-11-25T05:19:18.2187210Z 	at org.gradle.internal.execution.steps.CaptureMutableStateBeforeExecutionStep.execute(CaptureMutableStateBeforeExecutionStep.java:45)
+build	Compilar release	2026-11-25T05:19:18.2189046Z 	at org.gradle.internal.execution.steps.SkipEmptyMutableWorkStep.executeWithNonEmptySources(SkipEmptyMutableWorkStep.java:210)
+build	Compilar release	2026-11-25T05:19:18.2190563Z 	at org.gradle.internal.execution.steps.SkipEmptyMutableWorkStep.executeMutable(SkipEmptyMutableWorkStep.java:90)
+build	Compilar release	2026-11-25T05:19:18.2192090Z 	at org.gradle.internal.execution.steps.SkipEmptyMutableWorkStep.executeMutable(SkipEmptyMutableWorkStep.java:53)
+build	Compilar release	2026-11-25T05:19:18.2193409Z 	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+build	Compilar release	2026-11-25T05:19:18.2194929Z 	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsStartedStep.execute(MarkSnapshottingInputsStartedStep.java:38)
+build	Compilar release	2026-11-25T05:19:18.2196900Z 	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.executeMutable(LoadPreviousExecutionStateStep.java:36)
+build	Compilar release	2026-11-25T05:19:18.2198521Z 	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.executeMutable(LoadPreviousExecutionStateStep.java:23)
+build	Compilar release	2026-11-25T05:19:18.2199880Z 	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+build	Compilar release	2026-11-25T05:19:18.2201150Z 	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.executeMutable(HandleStaleOutputsStep.java:77)
+build	Compilar release	2026-11-25T05:19:18.2202655Z 	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.executeMutable(HandleStaleOutputsStep.java:43)
+build	Compilar release	2026-11-25T05:19:18.2204344Z 	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+build	Compilar release	2026-11-25T05:19:18.2205772Z 	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.lambda$executeMutable$0(AssignMutableWorkspaceStep.java:34)
+build	Compilar release	2026-11-25T05:19:18.2207319Z 	at org.gradle.api.internal.tasks.execution.TaskExecution$4.withWorkspace(TaskExecution.java:314)
+build	Compilar release	2026-11-25T05:19:18.2208731Z 	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.executeMutable(AssignMutableWorkspaceStep.java:30)
+build	Compilar release	2026-11-25T05:19:18.2210360Z 	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.executeMutable(AssignMutableWorkspaceStep.java:21)
+build	Compilar release	2026-11-25T05:19:18.2211674Z 	at org.gradle.internal.execution.steps.MutableStep.execute(MutableStep.java:26)
+build	Compilar release	2026-11-25T05:19:18.2212832Z 	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:40)
+build	Compilar release	2026-11-25T05:19:18.2214310Z 	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:23)
+build	Compilar release	2026-11-25T05:19:18.2215963Z 	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.lambda$execute$2(ExecuteWorkBuildOperationFiringStep.java:67)
+build	Compilar release	2026-11-25T05:19:18.2218114Z 	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:67)
+build	Compilar release	2026-11-25T05:19:18.2219953Z 	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:39)
+build	Compilar release	2026-11-25T05:19:18.2221467Z 	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:46)
+build	Compilar release	2026-11-25T05:19:18.2222734Z 	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:34)
+build	Compilar release	2026-11-25T05:19:18.2223901Z 	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:56)
+build	Compilar release	2026-11-25T05:19:18.2224981Z 	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:38)
+build	Compilar release	2026-11-25T05:19:18.2226220Z 	at org.gradle.internal.execution.impl.DefaultExecutionEngine$1.execute(DefaultExecutionEngine.java:68)
+build	Compilar release	2026-11-25T05:19:18.2227815Z 	at org.gradle.api.internal.tasks.execution.DefaultTaskNodeExecutor.doExecute(DefaultTaskNodeExecutor.java:364)
+build	Compilar release	2026-11-25T05:19:18.2228780Z 	... 55 more
+build	Compilar release	2026-11-25T05:19:18.2230677Z Caused by: org.jetbrains.kotlin.gradle.tasks.CompilationErrorException: Argument type mismatch: actual type is 'String', but 'Char' was expected.
+build	Compilar release	2026-11-25T05:19:18.2232816Z 	at org.jetbrains.kotlin.gradle.plugin.diagnostics.DefaultCompilerDiagnosticsProblemsReporter.reportCompilerMessage(CompilerDiagnosticsProblemsReporter.kt:63)
+build	Compilar release	2026-11-25T05:19:18.2234873Z 	at org.jetbrains.kotlin.compilerRunner.btapi.ProblemsApiCompilerMessageRenderer.replayTo(ProblemsApiCompilerMessageRenderer.kt:88)
+build	Compilar release	2026-11-25T05:19:18.2236899Z 	at org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork.execute(BuildToolsApiCompilationWork.kt:251)
+build	Compilar release	2026-11-25T05:19:18.2238192Z 	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:68)
+build	Compilar release	2026-11-25T05:19:18.2239501Z 	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:64)
+build	Compilar release	2026-11-25T05:19:18.2240833Z 	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:61)
+build	Compilar release	2026-11-25T05:19:18.2242218Z 	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:103)
+build	Compilar release	2026-11-25T05:19:18.2243654Z 	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:61)
+build	Compilar release	2026-11-25T05:19:18.2244871Z 	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
+build	Compilar release	2026-11-25T05:19:18.2245817Z 	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
+build	Compilar release	2026-11-25T05:19:18.2247409Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+build	Compilar release	2026-11-25T05:19:18.2249547Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+build	Compilar release	2026-11-25T05:19:18.2251218Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+build	Compilar release	2026-11-25T05:19:18.2252699Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+build	Compilar release	2026-11-25T05:19:18.2254179Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+build	Compilar release	2026-11-25T05:19:18.2255654Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+build	Compilar release	2026-11-25T05:19:18.2257052Z 	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+build	Compilar release	2026-11-25T05:19:18.2258300Z 	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
+build	Compilar release	2026-11-25T05:19:18.2259740Z 	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:58)
+build	Compilar release	2026-11-25T05:19:18.2260858Z 	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$1(DefaultWorkerExecutor.java:169)
+build	Compilar release	2026-11-25T05:19:18.2262371Z 	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:191)
+build	Compilar release	2026-11-25T05:19:18.2264065Z 	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$600(DefaultConditionalExecutionQueue.java:112)
+build	Compilar release	2026-11-25T05:19:18.2265581Z 	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:168)
+build	Compilar release	2026-11-25T05:19:18.2266922Z 	at org.gradle.internal.Factories$1.create(Factories.java:30)
+build	Compilar release	2026-11-25T05:19:18.2267993Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$runAndReleaseLocks$0(DefaultWorkerLeaseService.java:296)
+build	Compilar release	2026-11-25T05:19:18.2269375Z 	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
+build	Compilar release	2026-11-25T05:19:18.2270737Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.runAndReleaseLocks(DefaultWorkerLeaseService.java:294)
+build	Compilar release	2026-11-25T05:19:18.2272263Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:290)
+build	Compilar release	2026-11-25T05:19:18.2273734Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:282)
+build	Compilar release	2026-11-25T05:19:18.2275137Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:132)
+build	Compilar release	2026-11-25T05:19:18.2276683Z 	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:138)
+build	Compilar release	2026-11-25T05:19:18.2278228Z 	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:163)
+build	Compilar release	2026-11-25T05:19:18.2279494Z 	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:125)
+build	Compilar release	2026-11-25T05:19:18.2280253Z 	... 2 more
+build	Compilar release	2026-11-25T05:19:18.2280437Z 
+build	Compilar release	2026-11-25T05:19:18.2280448Z 
+build	Compilar release	2026-11-25T05:19:18.2280631Z BUILD FAILED in 51s
+build	Compilar release	2026-11-25T05:19:18.2280853Z 
+build	Compilar release	2026-11-25T05:19:18.2281770Z For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+build	Compilar release	2026-11-25T05:19:18.2283028Z 270 actionable tasks: 137 executed, 133 from cache
+build	Compilar release	2026-11-25T05:19:18.2283652Z Configuration cache entry stored.
+build	Compilar release	2026-11-25T05:19:18.5766833Z ##[error]Process completed with exit code 1.

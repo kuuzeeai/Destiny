@@ -21,11 +21,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -70,7 +70,8 @@ private fun terminalLines(calls: List<OpenCodeToolCall>): List<TerminalLine> {
 
 /**
  * Terminal de solo lectura: todo lo que el agente ejecuta en este chat y lo que responde cada
- * comando, en vivo. No envía nada: solo muestra. Sigue el final mientras estés abajo.
+ * comando, en vivo. No envía nada: solo muestra. Baja sola mientras llega código; si subes a
+ * leer se queda quieta, y vuelve a seguir cuando regresas al final.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,38 +79,37 @@ fun TerminalLogView(calls: List<OpenCodeToolCall>, onClose: () -> Unit) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val lines = remember(calls) { terminalLines(calls) }
     val listState = rememberLazyListState()
-    val atBottom by remember {
-        derivedStateOf {
-            val info = listState.layoutInfo
-            val last = info.visibleItemsInfo.lastOrNull()
-            last == null || last.index >= info.totalItemsCount - 1
+    // Sigue el final salvo que la persona suba a leer: solo su propio gesto lo cambia.
+    var following by remember { mutableStateOf(true) }
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.isScrollInProgress }.collect { scrolling ->
+            if (!scrolling) following = !listState.canScrollForward
         }
     }
-    var started by remember { mutableStateOf(false) }
-    LaunchedEffect(lines.size) {
-        if (lines.isNotEmpty() && (!started || atBottom)) listState.scrollToItem(lines.lastIndex)
-        started = true
+    // Cada vez que cambia el contenido (línea nueva o texto que crece) baja al final.
+    LaunchedEffect(lines) {
+        if (following && lines.isNotEmpty()) listState.scrollToItem(lines.lastIndex)
     }
     OpenCodeBottomSheet(onDismissRequest = onClose, sheetState = sheetState) {
         Column(
             Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.9f)
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 16.dp),
+                .padding(horizontal = 4.dp)
+                .padding(bottom = 8.dp),
         ) {
             Text(
                 stringResource(R.string.session_sheet_terminal),
                 style = OpenCodeTextStyles.callout.copy(fontWeight = FontWeight.SemiBold),
                 color = OpenCodeTheme.colors.text,
-                modifier = Modifier.padding(bottom = 10.dp),
+                modifier = Modifier.padding(start = 12.dp, bottom = 8.dp),
             )
             Box(
                 Modifier
                     .weight(1f)
                     .fillMaxWidth()
                     .background(Color(0xFF0D1117), RoundedCornerShape(12.dp))
-                    .padding(10.dp),
+                    .padding(horizontal = 8.dp, vertical = 10.dp),
             ) {
                 if (lines.isEmpty()) {
                     Text(

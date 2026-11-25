@@ -1,5 +1,26 @@
 package ai.opencode.feature.session
 
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.window.DialogWindowProvider
+import android.os.Build
+import android.view.WindowInsetsController
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -111,6 +132,56 @@ private val sshCsi = Regex("\u001B\\[[0-9;?]*[ -/]*[@-~]")
 private val sshCharset = Regex("\u001B[()][A-Za-z0-9]|\u001B[=>]")
 private val sshIncomplete = Regex("\u001B(\\[[0-9;?]*[ -/]*|\\][^\u0007\u001B]*)?$")
 
+private val SSH_FG = 0xFFFFFFFF.toInt()
+private val SSH_ANSI = intArrayOf(
+    0xFF000000.toInt(), 0xFFCD0000.toInt(), 0xFF00CD00.toInt(), 0xFFCDCD00.toInt(),
+    0xFF6495ED.toInt(), 0xFFCD00CD.toInt(), 0xFF00CDCD.toInt(), 0xFFE5E5E5.toInt(),
+    0xFF7F7F7F.toInt(), 0xFFFF0000.toInt(), 0xFF00FF00.toInt(), 0xFFFFFF00.toInt(),
+    0xFF5C5CFF.toInt(), 0xFFFF00FF.toInt(), 0xFF00FFFF.toInt(), 0xFFFFFFFF.toInt(),
+)
+private val sshCsiParts = Regex("\u001B\\[([0-9;?<=>]*)([ -/]*)([@-~])")
+
+private fun ssh256(value: Int): Int {
+    val i = value.coerceIn(0, 255)
+    if (i < 16) return SSH_ANSI[i]
+    if (i < 232) {
+        val v = i - 16
+        val r = v / 36
+        val g = (v / 6) % 6
+        val b = v % 6
+        val lr = if (r == 0) 0 else 55 + r * 40
+        val lg = if (g == 0) 0 else 55 + g * 40
+        val lb = if (b == 0) 0 else 55 + b * 40
+        return (0xFF shl 24) or (lr shl 16) or (lg shl 8) or lb
+    }
+    val gray = 8 + (i - 232) * 10
+    return (0xFF shl 24) or (gray shl 16) or (gray shl 8) or gray
+}
+
+private fun styled(sb: CharSequence, colors: List<Int>, cursor: Int): AnnotatedString {
+    val length = maxOf(sb.length, cursor + 1)
+    if (length <= 0) return AnnotatedString("")
+    return buildAnnotatedString {
+        var start = 0
+        while (start < length) {
+            if (start == cursor) {
+                pushStyle(SpanStyle(color = Color.Black, background = Color.White))
+                append(if (start < sb.length) sb[start].toString() else " ")
+                pop()
+                start++
+                continue
+            }
+            val color = if (start < colors.size) colors[start] else SSH_FG
+            var end = start + 1
+            while (end < length && end != cursor && (if (end < colors.size) colors[end] else SSH_FG) == color) end++
+            pushStyle(SpanStyle(color = Color(color)))
+            append(buildString { for (k in start until end) append(if (k < sb.length) sb[k] else ' ') })
+            pop()
+            start = end
+        }
+    }
+}
+
 private class SshStore(context: Context) {
     private val prefs = context.getSharedPreferences(SSH_PREFS, Context.MODE_PRIVATE)
 
@@ -185,8 +256,8 @@ private class SshShell(
     var hostPrompt by mutableStateOf<String?>(null)
     var hasKey by mutableStateOf(store.hasKey)
     var hasKnownHosts by mutableStateOf(store.knownHosts.isNotBlank())
-    val lines = mutableStateListOf<String>()
-    var current by mutableStateOf("")
+    val lines = mutableStateListOf<AnnotatedString>()
+    var current by mutableStateOf(AnnotatedString(""))
 
     val savedHost: String get() = store.host.ifBlank { SSH_DEFAULT_HOST }
     val savedPort: Int get() = if (store.host.isBlank()) SSH_DEFAULT_PORT else store.port
@@ -199,6 +270,8 @@ private class SshShell(
     private var userClosed = false
     private val writer by lazy { Executors.newSingleThreadExecutor() }
     private val edit = StringBuilder()
+    private val editColors = ArrayList<Int>()
+    private var curColor = SSH_FG
     private var cursor = 0
     private var pendingEscape = ""
 
@@ -260,7 +333,7 @@ private class SshShell(
         val note = if (password.isNotEmpty()) installKey(s) else null
 
         val shell = s.openChannel("shell") as ChannelShell
-        shell.setPtyType("dumb", 80, 24, 0, 0)
+        shell.setPtyType("xterm-256color", 80, 24, 0, 0)
         val input = shell.inputStream
         output = shell.outputStream
         shell.connect(10000)
@@ -268,9 +341,11 @@ private class SshShell(
         scope.launch {
             lines.clear()
             edit.setLength(0)
+            editColors.clear()
+            curColor = SSH_FG
             cursor = 0
-            current = ""
-            if (note != null) lines.add(note)
+            current = AnnotatedString("")
+            if (note != null) lines.add(AnnotatedString(note))
             hasKey = store.hasKey
             hasKnownHosts = store.knownHosts.isNotBlank()
             phase = SshPhase.Connected
@@ -364,7 +439,7 @@ private class SshShell(
     }
 
     fun feed(chunk: String) {
-        var text = (pendingEscape + chunk).replace(sshOsc, "").replace(sshCsi, "").replace(sshCharset, "")
+        var text = (pendingEscape + chunk).replace(sshOsc, "").replace(sshCharset, "")
         val tail = sshIncomplete.find(text)
         if (tail != null) {
             pendingEscape = tail.value.take(256)
@@ -372,27 +447,121 @@ private class SshShell(
         } else {
             pendingEscape = ""
         }
-        text = text.replace("\u001B", "")
-        for (c in text) {
+        var i = 0
+        while (i < text.length) {
+            val c = text[i]
+            if (c == '\u001B') {
+                val m = sshCsiParts.matchAt(text, i)
+                if (m != null) {
+                    csi(m.groupValues[1], m.groupValues[3])
+                    i = m.range.last + 1
+                } else {
+                    i++
+                }
+                continue
+            }
             when (c) {
                 '\n' -> {
-                    lines.add(edit.toString())
+                    lines.add(styled(edit, editColors, -1))
                     edit.setLength(0)
+                    editColors.clear()
                     cursor = 0
                 }
                 '\r' -> cursor = 0
                 '\b' -> if (cursor > 0) cursor--
-                '\t' -> repeat(4) { put(' ') }
+                '\t' -> repeat(8 - cursor % 8) { put(' ') }
                 else -> if (c >= ' ') put(c)
             }
+            i++
         }
         if (lines.size > SSH_MAX_LINES) lines.subList(0, 500).clear()
-        current = edit.toString()
+        current = styled(edit, editColors, cursor)
+    }
+
+    private fun csi(params: String, fin: Char) {
+        val nums = params.trimStart('?', '<', '=', '>').split(';').map { it.toIntOrNull() }
+        val first = nums.firstOrNull()
+        val count = (first ?: 1).coerceAtLeast(1)
+        when (fin) {
+            'm' -> sgr(nums.map { it ?: 0 })
+            'K' -> when (first ?: 0) {
+                0 -> if (cursor < edit.length) {
+                    edit.setLength(cursor)
+                    while (editColors.size > cursor) editColors.removeAt(editColors.size - 1)
+                }
+                1 -> for (k in 0 until minOf(cursor + 1, edit.length)) edit.setCharAt(k, ' ')
+                else -> {
+                    edit.setLength(0)
+                    editColors.clear()
+                }
+            }
+            'C' -> cursor += count
+            'D' -> cursor = maxOf(0, cursor - count)
+            'G' -> cursor = count - 1
+            'P' -> {
+                val end = minOf(edit.length, cursor + count)
+                if (cursor < end) {
+                    edit.delete(cursor, end)
+                    repeat(end - cursor) { editColors.removeAt(cursor) }
+                }
+            }
+            '@' -> {
+                pad(cursor)
+                edit.insert(cursor, " ".repeat(count))
+                repeat(count) { editColors.add(cursor, curColor) }
+            }
+        }
+    }
+
+    private fun sgr(codes: List<Int>) {
+        val list = if (codes.isEmpty()) listOf(0) else codes
+        var i = 0
+        while (i < list.size) {
+            val code = list[i]
+            when {
+                code == 0 || code == 39 -> curColor = SSH_FG
+                code in 30..37 -> curColor = SSH_ANSI[code - 30]
+                code in 90..97 -> curColor = SSH_ANSI[code - 90 + 8]
+                code == 38 || code == 48 -> {
+                    val mode = list.getOrNull(i + 1)
+                    if (mode == 5) {
+                        if (code == 38) curColor = ssh256(list.getOrNull(i + 2) ?: 0)
+                        i += 2
+                    } else if (mode == 2) {
+                        val r = (list.getOrNull(i + 2) ?: 0).coerceIn(0, 255)
+                        val g = (list.getOrNull(i + 3) ?: 0).coerceIn(0, 255)
+                        val b = (list.getOrNull(i + 4) ?: 0).coerceIn(0, 255)
+                        if (code == 38) curColor = (0xFF shl 24) or (r shl 16) or (g shl 8) or b
+                        i += 4
+                    }
+                }
+            }
+            i++
+        }
+    }
+
+    private fun pad(pos: Int) {
+        while (edit.length < pos) {
+            edit.append(' ')
+            editColors.add(curColor)
+        }
     }
 
     private fun put(c: Char) {
-        if (cursor < edit.length) edit.setCharAt(cursor, c) else edit.append(c)
+        pad(cursor)
+        if (cursor < edit.length) {
+            edit.setCharAt(cursor, c)
+            editColors[cursor] = curColor
+        } else {
+            edit.append(c)
+            editColors.add(curColor)
+        }
         cursor++
+    }
+
+    fun resize(cols: Int, rows: Int) {
+        val ch = channel ?: return
+        runCatching { writer.execute { runCatching { ch.setPtySize(cols, rows, 0, 0) } } }
     }
 
     fun send(text: String) {
@@ -457,7 +626,16 @@ fun SshTerminalSheet(onClose: () -> Unit) {
         }
     }
     val connected = shell.phase == SshPhase.Connected && shell.hostPrompt == null
-    val background = if (connected) Color(0xFF0D1117) else MaterialTheme.colorScheme.surface
+    val background = if (connected) Color.Black else MaterialTheme.colorScheme.surface
+    val view = LocalView.current
+    val darkTheme = isSystemInDarkTheme()
+    SideEffect {
+        val window = (view.parent as? DialogWindowProvider)?.window
+        if (window != null && Build.VERSION.SDK_INT >= 30) {
+            val mask = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+            window.insetsController?.setSystemBarsAppearance(if (connected || darkTheme) 0 else mask, mask)
+        }
+    }
     Dialog(
         onDismissRequest = {
             val now = SystemClock.elapsedRealtime()
@@ -476,8 +654,8 @@ fun SshTerminalSheet(onClose: () -> Unit) {
                     .fillMaxSize()
                     .systemBarsPadding()
                     .imePadding()
-                    .padding(horizontal = 4.dp)
-                    .padding(bottom = 4.dp),
+                    .padding(horizontal = if (connected) 0.dp else 4.dp)
+                    .padding(bottom = if (connected) 0.dp else 4.dp),
             ) {
                 if (!connected) {
                     Text(
@@ -609,21 +787,28 @@ private fun SshConnectForm(shell: SshShell) {
     }
 }
 
+private const val SSH_SENTINEL = " "
+
 @Composable
 private fun SshKeyButton(label: String, active: Boolean, modifier: Modifier, onClick: () -> Unit) {
     Box(
         modifier
-            .height(44.dp)
-            .background(if (active) Color(0xFF30363D) else Color.Transparent, RoundedCornerShape(8.dp))
+            .height(37.5.dp)
+            .background(if (active) Color(0xFF606060) else Color.Black)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text(label, color = Color(0xFFC9D1D9), fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+        Text(label, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
     }
 }
 
 @Composable
 private fun ColumnScope.SshTerminalPane(shell: SshShell) {
+    val density = LocalDensity.current
+    val charPx = 18.3f
+    val linePx = 36f
+    val fontSize = with(density) { (charPx / 0.6f).toSp() }
+    val lineHeight = with(density) { linePx.toSp() }
     val listState = rememberLazyListState()
     var following by remember { mutableStateOf(true) }
     LaunchedEffect(listState) {
@@ -635,39 +820,38 @@ private fun ColumnScope.SshTerminalPane(shell: SshShell) {
     LaunchedEffect(total, shell.current) {
         if (following) listState.scrollToItem(total - 1)
     }
-    Box(
-        Modifier
-            .weight(1f)
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-    ) {
-        SelectionContainer {
-            LazyColumn(state = listState) {
-                items(total) { index ->
-                    val text = if (index < shell.lines.size) shell.lines[index] else shell.current
-                    Text(
-                        text.ifEmpty { " " },
-                        color = Color(0xFFC9D1D9),
-                        fontFamily = OpenCodeFonts.monospace,
-                        fontSize = 12.sp,
-                        lineHeight = 16.sp,
-                    )
-                }
-            }
-        }
+    val focus = remember { FocusRequester() }
+    val keyboard = LocalSoftwareKeyboardController.current
+    LaunchedEffect(Unit) {
+        delay(300)
+        runCatching { focus.requestFocus() }
+        keyboard?.show()
     }
-    var input by remember { mutableStateOf("") }
+    var typed by remember { mutableStateOf(TextFieldValue(SSH_SENTINEL, TextRange(1))) }
     var ctrl by remember { mutableStateOf(false) }
     var alt by remember { mutableStateOf(false) }
-    fun submit() {
-        shell.send(input + "\n")
-        input = ""
+    fun typeText(s: String) {
+        following = true
+        if (s.isEmpty()) return
+        val first = s[0]
+        if (ctrl) {
+            shell.send((first.uppercaseChar().code and 0x1f).toChar().toString())
+            if (s.length > 1) shell.send(s.substring(1))
+        } else if (alt) {
+            shell.send("\u001B" + first)
+            if (s.length > 1) shell.send(s.substring(1))
+        } else {
+            shell.send(s)
+        }
+        ctrl = false
+        alt = false
     }
     fun press(label: String) {
+        following = true
         when (label) {
             "ESC" -> shell.send("\u001B")
-            "/" -> input += "/"
-            "—" -> input += "-"
+            "/" -> typeText("/")
+            "—" -> typeText("-")
             "HOME" -> shell.send("\u001B[H")
             "END" -> shell.send("\u001B[F")
             "↑" -> shell.send("\u001B[A")
@@ -676,62 +860,72 @@ private fun ColumnScope.SshTerminalPane(shell: SshShell) {
             "←" -> shell.send("\u001B[D")
             "PGUP" -> shell.send("\u001B[5~")
             "PGDN" -> shell.send("\u001B[6~")
-            "TAB" -> {
-                shell.send(input + "\t")
-                input = ""
-            }
+            "⇆" -> shell.send("\t")
             "CTRL" -> ctrl = !ctrl
             "ALT" -> alt = !alt
         }
     }
-    val light = Color(0xFFC9D1D9)
-    Row(
-        Modifier.fillMaxWidth().padding(top = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        OutlinedTextField(
-            value = input,
-            onValueChange = { new ->
-                if ((ctrl || alt) && new.length == input.length + 1 && new.startsWith(input)) {
-                    val c = new.last()
-                    if (ctrl) shell.send((c.uppercaseChar().code and 0x1f).toChar().toString())
-                    else shell.send("\u001B" + c)
-                    ctrl = false
-                    alt = false
-                } else {
-                    input = new
-                }
+    BoxWithConstraints(
+        Modifier
+            .weight(1f)
+            .fillMaxWidth()
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                runCatching { focus.requestFocus() }
+                keyboard?.show()
             },
-            modifier = Modifier.weight(1f),
+    ) {
+        val cols = (constraints.maxWidth / charPx).toInt().coerceAtLeast(20)
+        val screenRows = (constraints.maxHeight / linePx).toInt().coerceAtLeast(5)
+        LaunchedEffect(cols, screenRows) { shell.resize(cols, screenRows) }
+        LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+            items(total) { index ->
+                val line = if (index < shell.lines.size) shell.lines[index] else shell.current
+                if (line.length <= cols) {
+                    SshRow(if (line.isEmpty()) AnnotatedString(" ") else line, fontSize, lineHeight)
+                } else {
+                    Column {
+                        var s = 0
+                        while (s < line.length) {
+                            SshRow(line.subSequence(s, minOf(line.length, s + cols)), fontSize, lineHeight)
+                            s += cols
+                        }
+                    }
+                }
+            }
+        }
+        BasicTextField(
+            value = typed,
+            onValueChange = { v ->
+                val t = v.text
+                if (t.isEmpty()) {
+                    following = true
+                    shell.send("\u007F")
+                } else if (t != SSH_SENTINEL) {
+                    val at = t.indexOf(' ')
+                    typeText(if (at >= 0) t.removeRange(at, at + 1) else t)
+                }
+                typed = TextFieldValue(SSH_SENTINEL, TextRange(1))
+            },
+            modifier = Modifier.size(1.dp).focusRequester(focus),
             singleLine = true,
-            textStyle = TextStyle(fontFamily = OpenCodeFonts.monospace, fontSize = 14.sp, color = light),
-            placeholder = { Text(stringResource(R.string.ssh_command_hint), color = Color(0xFF8B949E)) },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = light,
-                unfocusedTextColor = light,
-                focusedBorderColor = Color(0xFF8B949E),
-                unfocusedBorderColor = Color(0xFF30363D),
-                cursorColor = light,
-            ),
+            textStyle = TextStyle(color = Color.Transparent),
+            cursorBrush = SolidColor(Color.Transparent),
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.None,
                 autoCorrectEnabled = false,
+                keyboardType = KeyboardType.VisiblePassword,
                 imeAction = ImeAction.Send,
             ),
-            keyboardActions = KeyboardActions(onSend = { submit() }),
+            keyboardActions = KeyboardActions(onSend = { shell.send("\r") }),
         )
-        TextButton(
-            onClick = { submit() },
-            colors = ButtonDefaults.textButtonColors(contentColor = light),
-        ) { Text(stringResource(R.string.ssh_send)) }
     }
-    val rows = listOf(
+    val keyRows = listOf(
         listOf("ESC", "/", "—", "HOME", "↑", "END", "PGUP"),
-        listOf("TAB", "CTRL", "ALT", "←", "↓", "→", "PGDN"),
+        listOf("⇆", "CTRL", "ALT", "←", "↓", "→", "PGDN"),
     )
-    for (row in rows) {
+    for (keys in keyRows) {
         Row(Modifier.fillMaxWidth()) {
-            for (label in row) {
+            for (label in keys) {
                 SshKeyButton(
                     label = label,
                     active = (label == "CTRL" && ctrl) || (label == "ALT" && alt),
@@ -741,18 +935,17 @@ private fun ColumnScope.SshTerminalPane(shell: SshShell) {
             }
         }
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        TextButton(
-            onClick = { shell.send("\u0003") },
-            colors = ButtonDefaults.textButtonColors(contentColor = light),
-        ) { Text(stringResource(R.string.ssh_ctrl_c)) }
-        TextButton(
-            onClick = { shell.clear() },
-            colors = ButtonDefaults.textButtonColors(contentColor = light),
-        ) { Text(stringResource(R.string.ssh_clear)) }
-        TextButton(
-            onClick = { shell.leave() },
-            colors = ButtonDefaults.textButtonColors(contentColor = light),
-        ) { Text(stringResource(R.string.ssh_disconnect)) }
-    }
+}
+
+@Composable
+private fun SshRow(text: AnnotatedString, fontSize: androidx.compose.ui.unit.TextUnit, lineHeight: androidx.compose.ui.unit.TextUnit) {
+    Text(
+        text,
+        color = Color.White,
+        fontFamily = FontFamily.Monospace,
+        fontSize = fontSize,
+        lineHeight = lineHeight,
+        softWrap = false,
+        maxLines = 1,
+    )
 }

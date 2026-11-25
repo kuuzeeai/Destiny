@@ -469,10 +469,8 @@ fun HomeDrawer(
                     // Their band takes its own touches, the disabled pill's included.
                     .swallowingTouches(),
             ) {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                shadowElevation = 6.dp,
+            // Two floating bubbles, no container: New chat and Settings.
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .onSizeChanged { controlsHeight = it.height / density.density },
@@ -480,7 +478,7 @@ fun HomeDrawer(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -554,9 +552,9 @@ private fun DrawerNewSessionButton(enabled: Boolean, onClick: () -> Unit) {
     Surface(
         // The desktop's floating control: the popover fill, hairline ring and a soft shadow, at the
         // floating panels' radius so the tall footer buttons don't read as keys.
-        shape = RoundedCornerShape(OpenCodeRadius.panel),
-        color = MaterialTheme.colorScheme.primaryContainer,
-        shadowElevation = 0.dp,
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        shadowElevation = 4.dp,
         contentColor = tint,
         modifier = Modifier
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
@@ -638,9 +636,9 @@ private fun DrawerFooterTrailing(
             }
         }
         Surface(
-            shape = RoundedCornerShape(OpenCodeRadius.panel),
-            color = MaterialTheme.colorScheme.secondaryContainer,
-            shadowElevation = 0.dp,
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            shadowElevation = 4.dp,
             contentColor = OpenCodeTheme.colors.text,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {

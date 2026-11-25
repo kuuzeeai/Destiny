@@ -20,7 +20,7 @@
     <!-- Drawer footer and delete confirmation -->
     <string name="drawer_delete_session_title">¿Eliminar «%1$s»?</string>
     <string name="drawer_delete_session_message">La sesión se eliminará del servidor para todos los clientes.</string>
-    <string name="drawer_new_session">Nueva sesión</string>
+    <string name="drawer_new_session">Nuevo chat</string>
     <string name="drawer_start_voice_call_description">Iniciar llamada de voz</string>
 
     <!-- Archived page -->
@@ -57,7 +57,7 @@
     <string name="drawer_whats_new">Novedades</string>
     <string name="drawer_whats_new_hide">Ocultar</string>
     <string name="drawer_empty_title">No hay sesiones</string>
-    <string name="drawer_empty_message">Inicia una con Nueva sesión.</string>
+    <string name="drawer_empty_message">Inicia uno con Nuevo chat.</string>
     <string name="drawer_search_no_results_title">Sin resultados para «%1$s»</string>
     <string name="drawer_search_no_results_message">Revisa la ortografía o prueba otra búsqueda.</string>
     <string name="drawer_load_more_description">Cargando más sesiones</string>

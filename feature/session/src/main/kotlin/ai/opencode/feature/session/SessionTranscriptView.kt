@@ -853,11 +853,14 @@ fun SyncingSessionTitle(
 fun WorkingIndicator(activity: WorkingActivity, modifier: Modifier = Modifier) {
     val fontScale = LocalDensity.current.fontScale
     // The app's infinity mark, scaled with the body text it leads.
-    val loaderWidth = (32 * fontScale).dp
+    val loaderWidth = (24 * fontScale).dp
     val spacing = (8 * fontScale).dp
+    // Solo el infinito: el texto queda para lo que el agente necesita decir (detener, pedir datos, reintento).
+    val showsText = activity.phase == WorkingActivity.Phase.stopping || activity.needsInput ||
+        (activity.retry != null && activity.phase == WorkingActivity.Phase.running)
     Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing)) {
         InfinityLoader(
-            modifier = Modifier.clearAndSetSemantics {},
+            modifier = if (showsText) Modifier.clearAndSetSemantics {} else Modifier.semantics { contentDescription = activity.title },
             width = loaderWidth,
             animate = !(activity.phase == WorkingActivity.Phase.stopping || activity.isHeld || activity.needsInput),
         )
@@ -872,7 +875,7 @@ fun WorkingIndicator(activity: WorkingActivity, modifier: Modifier = Modifier) {
                 }
             }
             Text(activity.title(now), style = style.copy(fontFeatureSettings = "tnum"), color = OpenCodeTheme.colors.secondaryText)
-        } else {
+        } else if (showsText) {
             Text(activity.title, style = style, color = OpenCodeTheme.colors.secondaryText)
         }
     }

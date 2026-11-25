@@ -186,4 +186,10 @@
         <item quantity="one">Reading %1$d file</item>
         <item quantity="other">Reading %1$d files</item>
     </plurals>
+    <!-- Tools sheet -->
+    <string name="transcript_tool_summary">Summary</string>
+    <string name="transcript_tool_summary_open_click_label">Open the tools summary</string>
+    <string name="transcript_tool_request">Request</string>
+    <string name="transcript_tool_response">Response</string>
+    <string name="transcript_tool_no_output">No output</string>
 </resources>

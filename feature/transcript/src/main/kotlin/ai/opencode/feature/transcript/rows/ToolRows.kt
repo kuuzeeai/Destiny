@@ -164,13 +164,13 @@ internal fun SubagentToolView(call: OpenCodeToolCall, subagents: Map<String, Tra
 
 /** The collapsed Used N header: “Used 12 tools”, or a red “· 1 failed” (iOS `InlineToolGroupHeaderLabel`). */
 @Composable
-private fun InlineToolGroupHeaderLabel(header: InlineToolGroupHeader, expanded: Boolean, modifier: Modifier = Modifier) {
+private fun InlineToolGroupHeaderLabel(header: InlineToolGroupHeader, expanded: Boolean, modifier: Modifier = Modifier, runningTitle: String? = null) {
     val colors = OpenCodeTheme.colors
     val style = OpenCodeTextStyles.subheadline.copy(fontFeatureSettings = "tnum")
     val failedCount = stringResource(R.string.transcript_tool_group_failed_count, header.failed)
     if (isAccessibilityTextSize()) {
         val text = buildAnnotatedString {
-            withStyle(SpanStyle(color = colors.secondaryText)) { append(header.title) }
+            withStyle(SpanStyle(color = colors.secondaryText)) { append(runningTitle ?: header.title) }
             if (header.failed > 0) withStyle(SpanStyle(color = colors.danger)) { append(" · $failedCount") }
             header.cue?.let { withStyle(SpanStyle(color = colors.secondaryText)) { append(" · $it") } }
         }
@@ -184,12 +184,24 @@ private fun InlineToolGroupHeaderLabel(header: InlineToolGroupHeader, expanded: 
         // found against a live server). Restore alignByBaseline once Compose is on 1.13.
         Row(modifier) {
             // RollingNumber falls back to plain text when it doesn't fit (iOS `ViewThatFits`).
-            RollingNumber(header.title, style = style, color = colors.secondaryText)
-            if (header.failed > 0) {
-                RollingNumber(" · $failedCount", style = style, color = colors.danger)
-            }
-            header.cue?.let {
-                Text(" · $it", style = style, color = colors.secondaryText, maxLines = 1, softWrap = false)
+            if (runningTitle != null) {
+                // Mientras una herramienta corre, la linea dice que esta haciendo.
+                Text(
+                    runningTitle,
+                    Modifier.weight(1f, fill = false).inlineRowPulse(true),
+                    style = style,
+                    color = colors.secondaryText,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            } else {
+                RollingNumber(header.title, style = style, color = colors.secondaryText)
+                if (header.failed > 0) {
+                    RollingNumber(" · $failedCount", style = style, color = colors.danger)
+                }
+                header.cue?.let {
+                    Text(" · $it", style = style, color = colors.secondaryText, maxLines = 1, softWrap = false)
+                }
             }
             // The desktop's disclosure chevron.
             val reducedMotion = rememberReduceMotion()
@@ -217,32 +229,31 @@ private fun InlineToolGroupHeaderLabel(header: InlineToolGroupHeader, expanded: 
 @Composable
 internal fun InlineToolGroupView(entry: TranscriptEntry, key: String, tools: List<OpenCodeTranscriptItem>, subagents: Map<String, TranscriptSubagent>) {
     val context = LocalTranscriptRowContext.current
-    val disclosure = context.disclosure
-    val isExpanded = disclosure.isOpen(TranscriptDisclosureState.Kind.ToolGroups, key)
     val images = entry.toolImageAttachments
     val header = InlineToolGroupHeader(tools)
     val rows = InlineToolRow.rows(tools)
-    val expandedLabel = stringResource(R.string.transcript_expanded)
-    val collapsedLabel = stringResource(R.string.transcript_collapsed)
+    // Una sola linea, como Claude: si una herramienta corre dice que hace, y al tocarla abre la hoja.
+    val runningTitle = rows.lastOrNull { it.isRunning }?.title
+    var sheetOpen by remember(key) { mutableStateOf(false) }
+    var selectedID by remember(key) { mutableStateOf<String?>(null) }
+    val openLabel = stringResource(R.string.transcript_tool_summary_open_click_label)
     val toolImageLabel = stringResource(R.string.transcript_tool_image)
     Column {
         InlineToolGroupHeaderLabel(
             header,
-            isExpanded,
+            false,
             Modifier
                 .fillMaxWidth()
                 .rowHitTarget(
                     target = Modifier
-                        .rowClickable {
-                            disclosure.toggle(TranscriptDisclosureState.Kind.ToolGroups, key, entry.id, crossFades = true)
-                        }
+                        .rowClickable { sheetOpen = true }
                         .clearAndSetSemantics {
-                            contentDescription = header.spoken
-                            stateDescription = if (isExpanded) expandedLabel else collapsedLabel
+                            contentDescription = runningTitle ?: header.spoken
                             role = Role.Button
-                            onClick { disclosure.toggle(TranscriptDisclosureState.Kind.ToolGroups, key, entry.id, crossFades = true); true }
+                            onClick(openLabel) { sheetOpen = true; true }
                         },
                 ),
+            runningTitle,
         )
         if (images.isNotEmpty()) {
             ToolImageMosaic(images, Modifier.padding(top = TranscriptMetrics.clustered)) { id ->
@@ -251,12 +262,17 @@ internal fun InlineToolGroupView(entry: TranscriptEntry, key: String, tools: Lis
         }
         val videos = entry.toolVideoReferences
         if (videos.isNotEmpty()) AgentFileCards(videos, onOpen = { context.send(TranscriptAction.OpenFile(it)) })
-        DisclosedPlain(isExpanded) {
-            Column {
-                for ((index, row) in rows.withIndex()) {
-                    InlineToolRowView(entry, row, subagents, isFirst = index == 0, isLast = index == rows.lastIndex)
-                }
-            }
+        if (sheetOpen) {
+            ToolTimelineSheet(
+                rows = rows,
+                selectedID = selectedID,
+                onSelect = { selectedID = it },
+                onDismiss = {
+                    sheetOpen = false
+                    selectedID = null
+                },
+                subagents = subagents,
+            )
         }
     }
 }

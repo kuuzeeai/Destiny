@@ -193,4 +193,10 @@
         <item quantity="many">Leyendo %1$d archivos</item>
         <item quantity="other">Leyendo %1$d archivos</item>
     </plurals>
+    <!-- Hoja de herramientas -->
+    <string name="transcript_tool_summary">Resumen</string>
+    <string name="transcript_tool_summary_open_click_label">Abrir el resumen de herramientas</string>
+    <string name="transcript_tool_request">Solicitud</string>
+    <string name="transcript_tool_response">Respuesta</string>
+    <string name="transcript_tool_no_output">Sin salida</string>
 </resources>

@@ -33,6 +33,8 @@ sealed interface DrawerListItem {
     data object WhatsNew : DrawerListItem
     /** Under Catch Up while the server has archived sessions. */
     data object Archived : DrawerListItem
+    /** Burbuja encima de Archivadas: abre Mi terminal (SSH). */
+    data object Terminal : DrawerListItem
     data class Header(val kind: DrawerSectionHeaderKind) : DrawerListItem
     data class Session(val id: String) : DrawerListItem
     data object Empty : DrawerListItem
@@ -49,6 +51,7 @@ sealed interface DrawerListItem {
             CatchUp -> "catch-up"
             WhatsNew -> "whats-new"
             Archived -> "archived"
+            Terminal -> "terminal"
             is Header -> "header-${kind.name}"
             is Session -> "session-$id"
             Empty -> "empty"
@@ -198,7 +201,7 @@ data class DrawerListModel(
             )
             val plain = state.search.isEmpty() && inputs.filter == DrawerFilter.All
             val archivedCount = if (plain) state.inboxSidebarStatus.archived.size else 0
-            val showsShortcuts = plain && (shortcuts.showsCatchUp || shortcuts.showsWhatsNew) || archivedCount > 0
+            val showsShortcuts = plain || archivedCount > 0
 
             val top = buildList {
                 if (serverNote != null && plain) add(DrawerListItem.ServerNote)
@@ -206,6 +209,7 @@ data class DrawerListModel(
                     add(DrawerListItem.CatchUp)
                     add(DrawerListItem.WhatsNew)
                 }
+                if (plain) add(DrawerListItem.Terminal)
                 if (archivedCount > 0) add(DrawerListItem.Archived)
             }
 

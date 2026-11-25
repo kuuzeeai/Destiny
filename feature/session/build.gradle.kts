@@ -21,6 +21,8 @@ dependencies {
     // ProviderIcon: OpenCode's provider logos ship, drawn by Coil.
     implementation(libs.coil.compose)
     implementation(libs.coil.svg)
+    // Mi terminal (SSH) del menu lateral.
+    implementation(libs.jsch)
     // android.icu (SessionContextText's compact window) in the ported SessionSheetTests line.
     testImplementation(libs.robolectric)
 }

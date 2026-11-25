@@ -12,6 +12,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -90,13 +94,16 @@ fun TerminalLogView(calls: List<OpenCodeToolCall>, onClose: () -> Unit) {
     LaunchedEffect(lines) {
         if (following && lines.isNotEmpty()) listState.scrollToItem(lines.lastIndex)
     }
+    // La caja negra baja hasta casi el borde de la pantalla (sobre la barra de navegacion), separada por 4 dp.
+    val density = LocalDensity.current
+    val extraBottomPx = WindowInsets.navigationBars.getBottom(density)
     OpenCodeBottomSheet(onDismissRequest = onClose, sheetState = sheetState) {
         Column(
             Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.9f)
                 .padding(horizontal = 4.dp)
-                .padding(bottom = 8.dp),
+                .padding(bottom = 4.dp),
         ) {
             Text(
                 stringResource(R.string.session_sheet_terminal),
@@ -108,8 +115,23 @@ fun TerminalLogView(calls: List<OpenCodeToolCall>, onClose: () -> Unit) {
                 Modifier
                     .weight(1f)
                     .fillMaxWidth()
+                    .layout { measurable, constraints ->
+                        val extra = if (constraints.hasBoundedHeight) extraBottomPx else 0
+                        val placeable = measurable.measure(
+                            constraints.copy(
+                                minHeight = constraints.minHeight + extra,
+                                maxHeight = constraints.maxHeight + extra,
+                            ),
+                        )
+                        layout(placeable.width, placeable.height - extra) { placeable.place(0, 0) }
+                    }
                     .background(Color(0xFF0D1117), RoundedCornerShape(12.dp))
-                    .padding(horizontal = 8.dp, vertical = 10.dp),
+                    .padding(
+                        start = 8.dp,
+                        end = 8.dp,
+                        top = 10.dp,
+                        bottom = 10.dp + with(density) { extraBottomPx.toDp() },
+                    ),
             ) {
                 if (lines.isEmpty()) {
                     Text(

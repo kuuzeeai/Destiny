@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -66,11 +67,11 @@ internal fun ArchivedEntryRow(count: Int, regularList: Boolean, onClick: () -> U
         Modifier
             .fillMaxWidth()
             .then(if (regularList) Modifier.padding(horizontal = DrawerMetrics.rowEdge, vertical = 3.dp) else Modifier)
-            .clip(RoundedCornerShape(if (regularList) DrawerMetrics.rowCornerRadius else 0.dp))
+            .clip(if (regularList) CircleShape else RoundedCornerShape(0.dp))
             .background(if (regularList) MaterialTheme.colorScheme.secondaryContainer else androidx.compose.ui.graphics.Color.Transparent)
             .clickable(role = Role.Button, onClick = onClick)
             .heightIn(min = if (regularList) DrawerMetrics.rowHeight else 48.dp)
-            .padding(start = start, end = end),
+            .padding(start = if (regularList) start + 2.dp else start, end = if (regularList) end + 2.dp else end),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(if (regularList) 8.dp else 12.dp),
     ) {
@@ -79,6 +80,34 @@ internal fun ArchivedEntryRow(count: Int, regularList: Boolean, onClick: () -> U
         }
         Text(stringResource(R.string.drawer_archived), style = font, color = colors.text, modifier = Modifier.weight(1f))
         Text("$count", style = font.copy(fontFeatureSettings = "tnum"), color = colors.secondaryText)
+    }
+}
+
+/** Burbuja encima de Archivadas: abre Mi terminal (SSH). */
+@Composable
+internal fun TerminalEntryRow(onClick: () -> Unit) {
+    val colors = OpenCodeTheme.colors
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = DrawerMetrics.rowEdge, vertical = 3.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .clickable(role = Role.Button, onClick = onClick)
+            .heightIn(min = DrawerMetrics.rowHeight)
+            .padding(start = DrawerMetrics.textInset + 2.dp, end = DrawerMetrics.trailingInset + 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Box(Modifier.width(22.dp), contentAlignment = Alignment.CenterStart) {
+            OpenCodeIcon(SFSymbol.Terminal, contentDescription = null, tint = colors.secondaryText)
+        }
+        Text(
+            stringResource(R.string.drawer_terminal_entry),
+            style = DrawerTunables.rowFont.font,
+            color = colors.text,
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 

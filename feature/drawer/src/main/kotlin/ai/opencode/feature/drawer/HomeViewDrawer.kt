@@ -55,6 +55,7 @@ import ai.opencode.feature.drawer.style.DrawerSectionBreak
 import ai.opencode.feature.drawer.style.DrawerTunables
 import ai.opencode.feature.drawer.switcher.ServerFlowTitle
 import ai.opencode.feature.session.ComposerTunables
+import ai.opencode.feature.session.SshTerminalSheet
 import ai.opencode.feature.settings.whatsnew.WhatsNewFeature
 import ai.opencode.feature.voice.FloatingCallCenter
 import ai.opencode.feature.voice.floatingCallDrawerButton
@@ -273,6 +274,7 @@ fun HomeDrawer(
         checkedIDs = selection.ids,
         filter = filter,
     )
+    var showsTerminal by remember { mutableStateOf(false) }
     val actions = remember(store, viewState) {
         DrawerListActions(
             select = select,
@@ -281,6 +283,7 @@ fun HomeDrawer(
             openWhatsNew = viewState::openWhatsNew,
             hideWhatsNew = { store.send(HomeFeature.Action.WhatsNew(WhatsNewFeature.Action.HideTapped)) },
             openArchived = openArchived,
+            openTerminal = { showsTerminal = true },
         )
     }
 
@@ -431,6 +434,8 @@ fun HomeDrawer(
                 null
             },
         )
+
+        if (showsTerminal) SshTerminalSheet(onClose = { showsTerminal = false })
 
         OpenCodeNoticePresence(
             failure,

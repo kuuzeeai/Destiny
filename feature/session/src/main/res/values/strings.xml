@@ -333,4 +333,31 @@
     <string name="session_media_loading_earlier">Loading…</string>
     <string name="session_media_earlier_failed">Couldn’t load earlier messages. Check your connection and try again.</string>
     <string name="session_media_earlier_nothing_new">Nothing new here in the messages just loaded. Earlier ones may have more.</string>
+    <!-- Mi terminal (SSH) -->
+    <string name="ssh_title">My terminal (SSH)</string>
+    <string name="ssh_host">Address (IP)</string>
+    <string name="ssh_port">Port</string>
+    <string name="ssh_user">User</string>
+    <string name="ssh_password">Password (first time only)</string>
+    <string name="ssh_key_hint">A key is already saved: you can leave the password empty.</string>
+    <string name="ssh_connect">Connect</string>
+    <string name="ssh_connecting">Connecting…</string>
+    <string name="ssh_forget">Forget key and fingerprint</string>
+    <string name="ssh_command_hint">Type a command</string>
+    <string name="ssh_send">Send</string>
+    <string name="ssh_ctrl_c">Ctrl+C</string>
+    <string name="ssh_clear">Clear</string>
+    <string name="ssh_disconnect">Disconnect</string>
+    <string name="ssh_trust_title">First connection to this server: check the fingerprint</string>
+    <string name="ssh_trust_yes">Trust and continue</string>
+    <string name="ssh_trust_no">Cancel</string>
+    <string name="ssh_err_auth">Could not sign in: wrong user or password, or the saved key no longer works. Type the password.</string>
+    <string name="ssh_err_changed">The server fingerprint changed, so it did not connect. If you reinstalled Termux on the old phone, tap Forget key and fingerprint.</string>
+    <string name="ssh_err_rejected">Cancelled: you did not trust the fingerprint.</string>
+    <string name="ssh_err_network">Could not connect. Check that the old phone is on, on the same Wi-Fi and with sshd running.</string>
+    <string name="ssh_err_no_key">The password is missing: there is no saved key yet.</string>
+    <string name="ssh_err_closed">The session was closed.</string>
+    <string name="ssh_err_generic">Error: %1$s</string>
+    <string name="ssh_key_saved">[Key saved: next time it will sign in without a password]</string>
+    <string name="ssh_key_failed">[Could not save the key; next time it will ask for the password]</string>
 </resources>

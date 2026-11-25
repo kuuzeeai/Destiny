@@ -90,7 +90,7 @@ internal fun TerminalEntryRow(onClick: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = DrawerMetrics.rowEdge, vertical = 3.dp)
+            .padding(horizontal = DrawerMetrics.rowEdge, vertical = DrawerTunables.rowGap / 2)
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .clickable(role = Role.Button, onClick = onClick)

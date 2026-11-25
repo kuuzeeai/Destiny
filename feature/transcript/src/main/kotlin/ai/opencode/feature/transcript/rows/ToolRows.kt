@@ -297,7 +297,7 @@ private fun InlineToolRowView(
             TimelineStep(isFirst, isLast, null, tint) {
                 SubagentToolView(kind.call, subagents, Modifier.padding(vertical = InlineRowMetrics.rowPadding))
             }
-        is InlineToolRow.Kind.Notice ->
+        is InlineToolRow.Kind.Notice, is InlineToolRow.Kind.Message ->
             TimelineStep(isFirst, isLast, toolGlyph(row), tint) {
                 InlineRowLabel(row, Modifier.semantics(mergeDescendants = true) {})
             }

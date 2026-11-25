@@ -3,6 +3,7 @@ package ai.opencode.feature.transcript.rows
 import ai.opencode.core.strings.localized
 import ai.opencode.core.strings.localizedPlural
 import ai.opencode.feature.transcript.R
+import ai.opencode.feature.transcript.TranscriptEntry
 import ai.opencode.server.model.OpenCodeJSONValue
 import ai.opencode.server.model.OpenCodeQuestion
 import ai.opencode.server.model.OpenCodeToolCall
@@ -27,6 +28,8 @@ data class InlineToolRow(
         /** Consecutive settled reads: “Read .config, README.md, …”. */
         data class Reads(val calls: List<OpenCodeToolCall>) : Kind
         data class Notice(val text: String, val isError: Boolean) : Kind
+        /** What the agent said between steps (“Voy a completar los cambios…”): one line here, the rest on a tap. */
+        data class Message(val text: String) : Kind
     }
 
     val name: String
@@ -34,6 +37,7 @@ data class InlineToolRow(
             is Kind.Tool -> kind.call.displayName
             is Kind.Reads -> localized(R.string.transcript_tool_read)
             is Kind.Notice -> TranscriptNoticeKind.headingOfNotice(kind.text)
+            is Kind.Message -> plainLine(kind.text)
         }
 
     val detail: String?
@@ -41,6 +45,7 @@ data class InlineToolRow(
             is Kind.Tool -> detail(kind.call)
             is Kind.Reads -> kind.calls.mapNotNull(::detail).joinToString(", ").nonEmpty
             is Kind.Notice -> kind.text.split(" · ").drop(1).joinToString(" · ").nonEmpty
+            is Kind.Message -> null
         }
 
     /** A short plain-language title (“Reading build.gradle”), shown instead of the raw command. */
@@ -49,6 +54,7 @@ data class InlineToolRow(
             is Kind.Tool -> stepTitle(kind.call)
             is Kind.Reads -> localizedPlural(R.plurals.transcript_step_reading_files, kind.calls.size, kind.calls.size)
             is Kind.Notice -> name
+            is Kind.Message -> plainLine(kind.text)
         }
 
     /** Only commands are mono. */
@@ -59,6 +65,7 @@ data class InlineToolRow(
             is Kind.Tool -> kind.call.status == OpenCodeToolCall.Status.Error && kind.call.decline == null
             is Kind.Reads -> false
             is Kind.Notice -> kind.isError
+            is Kind.Message -> false
         }
 
     val isRunning: Boolean
@@ -93,10 +100,21 @@ data class InlineToolRow(
                     }
                     is OpenCodeTranscriptItem.Notice ->
                         rows += InlineToolRow(item.id, listOf(item.id), Kind.Notice(item.text, item.isError))
+                    is OpenCodeTranscriptItem.AssistantMarkdown ->
+                        rows += InlineToolRow(item.id, listOf(item.id), Kind.Message(item.text))
                     else -> continue
                 }
             }
             return rows
+        }
+
+        private val LEADING_MARK = Regex("""^(#{1,6}|>|[-*+]|\d+[.)])\s+""")
+        private val LINK = Regex("""\[([^\]]*)]\([^)]*\)""")
+
+        /** A message's first line as plain text, without Markdown marks: the one line its step shows. */
+        fun plainLine(text: String): String {
+            val line = text.lineSequence().map { it.trim() }.firstOrNull { it.isNotEmpty() && !it.startsWith("```") } ?: return ""
+            return line.replace(LEADING_MARK, "").replace(LINK, "$1").replace(Regex("[*`~]"), "").trim()
         }
 
         private fun isMergeableRead(call: OpenCodeToolCall): Boolean =
@@ -163,14 +181,20 @@ data class InlineToolRow(
  * shows and the timeline it opens. Pure, like [InlineToolRow].
  */
 object TurnSteps {
-    /** The tools and notices after the last message you sent, as the groups of that turn hold them. */
+    /**
+     * The turn's steps after the last message you sent, as its group holds them: tools, notices and
+     * the replies that came before a later step (the last reply is the answer, not a step).
+     */
     fun of(items: List<OpenCodeTranscriptItem>): List<OpenCodeTranscriptItem> {
         val last = items.indexOfLast {
             it is OpenCodeTranscriptItem.UserText || it is OpenCodeTranscriptItem.UserImages || it is OpenCodeTranscriptItem.UserFiles
         }
-        return items.subList(if (last >= 0) last + 1 else 0, items.size).filter { item ->
+        val turn = items.subList(if (last >= 0) last + 1 else 0, items.size)
+        val folded = TranscriptEntry.foldedMessageIDs(turn)
+        return turn.filter { item ->
             when (item) {
                 is OpenCodeTranscriptItem.Notice -> true
+                is OpenCodeTranscriptItem.AssistantMarkdown -> item.id in folded
                 // Questions are the dock's and the transcript's own rows, never steps.
                 is OpenCodeTranscriptItem.Tool -> !(item.call.name == "question" && (item.call.questions != null || item.call.status == OpenCodeToolCall.Status.Running || item.call.status == OpenCodeToolCall.Status.Streaming))
                 else -> false
@@ -178,9 +202,9 @@ object TurnSteps {
         }
     }
 
-    /** What the run is doing now: the step that is running, else the last one it took. Null before any step. */
+    /** What the run is doing now: the tool step that is running, else the last one it took. Null before any step. */
     fun task(steps: List<OpenCodeTranscriptItem>): String? {
-        val rows = InlineToolRow.rows(steps).filter { it.kind !is InlineToolRow.Kind.Notice }
+        val rows = InlineToolRow.rows(steps).filter { it.kind is InlineToolRow.Kind.Tool || it.kind is InlineToolRow.Kind.Reads }
         return (rows.lastOrNull { it.isRunning } ?: rows.lastOrNull())?.title?.nonEmpty
     }
 }

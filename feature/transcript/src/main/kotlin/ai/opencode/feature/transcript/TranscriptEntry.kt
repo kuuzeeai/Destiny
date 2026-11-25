@@ -189,6 +189,32 @@ sealed interface TranscriptEntry {
             return ids
         }
 
+        /**
+         * The replies that come before a tool step of their own turn (“Voy a completar los
+         * cambios…”): they join the turn's steps instead of standing in the chat, where the
+         * Working line and the timeline carry them. The text after the turn's last step is its
+         * answer and stays. A question, a compaction or any other row ends what a step can fold.
+         */
+        fun foldedMessageIDs(items: List<OpenCodeTranscriptItem>): Set<String> {
+            val folded = mutableSetOf<String>()
+            val waiting = mutableListOf<String>()
+            for (item in items) {
+                when (item) {
+                    is OpenCodeTranscriptItem.AssistantMarkdown -> if (item.text.isNotBlank()) waiting += item.id
+                    is OpenCodeTranscriptItem.Tool ->
+                        if (isPendingQuestion(item)) {
+                            waiting.clear()
+                        } else {
+                            folded += waiting
+                            waiting.clear()
+                        }
+                    is OpenCodeTranscriptItem.Notice, is OpenCodeTranscriptItem.SendFailure, is OpenCodeTranscriptItem.RunRetry -> Unit
+                    else -> waiting.clear()
+                }
+            }
+            return folded
+        }
+
         private fun isPendingQuestion(item: OpenCodeTranscriptItem): Boolean {
             val call = (item as? OpenCodeTranscriptItem.Tool)?.call ?: return false
             return call.name == "question" &&
@@ -215,6 +241,7 @@ sealed interface TranscriptEntry {
             sessionStartModels: Set<String>? = null,
         ): List<TranscriptEntry> {
             val startModels = sessionStartModels ?: sessionStartModelIDs(items)
+            val folded = foldedMessageIDs(items)
             val entries = mutableListOf<TranscriptEntry>()
             val run = mutableListOf<OpenCodeTranscriptItem>()
             var kind: Run? = null
@@ -273,6 +300,8 @@ sealed interface TranscriptEntry {
                         flush()
                         entries += Single(item)
                     }
+                    // A reply that comes before a later step of its turn is one of that turn's steps.
+                    is OpenCodeTranscriptItem.AssistantMarkdown if item.id in folded -> append(item, Run.Tools)
                     is OpenCodeTranscriptItem.AssistantMarkdown -> {
                         flush()
                         entries += Single(item)
@@ -330,9 +359,12 @@ sealed interface TranscriptEntry {
          * [build] makes there: back to the first row of a tool group or of a send's rows.
          */
         fun entryStart(index: Int, items: List<OpenCodeTranscriptItem>): Int {
+            val folded by lazy { foldedMessageIDs(items) }
             fun kind(item: OpenCodeTranscriptItem): String = when {
                 item is OpenCodeTranscriptItem.Tool && isPendingQuestion(item) ->
                     if (isRunningOrStreaming(item.call)) "passes" else "breaks"
+                // A reply folded into its turn's steps belongs to their group.
+                item is OpenCodeTranscriptItem.AssistantMarkdown && item.id in folded -> "run:tools"
                 item is OpenCodeTranscriptItem.Tool || item is OpenCodeTranscriptItem.Notice -> "run:tools"
                 item is OpenCodeTranscriptItem.UserText || item is OpenCodeTranscriptItem.UserImages ||
                     item is OpenCodeTranscriptItem.UserFiles -> "run:user:${promptID(item) ?: item.id}"

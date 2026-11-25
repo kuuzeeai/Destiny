@@ -166,6 +166,13 @@ internal fun ToolTimelineSheet(
                             is InlineToolRow.Kind.Tool -> listOf(kind.call)
                             is InlineToolRow.Kind.Reads -> kind.calls
                             is InlineToolRow.Kind.Notice -> emptyList()
+                            is InlineToolRow.Kind.Message -> emptyList()
+                        }
+                        // What the agent said between steps, whole, where the timeline shows one line.
+                        (selected.kind as? InlineToolRow.Kind.Message)?.let { message ->
+                            SelectionContainer {
+                                Text(message.text.trim(), style = OpenCodeTextStyles.body, color = colors.text)
+                            }
                         }
                         for (call in calls) {
                             CallDetail(
@@ -247,7 +254,8 @@ private fun TimelineRow(
             Modifier.weight(1f).padding(vertical = vertical).inlineRowPulse(row.isRunning),
             style = style,
             color = if (row.isFailed) colors.danger else colors.text,
-            maxLines = 3,
+            // Una sola linea por paso, como Claude: lo largo se corta con puntos suspensivos.
+            maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
         if (tappable) {

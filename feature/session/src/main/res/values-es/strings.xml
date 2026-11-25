@@ -190,6 +190,7 @@
     <string name="session_activity_failed">Falló</string>
     <string name="session_working_stopping">Deteniendo…</string>
     <string name="session_status_working">Trabajando</string>
+    <string name="session_working_open_steps_click_label">Abrir lo que ha hecho</string>
     <string name="session_status_needs_input">Necesita tu respuesta</string>
     <string name="session_status_done">Listo</string>
 

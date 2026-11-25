@@ -43,7 +43,17 @@ class TranscriptSnapshotTrace {
 sealed interface TranscriptEntry {
     data class Single(val item: OpenCodeTranscriptItem) : TranscriptEntry
     data class UserGroup(val groupID: String, val items: List<OpenCodeTranscriptItem>, val startsTurn: Boolean) : TranscriptEntry
-    data class ToolGroup(val groupID: String, val tools: List<OpenCodeTranscriptItem>) : TranscriptEntry
+    data class ToolGroup(
+        val groupID: String,
+        val tools: List<OpenCodeTranscriptItem>,
+        /** Every tool step of the turn this group belongs to (all its groups): what the summary's timeline opens to. */
+        val turnTools: List<OpenCodeTranscriptItem> = tools,
+        /**
+         * Whether this group draws its one-line summary. A turn shows a single summary, on its first
+         * group, and none while it runs: the Working line beside the infinity carries the task then.
+         */
+        val showsSummary: Boolean = true,
+    ) : TranscriptEntry
 
     /**
      * After a finished reply: actions on the whole reply, such as Copy. Android carries the
@@ -148,7 +158,10 @@ sealed interface TranscriptEntry {
                         RowInsets(section, TranscriptMetrics.compact)
                     else -> RowInsets(flow, flow)
                 }
-                is ToolGroup -> RowInsets(flow, flow)
+                // A group with nothing to draw takes no room.
+                is ToolGroup ->
+                    if (!showsSummary && toolImageAttachments.isEmpty() && toolVideoReferences.isEmpty()) RowInsets(0.dp, 0.dp)
+                    else RowInsets(flow, flow)
                 // Belongs to the reply above it; the next row is a new turn.
                 is ReplyEnd -> RowInsets(flow, turn)
             }
@@ -284,7 +297,32 @@ sealed interface TranscriptEntry {
             }
             flush()
             if (!isRunning) endReply()
-            return entries
+            return foldToolGroupsByTurn(entries, isRunning)
+        }
+
+        /**
+         * One summary per turn instead of one per run of tools: the turn's first tool group keeps the
+         * row and carries every step of the turn, and the others draw nothing. While the turn runs
+         * none draws: the Working line shows the task and opens the same timeline.
+         */
+        private fun foldToolGroupsByTurn(entries: List<TranscriptEntry>, isRunning: Boolean): List<TranscriptEntry> {
+            if (entries.none { it is ToolGroup }) return entries
+            val folded = entries.toMutableList()
+            var start = 0
+            while (start < folded.size) {
+                var end = start + 1
+                while (end < folded.size && folded[end] !is UserGroup) end++
+                val groups = (start until end).filter { folded[it] is ToolGroup }
+                if (groups.isNotEmpty()) {
+                    val steps = groups.flatMap { (folded[it] as ToolGroup).tools }
+                    val live = isRunning && end == folded.size
+                    for ((n, index) in groups.withIndex()) {
+                        folded[index] = (folded[index] as ToolGroup).copy(turnTools = steps, showsSummary = !live && n == 0)
+                    }
+                }
+                start = end
+            }
+            return folded
         }
 
         /**

@@ -159,6 +159,33 @@ data class InlineToolRow(
 }
 
 /**
+ * The steps of the turn being worked on, for the Working line beside the infinity: the task it
+ * shows and the timeline it opens. Pure, like [InlineToolRow].
+ */
+object TurnSteps {
+    /** The tools and notices after the last message you sent, as the groups of that turn hold them. */
+    fun of(items: List<OpenCodeTranscriptItem>): List<OpenCodeTranscriptItem> {
+        val last = items.indexOfLast {
+            it is OpenCodeTranscriptItem.UserText || it is OpenCodeTranscriptItem.UserImages || it is OpenCodeTranscriptItem.UserFiles
+        }
+        return items.subList(if (last >= 0) last + 1 else 0, items.size).filter { item ->
+            when (item) {
+                is OpenCodeTranscriptItem.Notice -> true
+                // Questions are the dock's and the transcript's own rows, never steps.
+                is OpenCodeTranscriptItem.Tool -> !(item.call.name == "question" && (item.call.questions != null || item.call.status == OpenCodeToolCall.Status.Running || item.call.status == OpenCodeToolCall.Status.Streaming))
+                else -> false
+            }
+        }
+    }
+
+    /** What the run is doing now: the step that is running, else the last one it took. Null before any step. */
+    fun task(steps: List<OpenCodeTranscriptItem>): String? {
+        val rows = InlineToolRow.rows(steps).filter { it.kind !is InlineToolRow.Kind.Notice }
+        return (rows.lastOrNull { it.isRunning } ?: rows.lastOrNull())?.title?.nonEmpty
+    }
+}
+
+/**
  * The collapsed Used N header: “Used 12 tools”, or “Used 12 tools · 1 failed” in red when a call
  * failed.
  */

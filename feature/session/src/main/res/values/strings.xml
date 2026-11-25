@@ -185,6 +185,7 @@
     <string name="session_activity_failed">Failed</string>
     <string name="session_working_stopping">Stopping…</string>
     <string name="session_status_working">Working</string>
+    <string name="session_working_open_steps_click_label">Open what it has done</string>
     <string name="session_status_needs_input">Needs your input</string>
     <string name="session_status_done">Done</string>
 

@@ -49,6 +49,11 @@ import ai.opencode.feature.transcript.rows.ReplyCopyGlyph
 import ai.opencode.feature.transcript.rows.TranscriptFonts
 import ai.opencode.feature.transcript.rows.TranscriptRowSlots
 import ai.opencode.feature.transcript.rows.TranscriptTimeStamps
+import ai.opencode.feature.transcript.rows.TurnSteps
+import ai.opencode.feature.transcript.rows.TurnTimelineSheet
+import ai.opencode.feature.transcript.rows.inlineRowPulse
+import ai.opencode.feature.transcript.rows.rowClickable
+import ai.opencode.feature.transcript.rows.rowHitTarget
 import ai.opencode.feature.transcript.user.TranscriptSendFailure
 import ai.opencode.feature.transcript.user.TranscriptUserMessage
 import ai.opencode.server.OpenCodePairingLink
@@ -717,6 +722,7 @@ object SessionTranscriptView {
         val key = state.workingOrbKey
         fun token(id: Int) = WorkingRun.token(state.navigationID, id)
         val running = if (state.isRunning) {
+            val steps = TurnSteps.of(visibleItems)
             WorkingActivity(
                 phase = if (state.isInterrupting) WorkingActivity.Phase.stopping else WorkingActivity.Phase.running,
                 startedAt = run.startID?.let { scrollEdgeBridge.workingRunTime(token(it), now) },
@@ -724,6 +730,8 @@ object SessionTranscriptView {
                 key = key,
                 retry = WorkingActivity.retry(visibleItems),
                 isHeld = holdsWorking,
+                task = TurnSteps.task(steps),
+                steps = steps,
             )
         } else {
             null
@@ -858,9 +866,11 @@ fun WorkingIndicator(activity: WorkingActivity, modifier: Modifier = Modifier) {
     // Solo el infinito: el texto queda para lo que el agente necesita decir (detener, pedir datos, reintento).
     val showsText = activity.phase == WorkingActivity.Phase.stopping || activity.needsInput ||
         (activity.retry != null && activity.phase == WorkingActivity.Phase.running)
+    // Como Claude: al lado del infinito, la tarea en la que va (tocarla abre la linea de tiempo).
+    val task = activity.task?.takeIf { !showsText && activity.phase == WorkingActivity.Phase.running }
     Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing)) {
         InfinityLoader(
-            modifier = if (showsText) Modifier.clearAndSetSemantics {} else Modifier.semantics { contentDescription = activity.title },
+            modifier = if (showsText) Modifier.clearAndSetSemantics {} else Modifier.semantics { contentDescription = task ?: activity.title },
             width = loaderWidth,
             animate = !(activity.phase == WorkingActivity.Phase.stopping || activity.isHeld || activity.needsInput),
         )
@@ -877,6 +887,16 @@ fun WorkingIndicator(activity: WorkingActivity, modifier: Modifier = Modifier) {
             Text(activity.title(now), style = style.copy(fontFeatureSettings = "tnum"), color = OpenCodeTheme.colors.secondaryText)
         } else if (showsText) {
             Text(activity.title, style = style, color = OpenCodeTheme.colors.secondaryText)
+        } else if (task != null) {
+            Text(
+                task,
+                Modifier.weight(1f, fill = false).inlineRowPulse(activity.isHeld.not() && activity.phase == WorkingActivity.Phase.running),
+                style = style,
+                color = OpenCodeTheme.colors.secondaryText,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            OpenCodeIcon("chevron.right", contentDescription = null, size = 14.dp, tint = OpenCodeTheme.colors.tertiaryText)
         }
     }
 }
@@ -914,12 +934,31 @@ fun WorkingLineRow(
             if (activity.handoff(now.doubleValue) >= 1) break
         }
     }
+    // Tocar la linea abre la linea de tiempo de todo lo que ha hecho este turno.
+    var stepsOpen by remember { mutableStateOf(false) }
+    val opensSteps = activity.finaleStartedAt == null && activity.steps.isNotEmpty()
+    val openStepsLabel = stringResource(R.string.session_working_open_steps_click_label)
     Box(
         modifier
             .fillMaxWidth()
             .padding(top = TranscriptMetrics.flowHalf, bottom = TranscriptMetrics.turnHalf),
     ) {
-        WorkingLine(activity, { now.doubleValue }, reduceMotion, offersMove, onMoveToBackground)
+        WorkingLine(
+            // The Move to Background action sits at the end of the line: no task beside it.
+            activity = if (offersMove) activity.copy(task = null) else activity,
+            now = { now.doubleValue },
+            reduceMotion = reduceMotion,
+            offersMove = offersMove,
+            onMove = onMoveToBackground,
+            modifier = if (opensSteps) {
+                Modifier.rowHitTarget(target = Modifier.rowClickable(onClickLabel = openStepsLabel) { stepsOpen = true })
+            } else {
+                Modifier
+            },
+        )
+        if (stepsOpen && opensSteps) {
+            TurnTimelineSheet(steps = activity.steps, onDismiss = { stepsOpen = false })
+        }
         // An overlay, so offering it never changes the row's height.
         AnimatedVisibility(
             visible = offersMove,
@@ -946,11 +985,12 @@ private fun WorkingLine(
     reduceMotion: Boolean,
     offersMove: Boolean,
     onMove: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val copyLayer = rememberGraphicsLayer()
     val indicatorLayer = rememberGraphicsLayer()
     val moveToBackgroundLabel = stringResource(R.string.session_move_to_background)
-    Box {
+    Box(modifier) {
         ReplyCopyGlyph.Glyph(
             Modifier
                 .offset(x = ReplyCopyGlyph.leading)

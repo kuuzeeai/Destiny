@@ -149,6 +149,10 @@ data class WorkingActivity(
      * still until it answers.
      */
     val isHeld: Boolean = false,
+    /** What the run is doing now, shown beside the infinity ([TurnSteps.task]); null before its first step. */
+    val task: String? = null,
+    /** Everything this turn has done so far: the timeline a tap on the line opens ([TurnSteps.of]). */
+    val steps: List<OpenCodeTranscriptItem> = emptyList(),
 ) {
     enum class Phase { running, stopping, done, failed }
 

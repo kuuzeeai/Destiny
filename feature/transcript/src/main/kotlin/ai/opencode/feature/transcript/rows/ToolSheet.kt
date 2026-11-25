@@ -11,6 +11,7 @@ import ai.opencode.feature.transcript.R
 import ai.opencode.feature.transcript.TranscriptAction
 import ai.opencode.feature.transcript.TranscriptSubagent
 import ai.opencode.server.model.OpenCodeToolCall
+import ai.opencode.server.model.OpenCodeTranscriptItem
 import ai.opencode.server.model.nonEmpty
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -72,6 +73,27 @@ private fun OpenCodeToolCall.isSubagentCall(): Boolean = name == "subagent" || n
 
 private fun OpenCodeToolCall.isLive(): Boolean =
     status == OpenCodeToolCall.Status.Running || status == OpenCodeToolCall.Status.Streaming
+
+/**
+ * The timeline of everything a turn has done, opened from the Working line beside the infinity.
+ * [steps] come from [TurnSteps.of]; they are read live, so a step that is still running updates here.
+ */
+@Composable
+fun TurnTimelineSheet(
+    steps: List<OpenCodeTranscriptItem>,
+    onDismiss: () -> Unit,
+    subagents: Map<String, TranscriptSubagent> = emptyMap(),
+) {
+    var selectedID by remember { mutableStateOf<String?>(null) }
+    val rows = remember(steps) { InlineToolRow.rows(steps) }
+    ToolTimelineSheet(
+        rows = rows,
+        selectedID = selectedID,
+        onSelect = { selectedID = it },
+        onDismiss = onDismiss,
+        subagents = subagents,
+    )
+}
 
 /**
  * The bottom sheet behind the one-line tools row. [selectedID] is the opened step, or null for the

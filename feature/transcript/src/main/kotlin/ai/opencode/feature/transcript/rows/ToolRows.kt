@@ -230,50 +230,55 @@ private fun InlineToolGroupHeaderLabel(header: InlineToolGroupHeader, expanded: 
 internal fun InlineToolGroupView(entry: TranscriptEntry, key: String, tools: List<OpenCodeTranscriptItem>, subagents: Map<String, TranscriptSubagent>) {
     val context = LocalTranscriptRowContext.current
     val images = entry.toolImageAttachments
-    val header = InlineToolGroupHeader(tools)
-    val rows = InlineToolRow.rows(tools)
-    // Una sola linea, como Claude: si una herramienta corre dice que hace, y al tocarla abre la hoja.
-    val runningTitle = rows.lastOrNull { it.isRunning }?.title
+    // One summary per turn: the turn's first group draws it over every step of the turn; the
+    // other groups, and every group while the turn runs, draw only what they alone carry (images).
+    val group = entry as? TranscriptEntry.ToolGroup
+    val showsSummary = group?.showsSummary != false
+    val steps = group?.turnTools ?: tools
     var sheetOpen by remember(key) { mutableStateOf(false) }
     var selectedID by remember(key) { mutableStateOf<String?>(null) }
     val openLabel = stringResource(R.string.transcript_tool_summary_open_click_label)
     val toolImageLabel = stringResource(R.string.transcript_tool_image)
     Column {
-        InlineToolGroupHeaderLabel(
-            header,
-            false,
-            Modifier
-                .fillMaxWidth()
-                .rowHitTarget(
-                    target = Modifier
-                        .rowClickable { sheetOpen = true }
-                        .clearAndSetSemantics {
-                            contentDescription = runningTitle ?: header.spoken
-                            role = Role.Button
-                            onClick(openLabel) { sheetOpen = true; true }
-                        },
-                ),
-            runningTitle,
-        )
+        if (showsSummary) {
+            val header = InlineToolGroupHeader(steps)
+            val rows = InlineToolRow.rows(steps)
+            InlineToolGroupHeaderLabel(
+                header,
+                false,
+                Modifier
+                    .fillMaxWidth()
+                    .rowHitTarget(
+                        target = Modifier
+                            .rowClickable { sheetOpen = true }
+                            .clearAndSetSemantics {
+                                contentDescription = header.spoken
+                                role = Role.Button
+                                onClick(openLabel) { sheetOpen = true; true }
+                            },
+                    ),
+                null,
+            )
+            if (sheetOpen) {
+                ToolTimelineSheet(
+                    rows = rows,
+                    selectedID = selectedID,
+                    onSelect = { selectedID = it },
+                    onDismiss = {
+                        sheetOpen = false
+                        selectedID = null
+                    },
+                    subagents = subagents,
+                )
+            }
+        }
         if (images.isNotEmpty()) {
-            ToolImageMosaic(images, Modifier.padding(top = TranscriptMetrics.clustered)) { id ->
+            ToolImageMosaic(images, Modifier.padding(top = if (showsSummary) TranscriptMetrics.clustered else 0.dp)) { id ->
                 TranscriptImagePreview.fromAttachments(images, id, toolImageLabel, context.server)?.let { context.send(TranscriptAction.PreviewImage(it)) }
             }
         }
         val videos = entry.toolVideoReferences
         if (videos.isNotEmpty()) AgentFileCards(videos, onOpen = { context.send(TranscriptAction.OpenFile(it)) })
-        if (sheetOpen) {
-            ToolTimelineSheet(
-                rows = rows,
-                selectedID = selectedID,
-                onSelect = { selectedID = it },
-                onDismiss = {
-                    sheetOpen = false
-                    selectedID = null
-                },
-                subagents = subagents,
-            )
-        }
     }
 }
 

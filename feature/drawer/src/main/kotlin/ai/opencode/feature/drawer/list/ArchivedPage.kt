@@ -83,34 +83,6 @@ internal fun ArchivedEntryRow(count: Int, regularList: Boolean, onClick: () -> U
     }
 }
 
-/** Burbuja encima de Archivadas: abre Mi terminal (SSH). */
-@Composable
-internal fun TerminalEntryRow(onClick: () -> Unit) {
-    val colors = OpenCodeTheme.colors
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = DrawerMetrics.rowEdge, vertical = DrawerTunables.rowGap / 2)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.secondaryContainer)
-            .clickable(role = Role.Button, onClick = onClick)
-            .heightIn(min = DrawerMetrics.rowHeight)
-            .padding(start = DrawerMetrics.textInset + 2.dp, end = DrawerMetrics.trailingInset + 2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Box(Modifier.width(22.dp), contentAlignment = Alignment.CenterStart) {
-            OpenCodeIcon(SFSymbol.Terminal, contentDescription = null, tint = colors.secondaryText)
-        }
-        Text(
-            stringResource(R.string.drawer_terminal_entry),
-            style = DrawerTunables.rowFont.font,
-            color = colors.text,
-            modifier = Modifier.weight(1f),
-        )
-    }
-}
-
 /**
  * The Archived page over the drawer's list: back, the title and Search Archived (the server
  * searches, as on desktop), then the archived sessions. A tap opens one; a hold, or a tap

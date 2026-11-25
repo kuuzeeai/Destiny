@@ -66,6 +66,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -283,7 +287,6 @@ fun HomeDrawer(
             openWhatsNew = viewState::openWhatsNew,
             hideWhatsNew = { store.send(HomeFeature.Action.WhatsNew(WhatsNewFeature.Action.HideTapped)) },
             openArchived = openArchived,
-            openTerminal = { showsTerminal = true },
         )
     }
 
@@ -314,7 +317,6 @@ fun HomeDrawer(
             held = selection::toggle,
             openCatchUp = viewState::openCatchUp,
             openArchived = openArchived,
-            openTerminal = { showsTerminal = true },
             modifier = Modifier.fillMaxSize().then(beneathArchived),
         ) else DrawerListView(
             store = store,
@@ -393,23 +395,29 @@ fun HomeDrawer(
                 if (!selection.isActive) Row(
                     Modifier
                         .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
                         .padding(horizontal = DrawerMetrics.rowEdge)
                         .padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     for ((value, label) in listOf(
                         DrawerFilter.All to R.string.drawer_filter_all,
                         DrawerFilter.Unread to R.string.drawer_filter_unread,
                         DrawerFilter.Pinned to R.string.drawer_filter_pinned,
                     )) {
-                        FilterChip(
+                        CompactDrawerChip(
+                            text = localized(label),
                             selected = filter == value,
                             onClick = { filter = value },
-                            label = { Text(localized(label)) },
-                            shape = CircleShape,
                         )
                     }
+                    // Mi terminal (Termux por SSH): al lado de Fijadas.
+                    CompactDrawerChip(
+                        text = localized(R.string.drawer_filter_terminal),
+                        selected = false,
+                        onClick = { showsTerminal = true },
+                        icon = SFSymbol.Terminal,
+                    )
                 }
             }
         }
@@ -688,5 +696,31 @@ private fun DrawerFooterTrailing(
                 )
             }
         }
+    }
+}
+
+
+/** Burbuja pequeña de filtro: cuatro caben en una sola línea del panel. */
+@Composable
+private fun CompactDrawerChip(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    icon: SFSymbol? = null,
+) {
+    val colors = OpenCodeTheme.colors
+    Row(
+        Modifier
+            .height(28.dp)
+            .clip(CircleShape)
+            .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else androidx.compose.ui.graphics.Color.Transparent)
+            .border(1.dp, if (selected) androidx.compose.ui.graphics.Color.Transparent else colors.border, CircleShape)
+            .clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
+            .padding(horizontal = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        if (icon != null) OpenCodeIcon(icon, contentDescription = null, size = 14.dp, tint = colors.secondaryText)
+        Text(text, fontSize = 12.sp, maxLines = 1, color = colors.text)
     }
 }

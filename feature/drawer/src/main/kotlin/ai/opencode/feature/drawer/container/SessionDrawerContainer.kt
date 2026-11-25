@@ -343,7 +343,22 @@ fun SessionDrawerContainer(
                     .then(if (modal) Modifier.clip(ModalDrawerShape) else Modifier)
                     .then(if (hiddenFromAccessibility) Modifier.clearAndMergeSemantics() else Modifier),
             ) {
-                CompositionLocalProvider(LocalDrawerHidden provides drawerHidden) { drawer() }
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            if (modal && !motion.reducedMotion) {
+                                val p = if (drawerHeldOpen) 1f else motion.progress
+                                // Material 3 Expressive: el contenido llega más rápido que el panel
+                                // (profundidad) y se revela mientras el panel se abre.
+                                val eased = p * p * (3f - 2f * p)
+                                translationX = -(1f - eased) * width.toPx() * EXPRESSIVE_CONTENT_PARALLAX * (if (rtl) -1f else 1f)
+                                alpha = 0.25f + 0.75f * eased
+                            }
+                        },
+                ) {
+                    CompositionLocalProvider(LocalDrawerHidden provides drawerHidden) { drawer() }
+                }
                 if (sidebarShown != null) {
                     // The sidebar's edge against the session.
                     Box(
@@ -445,7 +460,12 @@ fun SessionDrawerContainer(
                     .fillMaxSize()
                     .sidebarLeading(controller)
                     .containerPoseLayer { size, densityPx ->
-                        if (!modal) {
+                        if (modal) {
+                            if (!motion.reducedMotion) {
+                                val p = if (returningOnModal) 1f else motion.progress
+                                translationX = width.value * EXPRESSIVE_CARD_PUSH * p * densityPx * if (rtl) -1f else 1f
+                            }
+                        } else {
                             val offset = motion.offset
                             translationX = offset * densityPx * if (rtl) -1 else 1
                             val radius = DrawerCorner.radius(motion.isCardMoving, offset, displayRadius.value)
@@ -678,8 +698,14 @@ private class ClearAndMergeDrawerSemanticsNode : Modifier.Node(), SemanticsModif
 /** Material's modal drawer scrim (the `scrim` role at 32%). */
 private const val MODAL_SCRIM_ALPHA = 0.32f
 
+/** How far the drawer's content trails behind its panel while it opens (fraction of the width). */
+private const val EXPRESSIVE_CONTENT_PARALLAX = 0.22f
+
+/** How far the session behind is pushed along while the drawer opens (fraction of the width). */
+private const val EXPRESSIVE_CARD_PUSH = 0.1f
+
 /** How long after the container first composes the hidden drawer is built (ms). */
 private const val DRAWER_PREWARM_DELAY_MS = 1500L
 
-/** Material's modal drawer: its trailing corners round (the large shape, 16 dp). */
-private val ModalDrawerShape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
+/** Material 3 Expressive modal drawer: its trailing corners round (extra large, 28 dp). */
+private val ModalDrawerShape = RoundedCornerShape(topEnd = 28.dp, bottomEnd = 28.dp)

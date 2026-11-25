@@ -101,16 +101,8 @@ fun TerminalLogView(calls: List<OpenCodeToolCall>, onClose: () -> Unit) {
         Column(
             Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.9f)
-                .padding(horizontal = 4.dp)
-                .padding(bottom = 4.dp),
+                .fillMaxHeight(0.9f),
         ) {
-            Text(
-                stringResource(R.string.session_sheet_terminal),
-                style = OpenCodeTextStyles.callout.copy(fontWeight = FontWeight.SemiBold),
-                color = OpenCodeTheme.colors.text,
-                modifier = Modifier.padding(start = 12.dp, bottom = 8.dp),
-            )
             Box(
                 Modifier
                     .weight(1f)
@@ -125,7 +117,7 @@ fun TerminalLogView(calls: List<OpenCodeToolCall>, onClose: () -> Unit) {
                         )
                         layout(placeable.width, placeable.height - extra) { placeable.place(0, 0) }
                     }
-                    .background(Color(0xFF0D1117), RoundedCornerShape(12.dp))
+                    .background(Color.Black, RoundedCornerShape(0.dp))
                     .padding(
                         start = 8.dp,
                         end = 8.dp,
@@ -136,7 +128,7 @@ fun TerminalLogView(calls: List<OpenCodeToolCall>, onClose: () -> Unit) {
                 if (lines.isEmpty()) {
                     Text(
                         stringResource(R.string.session_terminal_empty),
-                        color = Color(0xFF8B949E),
+                        color = Color(0xFF7F7F7F),
                         fontFamily = OpenCodeFonts.monospace,
                         fontSize = 12.sp,
                     )
@@ -146,10 +138,10 @@ fun TerminalLogView(calls: List<OpenCodeToolCall>, onClose: () -> Unit) {
                             items(lines.size) { index ->
                                 val line = lines[index]
                                 val color = when (line.kind) {
-                                    LineKind.Command -> Color(0xFF7EE787)
-                                    LineKind.Output -> Color(0xFFC9D1D9)
-                                    LineKind.Running -> Color(0xFFE3B341)
-                                    LineKind.Failed -> Color(0xFFFF7B72)
+                                    LineKind.Command -> Color(0xFF00CD00)
+                                    LineKind.Output -> Color.White
+                                    LineKind.Running -> Color(0xFFCDCD00)
+                                    LineKind.Failed -> Color(0xFFCD0000)
                                 }
                                 Text(
                                     line.text.ifEmpty { " " },

@@ -160,9 +160,6 @@ internal fun InboxSidebarList(
                     }
                 }
             }
-            item(key = "inbox-terminal") {
-                TerminalEntryRow(onClick = openTerminal)
-            }
             if (archivedCount > 0) {
                 item(key = "inbox-archived") {
                     ArchivedEntryRow(archivedCount, regularList = false, onClick = openArchived)

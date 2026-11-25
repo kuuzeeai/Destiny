@@ -185,4 +185,5 @@
     <string name="drawer_filter_unread">Sin leer</string>
     <string name="drawer_filter_pinned">Fijadas</string>
     <string name="drawer_terminal_entry">Mi terminal</string>
+    <string name="drawer_filter_terminal">Terminal</string>
 </resources>

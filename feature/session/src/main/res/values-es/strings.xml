@@ -72,6 +72,9 @@
     <string name="session_sheet_cost">Coste</string>
     <string name="session_sheet_media">Multimedia</string>
     <string name="session_sheet_media_value">Archivos y enlaces</string>
+    <string name="session_sheet_terminal">Visualizar terminal</string>
+    <string name="session_sheet_terminal_value">Solo lectura</string>
+    <string name="session_terminal_empty">Todavía no hay comandos en este chat</string>
     <string name="session_always_notify">Notificar siempre</string>
     <string name="session_always_notify_message_phone">Notificar en este teléfono al terminar cada respuesta, aunque el mensaje no se haya enviado desde aquí.</string>
     <string name="session_always_notify_message_tablet">Notificar en esta tableta al terminar cada respuesta, aunque el mensaje no se haya enviado desde aquí.</string>

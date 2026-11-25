@@ -971,6 +971,7 @@ private fun SessionSheets(store: StoreOf<State, Action>, listContext: SessionLis
     }
 
     val sheet = store.rememberOptionalScope({ it.sessionSheet }, Action::SessionSheet)
+    var showTerminal by remember { mutableStateOf(false) }
     // The Session sheet's content, composed and measured ahead of its first open.
     SessionSheetPrewarm(
         enabled = activePicker == null,
@@ -986,6 +987,7 @@ private fun SessionSheets(store: StoreOf<State, Action>, listContext: SessionLis
                 details = details,
                 onModelTapped = { store.send(Action.ModelButtonTapped) },
                 onMediaTapped = { store.send(Action.SessionMediaTapped) },
+                onTerminalTapped = { showTerminal = true },
                 onDismissRequest = dismiss,
                 providerIcon = { providerID, canonical, size -> ProviderIcon(providerID, Modifier.size(size), canonical) },
                 statusOrb = { status, size ->
@@ -1054,6 +1056,11 @@ private fun SessionSheets(store: StoreOf<State, Action>, listContext: SessionLis
         { Action.ShellOutput(PresentationAction.Presented(it)) },
     )?.let { shell ->
         ShellOutputView(shell, onClose = { store.send(Action.ShellOutput(PresentationAction.Dismiss)) })
+    }
+
+    if (showTerminal) {
+        val terminalCalls by store.observe { shellCalls(it.items) }
+        TerminalLogView(terminalCalls, onClose = { showTerminal = false })
     }
 }
 

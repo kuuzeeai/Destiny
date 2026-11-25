@@ -240,6 +240,7 @@ fun SessionSheetView(
     onModelTapped: () -> Unit,
     onMediaTapped: () -> Unit,
     onDismissRequest: () -> Unit,
+    onTerminalTapped: () -> Unit = {},
     statusOrb: @Composable (status: SessionSheetStatus, size: Dp) -> Unit = { status, size -> DefaultStatusOrb(status, size) },
     providerIcon: (@Composable (providerID: String, canonicalProviderID: String?, size: Dp) -> Unit)? = null,
 ) {
@@ -249,8 +250,12 @@ fun SessionSheetView(
         onMediaTapped()
         scope.launch { sheetState.hide() }.invokeOnCompletion { onDismissRequest() }
     }
+    val openTerminal = {
+        onTerminalTapped()
+        scope.launch { sheetState.hide() }.invokeOnCompletion { onDismissRequest() }
+    }
     OpenCodeBottomSheet(onDismissRequest = onDismissRequest, sheetState = sheetState) {
-        SessionSheetContent(sheet, context, details, onModelTapped, { openMedia() }, statusOrb, providerIcon)
+        SessionSheetContent(sheet, context, details, onModelTapped, { openMedia() }, { openTerminal() }, statusOrb, providerIcon)
         SessionActionPresentations(sheet, title = details.session?.title)
     }
 }
@@ -262,6 +267,7 @@ private fun SessionSheetContent(
     details: SessionSheetDetails,
     onModelTapped: () -> Unit,
     onMediaTapped: () -> Unit,
+    onTerminalTapped: () -> Unit,
     statusOrb: @Composable (SessionSheetStatus, Dp) -> Unit,
     providerIcon: (@Composable (String, String?, Dp) -> Unit)?,
 ) {
@@ -284,6 +290,7 @@ private fun SessionSheetContent(
         )
         DetailsCard(details, onModelTapped, providerIcon)
         MediaCard(onMediaTapped)
+        TerminalCard(onTerminalTapped)
         if (isListRow && notificationsAvailable) {
             AlwaysNotifyCard(isOn = state.alwaysNotifyPending ?: details.session?.alwaysNotify ?: false, isPending = state.alwaysNotifyPending != null) {
                 sheet.send(SessionSheetFeature.Action.AlwaysNotifyToggled(it))
@@ -371,6 +378,7 @@ fun SessionSheetPrewarm(
                 3 -> DetailsCard(warm.details, onModelTapped = { }, providerIcon)
                 else -> {
                     MediaCard { }
+                    TerminalCard { }
                     AlwaysNotifyCard(isOn = false, isPending = false) { }
                     DeleteRow(enabled = true) { }
                     rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -859,6 +867,31 @@ private fun MediaCard(onClick: () -> Unit) {
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(7.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(mediaValue, style = OpenCodeTextStyles.callout, color = OpenCodeTheme.colors.secondaryText, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+            OpenCodeIcon(SFSymbol.ChevronRight, contentDescription = null, size = 16.dp, tint = OpenCodeTheme.colors.tertiaryText)
+        }
+    }
+}
+
+@Composable
+private fun TerminalCard(onClick: () -> Unit) {
+    val terminalLabel = stringResource(R.string.session_sheet_terminal)
+    val terminalValue = stringResource(R.string.session_sheet_terminal_value)
+    DetailRow(
+        terminalLabel,
+        Modifier
+            .testTag("session-sheet-terminal")
+            .background(cardFill(), cardShape)
+            .openCodeHairline(cardShape)
+            .clip(cardShape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .clearAndSetSemantics {
+                contentDescription = terminalLabel
+                stateDescription = terminalValue
+                role = Role.Button
+            },
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(7.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(terminalValue, style = OpenCodeTextStyles.callout, color = OpenCodeTheme.colors.secondaryText, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
             OpenCodeIcon(SFSymbol.ChevronRight, contentDescription = null, size = 16.dp, tint = OpenCodeTheme.colors.tertiaryText)
         }
     }

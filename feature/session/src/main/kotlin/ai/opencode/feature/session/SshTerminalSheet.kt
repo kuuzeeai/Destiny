@@ -1,5 +1,15 @@
 package ai.opencode.feature.session
 
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.systemBarsPadding
+import kotlinx.coroutines.delay
+import android.os.SystemClock
 import ai.opencode.core.ui.OpenCodeFonts
 import ai.opencode.core.ui.OpenCodeTextStyles
 import ai.opencode.core.ui.OpenCodeTheme
@@ -429,7 +439,6 @@ private class SshShell(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SshTerminalSheet(onClose: () -> Unit) {
     val context = LocalContext.current.applicationContext
@@ -437,33 +446,71 @@ fun SshTerminalSheet(onClose: () -> Unit) {
     val shell = remember { SshShell(context, SshStore(context), scope) }
     DisposableEffect(shell) { onDispose { shell.disconnect() } }
     LaunchedEffect(shell) { shell.autoConnect() }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    OpenCodeBottomSheet(onDismissRequest = onClose, sheetState = sheetState) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.9f)
-                .imePadding()
-                .padding(horizontal = 4.dp)
-                .padding(bottom = 4.dp),
-        ) {
-            Text(
-                stringResource(R.string.ssh_title),
-                style = OpenCodeTextStyles.callout.copy(fontWeight = FontWeight.SemiBold),
-                color = OpenCodeTheme.colors.text,
-                modifier = Modifier.padding(start = 12.dp, bottom = 8.dp),
-            )
-            val prompt = shell.hostPrompt
-            if (prompt != null) {
-                SshHostPrompt(prompt, onAnswer = shell::confirmTrust)
-            } else when (shell.phase) {
-                SshPhase.Connected -> SshTerminalPane(shell)
-                SshPhase.Connecting -> Text(
-                    stringResource(R.string.ssh_connecting),
-                    color = OpenCodeTheme.colors.text,
-                    modifier = Modifier.padding(horizontal = 12.dp),
+    var lastBack by remember { mutableStateOf(0L) }
+    var hint by remember { mutableStateOf(false) }
+    LaunchedEffect(lastBack) {
+        if (lastBack > 0L) {
+            hint = true
+            delay(2000)
+            hint = false
+        }
+    }
+    val connected = shell.phase == SshPhase.Connected && shell.hostPrompt == null
+    val background = if (connected) Color(0xFF0D1117) else MaterialTheme.colorScheme.surface
+    Dialog(
+        onDismissRequest = {
+            val now = SystemClock.elapsedRealtime()
+            if (lastBack > 0L && now - lastBack < 2000L) onClose() else lastBack = now
+        },
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false,
+        ),
+    ) {
+        Box(Modifier.fillMaxSize().background(background)) {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .systemBarsPadding()
+                    .imePadding()
+                    .padding(horizontal = 4.dp)
+                    .padding(bottom = 4.dp),
+            ) {
+                if (!connected) {
+                    Text(
+                        stringResource(R.string.ssh_title),
+                        style = OpenCodeTextStyles.callout.copy(fontWeight = FontWeight.SemiBold),
+                        color = OpenCodeTheme.colors.text,
+                        modifier = Modifier.padding(start = 12.dp, top = 12.dp, bottom = 8.dp),
+                    )
+                }
+                val prompt = shell.hostPrompt
+                if (prompt != null) {
+                    SshHostPrompt(prompt, onAnswer = shell::confirmTrust)
+                } else when (shell.phase) {
+                    SshPhase.Connected -> SshTerminalPane(shell)
+                    SshPhase.Connecting -> Text(
+                        stringResource(R.string.ssh_connecting),
+                        color = OpenCodeTheme.colors.text,
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                    )
+                    SshPhase.Form -> SshConnectForm(shell)
+                }
+            }
+            if (hint) {
+                Text(
+                    stringResource(R.string.ssh_back_hint),
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .systemBarsPadding()
+                        .padding(bottom = 150.dp)
+                        .background(Color(0xE6000000), RoundedCornerShape(16.dp))
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                 )
-                SshPhase.Form -> SshConnectForm(shell)
             }
         }
     }
@@ -562,6 +609,19 @@ private fun SshConnectForm(shell: SshShell) {
 }
 
 @Composable
+private fun SshKeyButton(label: String, active: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    Box(
+        modifier
+            .height(44.dp)
+            .background(if (active) Color(0xFF30363D) else Color.Transparent, RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(label, color = Color(0xFFC9D1D9), fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+@Composable
 private fun ColumnScope.SshTerminalPane(shell: SshShell) {
     val listState = rememberLazyListState()
     var following by remember { mutableStateOf(true) }
@@ -578,8 +638,7 @@ private fun ColumnScope.SshTerminalPane(shell: SshShell) {
         Modifier
             .weight(1f)
             .fillMaxWidth()
-            .background(Color(0xFF0D1117), RoundedCornerShape(12.dp))
-            .padding(horizontal = 8.dp, vertical = 10.dp),
+            .padding(horizontal = 8.dp, vertical = 6.dp),
     ) {
         SelectionContainer {
             LazyColumn(state = listState) {
@@ -597,21 +656,62 @@ private fun ColumnScope.SshTerminalPane(shell: SshShell) {
         }
     }
     var input by remember { mutableStateOf("") }
+    var ctrl by remember { mutableStateOf(false) }
+    var alt by remember { mutableStateOf(false) }
     fun submit() {
         shell.send(input + "\n")
         input = ""
     }
+    fun press(label: String) {
+        when (label) {
+            "ESC" -> shell.send("\u001B")
+            "/" -> input += "/"
+            "—" -> input += "-"
+            "HOME" -> shell.send("\u001B[H")
+            "END" -> shell.send("\u001B[F")
+            "↑" -> shell.send("\u001B[A")
+            "↓" -> shell.send("\u001B[B")
+            "→" -> shell.send("\u001B[C")
+            "←" -> shell.send("\u001B[D")
+            "PGUP" -> shell.send("\u001B[5~")
+            "PGDN" -> shell.send("\u001B[6~")
+            "TAB" -> {
+                shell.send(input + "\t")
+                input = ""
+            }
+            "CTRL" -> ctrl = !ctrl
+            "ALT" -> alt = !alt
+        }
+    }
+    val light = Color(0xFFC9D1D9)
     Row(
-        Modifier.fillMaxWidth().padding(top = 8.dp),
+        Modifier.fillMaxWidth().padding(top = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         OutlinedTextField(
             value = input,
-            onValueChange = { input = it },
+            onValueChange = { new ->
+                if ((ctrl || alt) && new.length == input.length + 1 && new.startsWith(input)) {
+                    val c = new.last()
+                    if (ctrl) shell.send((c.uppercaseChar().code and 0x1f).toChar().toString())
+                    else shell.send("\u001B" + c)
+                    ctrl = false
+                    alt = false
+                } else {
+                    input = new
+                }
+            },
             modifier = Modifier.weight(1f),
             singleLine = true,
-            textStyle = TextStyle(fontFamily = OpenCodeFonts.monospace, fontSize = 14.sp),
-            placeholder = { Text(stringResource(R.string.ssh_command_hint)) },
+            textStyle = TextStyle(fontFamily = OpenCodeFonts.monospace, fontSize = 14.sp, color = light),
+            placeholder = { Text(stringResource(R.string.ssh_command_hint), color = Color(0xFF8B949E)) },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = light,
+                unfocusedTextColor = light,
+                focusedBorderColor = Color(0xFF8B949E),
+                unfocusedBorderColor = Color(0xFF30363D),
+                cursorColor = light,
+            ),
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.None,
                 autoCorrectEnabled = false,
@@ -619,11 +719,39 @@ private fun ColumnScope.SshTerminalPane(shell: SshShell) {
             ),
             keyboardActions = KeyboardActions(onSend = { submit() }),
         )
-        TextButton(onClick = { submit() }) { Text(stringResource(R.string.ssh_send)) }
+        TextButton(
+            onClick = { submit() },
+            colors = ButtonDefaults.textButtonColors(contentColor = light),
+        ) { Text(stringResource(R.string.ssh_send)) }
+    }
+    val rows = listOf(
+        listOf("ESC", "/", "—", "HOME", "↑", "END", "PGUP"),
+        listOf("TAB", "CTRL", "ALT", "←", "↓", "→", "PGDN"),
+    )
+    for (row in rows) {
+        Row(Modifier.fillMaxWidth()) {
+            for (label in row) {
+                SshKeyButton(
+                    label = label,
+                    active = (label == "CTRL" && ctrl) || (label == "ALT" && alt),
+                    modifier = Modifier.weight(1f),
+                    onClick = { press(label) },
+                )
+            }
+        }
     }
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        TextButton(onClick = { shell.send("\u0003") }) { Text(stringResource(R.string.ssh_ctrl_c)) }
-        TextButton(onClick = { shell.clear() }) { Text(stringResource(R.string.ssh_clear)) }
-        TextButton(onClick = { shell.leave() }) { Text(stringResource(R.string.ssh_disconnect)) }
+        TextButton(
+            onClick = { shell.send("\u0003") },
+            colors = ButtonDefaults.textButtonColors(contentColor = light),
+        ) { Text(stringResource(R.string.ssh_ctrl_c)) }
+        TextButton(
+            onClick = { shell.clear() },
+            colors = ButtonDefaults.textButtonColors(contentColor = light),
+        ) { Text(stringResource(R.string.ssh_clear)) }
+        TextButton(
+            onClick = { shell.leave() },
+            colors = ButtonDefaults.textButtonColors(contentColor = light),
+        ) { Text(stringResource(R.string.ssh_disconnect)) }
     }
 }

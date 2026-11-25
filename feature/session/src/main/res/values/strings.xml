@@ -360,4 +360,5 @@
     <string name="ssh_err_generic">Error: %1$s</string>
     <string name="ssh_key_saved">[Key saved: next time it will sign in without a password]</string>
     <string name="ssh_key_failed">[Could not save the key; next time it will ask for the password]</string>
+    <string name="ssh_back_hint">Press back again to exit</string>
 </resources>

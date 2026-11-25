@@ -372,4 +372,5 @@
     <string name="ssh_err_generic">Error: %1$s</string>
     <string name="ssh_key_saved">[Llave guardada: la próxima vez entrará sin contraseña]</string>
     <string name="ssh_key_failed">[No se pudo guardar la llave; la próxima vez pedirá la contraseña]</string>
+    <string name="ssh_back_hint">Pulsa atrás otra vez para salir</string>
 </resources>

@@ -206,7 +206,6 @@ data class DrawerListModel(
                     add(DrawerListItem.CatchUp)
                     add(DrawerListItem.WhatsNew)
                 }
-                if (archivedCount > 0) add(DrawerListItem.Archived)
             }
 
             // One pass for both lists.

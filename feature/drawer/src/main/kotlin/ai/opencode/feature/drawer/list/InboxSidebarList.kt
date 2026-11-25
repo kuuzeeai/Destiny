@@ -160,11 +160,6 @@ internal fun InboxSidebarList(
                     }
                 }
             }
-            if (archivedCount > 0) {
-                item(key = "inbox-archived") {
-                    ArchivedEntryRow(archivedCount, regularList = false, onClick = openArchived)
-                }
-            }
             items(rows, key = { it.id }) { row ->
                 InboxSidebarSessionRow(
                     row = row,

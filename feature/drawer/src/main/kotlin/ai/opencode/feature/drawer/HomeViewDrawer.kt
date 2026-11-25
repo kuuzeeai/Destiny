@@ -397,7 +397,7 @@ fun HomeDrawer(
                         .fillMaxWidth()
                         .padding(horizontal = DrawerMetrics.rowEdge)
                         .padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     for ((value, label) in listOf(

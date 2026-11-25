@@ -43,6 +43,7 @@ import ai.opencode.feature.transcript.list.NewMessagesMark
 import ai.opencode.feature.transcript.list.TranscriptList
 import ai.opencode.feature.transcript.list.TranscriptSlots
 import ai.opencode.feature.transcript.rows.AgentGlyphState
+import ai.opencode.feature.transcript.rows.InfinityLoader
 import ai.opencode.feature.transcript.rows.LocalTranscriptRowSlots
 import ai.opencode.feature.transcript.rows.ReplyCopyGlyph
 import ai.opencode.feature.transcript.rows.TranscriptFonts
@@ -851,15 +852,14 @@ fun SyncingSessionTitle(
 @Composable
 fun WorkingIndicator(activity: WorkingActivity, modifier: Modifier = Modifier) {
     val fontScale = LocalDensity.current.fontScale
-    // The subagent cards' orb, scaled with the body text it leads.
-    val orbSize = (18 * fontScale).dp
+    // The app's infinity mark, scaled with the body text it leads.
+    val loaderWidth = (32 * fontScale).dp
     val spacing = (8 * fontScale).dp
     Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing)) {
-        AgentActivityGlyph(
-            source = AgentActivitySource.Session(activity),
-            size = orbSize,
-            isPaused = activity.phase == WorkingActivity.Phase.stopping || activity.isHeld,
+        InfinityLoader(
             modifier = Modifier.clearAndSetSemantics {},
+            width = loaderWidth,
+            animate = !(activity.phase == WorkingActivity.Phase.stopping || activity.isHeld || activity.needsInput),
         )
         val style = TranscriptFonts.metaFont(FontWeight.Medium)
         if (activity.retry != null && activity.phase == WorkingActivity.Phase.running && !activity.needsInput) {

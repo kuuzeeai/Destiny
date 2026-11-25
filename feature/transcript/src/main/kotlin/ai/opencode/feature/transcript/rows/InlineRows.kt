@@ -43,6 +43,14 @@ data class InlineToolRow(
             is Kind.Notice -> kind.text.split(" · ").drop(1).joinToString(" · ").nonEmpty
         }
 
+    /** A short plain-language title (“Reading build.gradle”), shown instead of the raw command. */
+    val title: String
+        get() = when (kind) {
+            is Kind.Tool -> stepTitle(kind.call)
+            is Kind.Reads -> localizedPlural(R.plurals.transcript_step_reading_files, kind.calls.size, kind.calls.size)
+            is Kind.Notice -> name
+        }
+
     /** Only commands are mono. */
     val detailIsCommand: Boolean get() = (kind as? Kind.Tool)?.call?.isShell == true
 
@@ -93,6 +101,28 @@ data class InlineToolRow(
 
         private fun isMergeableRead(call: OpenCodeToolCall): Boolean =
             call.name == "read" && call.status == OpenCodeToolCall.Status.Completed && call.decline == null
+
+        /** What a step did, in a few plain words, never the raw command. */
+        fun stepTitle(call: OpenCodeToolCall): String {
+            val described = call.input.obj?.get("description")?.string?.trim()?.substringBefore('\n')?.nonEmpty
+            if (described != null) return described
+            if (call.isShell) return localized(R.string.transcript_step_command)
+            val target = call.inputPath?.trimEnd('/')?.substringAfterLast('/')?.nonEmpty
+            val name = call.name.lowercase()
+            return when {
+                "todo" in name -> localized(R.string.transcript_step_todo)
+                "web" in name || "fetch" in name -> localized(R.string.transcript_step_web)
+                "read" in name ->
+                    if (target != null) localized(R.string.transcript_step_reading, target) else localized(R.string.transcript_step_reading_file)
+                "write" in name ->
+                    if (target != null) localized(R.string.transcript_step_writing, target) else localized(R.string.transcript_step_writing_file)
+                "edit" in name || "patch" in name ->
+                    if (target != null) localized(R.string.transcript_step_editing, target) else localized(R.string.transcript_step_editing_file)
+                "grep" in name || "glob" in name || "search" in name || "find" in name || "list" in name ->
+                    localized(R.string.transcript_step_searching)
+                else -> call.displayName
+            }
+        }
 
         /**
          * A row's one-line detail. Code Mode's `execute` names the tools its script called (or the

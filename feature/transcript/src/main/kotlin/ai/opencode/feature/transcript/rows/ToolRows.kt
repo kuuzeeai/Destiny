@@ -18,6 +18,7 @@ import ai.opencode.feature.transcript.TranscriptEntry
 import ai.opencode.feature.transcript.TranscriptSubagent
 import ai.opencode.feature.transcript.markdown.ui.BandClock
 import ai.opencode.feature.transcript.markdown.ui.DisclosedContent
+import ai.opencode.feature.transcript.markdown.ui.LocalBandReveal
 import ai.opencode.feature.transcript.markdown.ui.DisclosedTransition
 import ai.opencode.feature.transcript.markdown.ui.TranscriptBand
 import ai.opencode.feature.transcript.user.TranscriptDragPayload
@@ -45,6 +46,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.HorizontalDivider
@@ -57,7 +59,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -160,7 +166,7 @@ internal fun SubagentToolView(call: OpenCodeToolCall, subagents: Map<String, Tra
 @Composable
 private fun InlineToolGroupHeaderLabel(header: InlineToolGroupHeader, expanded: Boolean, modifier: Modifier = Modifier) {
     val colors = OpenCodeTheme.colors
-    val style = TranscriptFonts.metaFont().copy(fontFeatureSettings = "tnum")
+    val style = OpenCodeTextStyles.subheadline.copy(fontFeatureSettings = "tnum")
     val failedCount = stringResource(R.string.transcript_tool_group_failed_count, header.failed)
     if (isAccessibilityTextSize()) {
         val text = buildAnnotatedString {
@@ -245,23 +251,43 @@ internal fun InlineToolGroupView(entry: TranscriptEntry, key: String, tools: Lis
         }
         val videos = entry.toolVideoReferences
         if (videos.isNotEmpty()) AgentFileCards(videos, onOpen = { context.send(TranscriptAction.OpenFile(it)) })
-        DisclosedBand(isExpanded) {
+        DisclosedPlain(isExpanded) {
             Column {
-                for (row in rows) InlineToolRowView(entry, row, subagents)
+                for ((index, row) in rows.withIndex()) {
+                    InlineToolRowView(entry, row, subagents, isFirst = index == 0, isLast = index == rows.lastIndex)
+                }
             }
         }
     }
 }
 
 @Composable
-private fun InlineToolRowView(entry: TranscriptEntry, row: InlineToolRow, subagents: Map<String, TranscriptSubagent>) {
+private fun InlineToolRowView(
+    entry: TranscriptEntry,
+    row: InlineToolRow,
+    subagents: Map<String, TranscriptSubagent>,
+    isFirst: Boolean,
+    isLast: Boolean,
+) {
+    val tint = if (row.isFailed) OpenCodeTheme.colors.danger else OpenCodeTheme.colors.tertiaryText
     when (val kind = row.kind) {
-        // The subagent card stays a card, in the band.
+        // The subagent card stays a card, on the line.
         is InlineToolRow.Kind.Tool if kind.call.isSubagent() ->
-            SubagentToolView(kind.call, subagents, Modifier.padding(vertical = InlineRowMetrics.rowPadding))
-        is InlineToolRow.Kind.Notice -> InlineRowLabel(row, Modifier.semantics(mergeDescendants = true) {})
-        is InlineToolRow.Kind.Tool -> InlineRowDisclosure(entry, row, listOf(row.id to kind.call))
-        is InlineToolRow.Kind.Reads -> InlineRowDisclosure(entry, row, row.memberIDs.zip(kind.calls))
+            TimelineStep(isFirst, isLast, null, tint) {
+                SubagentToolView(kind.call, subagents, Modifier.padding(vertical = InlineRowMetrics.rowPadding))
+            }
+        is InlineToolRow.Kind.Notice ->
+            TimelineStep(isFirst, isLast, toolGlyph(row), tint) {
+                InlineRowLabel(row, Modifier.semantics(mergeDescendants = true) {})
+            }
+        is InlineToolRow.Kind.Tool ->
+            TimelineStep(isFirst, isLast, toolGlyph(row), tint) {
+                InlineRowDisclosure(entry, row, listOf(row.id to kind.call))
+            }
+        is InlineToolRow.Kind.Reads ->
+            TimelineStep(isFirst, isLast, toolGlyph(row), tint) {
+                InlineRowDisclosure(entry, row, row.memberIDs.zip(kind.calls))
+            }
     }
 }
 
@@ -298,7 +324,7 @@ private fun InlineRowDisclosure(entry: TranscriptEntry, row: InlineToolRow, bodi
         )
         DisclosedContent(expanded) {
             Column(Modifier.padding(top = TranscriptMetrics.compact), verticalArrangement = Arrangement.spacedBy(TranscriptMetrics.clustered)) {
-                val headerDetail = if (bodies.size == 1 && detailFits) row.detail else null
+                val headerDetail: String? = null
                 for ((id, call) in bodies) ToolBody(entry, id, call, headerDetail)
             }
         }
@@ -306,28 +332,52 @@ private fun InlineRowDisclosure(entry: TranscriptEntry, row: InlineToolRow, bodi
 }
 
 /**
- * The desktop's tool row (`basic-tool.css`): a faint tool glyph, a medium-weight name and a muted
- * detail; only commands are mono, and only failures are marked, in red.
+ * One step of the opened group: its icon sits on a thin vertical line that joins the steps, and
+ * what it shows (title, then the opened command and output) hangs to the right.
  */
 @Composable
-private fun InlineRowLabel(row: InlineToolRow, modifier: Modifier = Modifier, onDetailFits: (Boolean) -> Unit = {}) {
+private fun TimelineStep(
+    isFirst: Boolean,
+    isLast: Boolean,
+    glyph: String?,
+    tint: Color,
+    content: @Composable () -> Unit,
+) {
     val colors = OpenCodeTheme.colors
-    val style = OpenCodeTextStyles.subheadline
-    Row(
-        modifier.fillMaxWidth().padding(vertical = InlineRowMetrics.rowPadding),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    val lineHeight = with(LocalDensity.current) { OpenCodeTextStyles.footnote.lineHeight.toDp() }
+    val centreY = InlineRowMetrics.rowPadding + lineHeight / 2
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .drawBehind {
+                val x = 10.dp.toPx()
+                val cy = centreY.toPx()
+                val gap = 11.dp.toPx()
+                val stroke = 1.dp.toPx()
+                if (!isFirst) drawLine(colors.border, Offset(x, 0f), Offset(x, cy - gap), strokeWidth = stroke)
+                if (!isLast) drawLine(colors.border, Offset(x, cy + gap), Offset(x, size.height), strokeWidth = stroke)
+            },
     ) {
-        Box(Modifier.height(with(LocalDensity.current) { style.lineHeight.toDp() }), contentAlignment = Alignment.Center) {
-            OpenCodeIcon(
-                toolGlyph(row),
-                contentDescription = null,
-                size = 16.dp,
-                tint = if (row.isFailed) colors.danger else colors.tertiaryText,
-            )
+        Box(
+            Modifier.padding(top = InlineRowMetrics.rowPadding).width(20.dp).height(lineHeight),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (glyph != null) {
+                OpenCodeIcon(glyph, contentDescription = null, size = 14.dp, tint = tint)
+            } else {
+                Box(Modifier.size(5.dp).clip(CircleShape).background(colors.tertiaryText))
+            }
         }
-        Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            InlineRowText(row, style, onDetailFits)
-        }
+        Column(Modifier.padding(start = 30.dp)) { content() }
+    }
+}
+
+/** A step's line: a short plain-language title, small and muted; only failures are marked, in red. */
+@Composable
+private fun InlineRowLabel(row: InlineToolRow, modifier: Modifier = Modifier, onDetailFits: (Boolean) -> Unit = {}) {
+    val style = OpenCodeTextStyles.footnote
+    Row(modifier.fillMaxWidth().padding(vertical = InlineRowMetrics.rowPadding)) {
+        InlineRowText(row, style, onDetailFits)
     }
 }
 
@@ -351,28 +401,17 @@ private fun toolGlyph(row: InlineToolRow): String {
 @Composable
 private fun RowScope.InlineRowText(row: InlineToolRow, style: TextStyle, onDetailFits: (Boolean) -> Unit) {
     val colors = OpenCodeTheme.colors
-    run {
-        Text(
-            row.name,
-            Modifier.alignByBaseline().inlineRowPulse(row.isRunning),
-            style = style.copy(fontWeight = FontWeight.Medium),
-            color = if (row.isFailed) colors.danger else colors.text,
-        )
-        val detail = row.detail
-        if (detail != null) {
-            val unlimited = isAccessibilityTextSize()
-            Text(
-                detail,
-                Modifier.alignByBaseline().weight(1f, fill = false),
-                style = if (row.detailIsCommand) TranscriptFonts.toolFont else style,
-                color = if (row.isFailed) colors.danger else colors.secondaryText,
-                maxLines = if (unlimited) Int.MAX_VALUE else 1,
-                overflow = TextOverflow.Ellipsis,
-                onTextLayout = { onDetailFits(!it.hasVisualOverflow) },
-            )
-        }
-        // Denying is an answer, not a failure.
-        if (row.isDenied) Text(stringResource(R.string.transcript_tool_denied), Modifier.alignByBaseline(), style = style, color = colors.secondaryText)
+    Text(
+        row.title,
+        Modifier.weight(1f, fill = false).inlineRowPulse(row.isRunning),
+        style = style,
+        color = if (row.isFailed) colors.danger else colors.secondaryText,
+        maxLines = if (isAccessibilityTextSize()) Int.MAX_VALUE else 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+    // Denying is an answer, not a failure.
+    if (row.isDenied) {
+        Text(" · " + stringResource(R.string.transcript_tool_denied), style = style, color = colors.secondaryText, maxLines = 1)
     }
 }
 
@@ -399,10 +438,7 @@ private fun ToolBody(entry: TranscriptEntry, id: String, call: OpenCodeToolCall,
             .padding(end = TranscriptMetrics.compact, bottom = TranscriptMetrics.clustered)
             .fillMaxWidth()
             .clip(shape)
-            // The page's own fill, so the box stands off the opened group's faint band around it
-            // (on the band's fill it nearly vanished in light).
-            .background(colors.canvas)
-            .border(0.5.dp, colors.border, shape),
+            .background(colors.userBubble),
     ) {
         if (hasInput) {
             SelectionContainer {
@@ -426,7 +462,6 @@ private fun ToolBody(entry: TranscriptEntry, id: String, call: OpenCodeToolCall,
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .background(colors.userBubble.copy(alpha = colors.userBubble.alpha * 0.6f))
                     .padding(TranscriptMetrics.standard),
                 verticalArrangement = Arrangement.spacedBy(TranscriptMetrics.clustered),
             ) {
@@ -597,5 +632,33 @@ private fun InlineQuestionLine(line: InlineQuestion.Line) {
 private fun DisclosedBand(isOpen: Boolean, content: @Composable () -> Unit) {
     BandClock(isOpen, Modifier.fillMaxWidth()) {
         TranscriptBand(verticalPadding = InlineRowMetrics.bandPadding) { Column { content() } }
+    }
+}
+
+/**
+ * An opened group's body with no card around it: it grows open and closed on the row's own
+ * disclosure spring like [DisclosedBand], and its content fades and rises in behind the edge.
+ */
+@Composable
+private fun DisclosedPlain(isOpen: Boolean, content: @Composable () -> Unit) {
+    BandClock(isOpen, Modifier.fillMaxWidth()) {
+        val reveal = LocalBandReveal.current
+        val reduceMotion = rememberReduceMotion()
+        val rise = with(LocalDensity.current) { 6.dp.toPx() }
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .drawWithContent {
+                    val r = reveal()
+                    val grow = if (reduceMotion) 1f else r
+                    clipRect(bottom = size.height * grow) { this@drawWithContent.drawContent() }
+                }
+                .graphicsLayer {
+                    val r = reveal()
+                    val lag = if (reduceMotion) r else ((r - 0.25f) / 0.75f).coerceIn(0f, 1f)
+                    alpha = lag
+                    translationY = if (reduceMotion) 0f else (1 - lag) * rise
+                },
+        ) { content() }
     }
 }

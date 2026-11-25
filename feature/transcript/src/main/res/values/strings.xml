@@ -172,4 +172,18 @@
         <item quantity="one">%1$s comment</item>
         <item quantity="other">%1$s comments</item>
     </plurals>
+    <string name="transcript_step_command">Running a command</string>
+    <string name="transcript_step_reading">Reading %1$s</string>
+    <string name="transcript_step_reading_file">Reading a file</string>
+    <string name="transcript_step_writing">Writing %1$s</string>
+    <string name="transcript_step_writing_file">Writing a file</string>
+    <string name="transcript_step_editing">Editing %1$s</string>
+    <string name="transcript_step_editing_file">Editing a file</string>
+    <string name="transcript_step_searching">Searching the code</string>
+    <string name="transcript_step_web">Looking it up on the web</string>
+    <string name="transcript_step_todo">Updating the task list</string>
+    <plurals name="transcript_step_reading_files">
+        <item quantity="one">Reading %1$d file</item>
+        <item quantity="other">Reading %1$d files</item>
+    </plurals>
 </resources>

@@ -278,7 +278,10 @@ private fun SessionSheetContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Hero(state, details, context, statusOrb, onRename = { sheet.send(SessionSheetFeature.Action.RenameTapped(details.session?.let { if (it.isUntitled) "" else it.title }.orEmpty())) })
-        Tiles(state, isListRow, context, details.session?.title, sheet::send)
+        Tiles(
+            state, isListRow, context, details.session?.title, sheet::send,
+            onRename = { sheet.send(SessionSheetFeature.Action.RenameTapped(details.session?.let { if (it.isUntitled) "" else it.title }.orEmpty())) },
+        )
         DetailsCard(details, onModelTapped, providerIcon)
         MediaCard(onMediaTapped)
         if (isListRow && notificationsAvailable) {
@@ -364,7 +367,7 @@ fun SessionSheetPrewarm(
                 1 -> Hero(warm.state, warm.details, warm.context, statusOrb = { _, size ->
                     AgentActivityGlyph(AgentActivitySource.Subagent(SubagentActivity(sessionID = null, phase = SubagentActivity.Phase.idle)), size = size)
                 }, onRename = { })
-                2 -> Tiles(warm.state, isListRow = true, warm.context, title = null, send = { })
+                2 -> Tiles(warm.state, isListRow = true, warm.context, title = null, send = { }, onRename = { })
                 3 -> DetailsCard(warm.details, onModelTapped = { }, providerIcon)
                 else -> {
                     MediaCard { }
@@ -533,10 +536,13 @@ private fun Tiles(
     context: SessionListContext,
     title: String?,
     send: (SessionSheetFeature.Action) -> Unit,
+    onRename: () -> Unit,
 ) {
     val isBusy = state.operation != null
     val untitledSession = stringResource(R.string.session_untitled_title)
     val tiles = buildList<@Composable () -> Unit> {
+        // Rename first: the session menu it came from is gone.
+        add { ActionTile(stringResource(CoreR.string.common_rename), SFSymbol.Pencil, inFlight = false, isBusy = isBusy, id = "rename", onClick = onRename) }
         if (isListRow) {
             add { ToggleTile(stringResource(R.string.session_pin), stringResource(R.string.session_pinned), SFSymbol.Pin, SFSymbol.PinFill, context.isPinned == true, "pin") { send(SessionSheetFeature.Action.PinTapped) } }
             add { ToggleTile(stringResource(R.string.session_unread), stringResource(R.string.session_unread), SFSymbol.EnvelopeOpen, SFSymbol.EnvelopeBadgeFill, context.isUnread, "read") { send(SessionSheetFeature.Action.ReadTapped) } }
@@ -554,7 +560,7 @@ private fun Tiles(
         }
         add { ExportTile(state.operation is SessionSheetFeature.Operation.Exporting, isBusy) { send(SessionSheetFeature.Action.ExportTapped(it, title ?: untitledSession)) } }
     }
-    // Six across; at accessibility sizes they wrap into rows of three, then two.
+    // Seven across; at accessibility sizes they wrap into rows of three, then two.
     val fontScale = LocalDensity.current.fontScale
     val across = minOf(tiles.size, if (fontScale >= 2f) 2 else if (isAccessibilityFontScale(fontScale)) 3 else tiles.size)
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -640,20 +646,20 @@ private fun ExportTile(inFlight: Boolean, isBusy: Boolean, onExport: (OpenCodeEx
  */
 @Composable
 private fun SessionSheetTile(title: String, symbol: SFSymbol, isOn: Boolean = false, inFlight: Boolean = false, dimmed: Boolean = false, symbolChanges: Boolean = true) {
-    val iconSize = with(LocalDensity.current) { (22 * fontScale).dp }
+    val iconSize = with(LocalDensity.current) { (18 * fontScale).dp }
     val reduceMotion = rememberReduceMotion()
     Column(
         Modifier
             .fillMaxWidth()
             .heightIn(min = 48.dp)
-            .padding(top = 8.dp, bottom = 6.dp)
+            .padding(top = 6.dp, bottom = 4.dp)
             .alpha(if (dimmed) 0.35f else 1f),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Box(Modifier.height(iconSize + 4.dp), contentAlignment = Alignment.Center) {
             if (inFlight) {
-                CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
             } else if (!symbolChanges) {
                 OpenCodeIcon(symbol, contentDescription = null, size = iconSize, tint = OpenCodeTheme.colors.text)
             } else {
@@ -667,7 +673,7 @@ private fun SessionSheetTile(title: String, symbol: SFSymbol, isOn: Boolean = fa
             }
         }
         // A long caption shrinks to 75 % before it truncates.
-        val style = OpenCodeTextStyles.caption1.copy(fontWeight = if (isOn) FontWeight.SemiBold else FontWeight.Normal)
+        val style = OpenCodeTextStyles.caption1.copy(fontSize = 10.sp, fontWeight = if (isOn) FontWeight.SemiBold else FontWeight.Normal)
         BasicText(
             title,
             style = style.copy(color = if (isOn) OpenCodeTheme.colors.text else OpenCodeTheme.colors.secondaryText),

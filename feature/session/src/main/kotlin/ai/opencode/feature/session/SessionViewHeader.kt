@@ -44,6 +44,7 @@ import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -208,9 +209,6 @@ internal fun SessionHeaderControls(
     val model by store.observe(SessionHeaderModel::from)
     val reducedMotion = rememberReduceMotion()
     val density = LocalDensity.current
-    val showsSessionMenu = onCatchUpOpen == null && model.sessionID != null
-    // A draft keeps the session menu's place, so the menu fading in as its session arrives moves nothing.
-    val holdsSessionMenuSlot = onCatchUpOpen == null && model.isDraft
     // While the drawer button's label shows, the title steps aside under it.
     val noticeCoversTitle = onBack == null && listContext.notice != null
 
@@ -243,15 +241,8 @@ internal fun SessionHeaderControls(
             model.backToRootID?.let { rootID ->
                 FloatingControl(SFSymbol.ArrowUturnBackward, stringResource(R.string.session_back_to_main_description)) { store.send(Action.FamilyPicked(rootID)) }
             }
-            when {
-                // It fades into the slot a draft kept for it.
-                showsSessionMenu -> AnimatedVisibility(
-                    visibleState = remember { MutableTransitionState(false).apply { targetState = true } },
-                    enter = fadeIn(Motion.microIn.animation(MotionPhase.Enter, reducedMotion)),
-                    exit = fadeOut(Motion.microIn.animation(MotionPhase.Exit, reducedMotion)),
-                ) { SessionMenuButton(store, model, listContext) }
-                holdsSessionMenuSlot -> Spacer(Modifier.size(headerButtonSize).clearAndSetSemantics {})
-            }
+            // The context ring alone, in its own circle: no dots, no menu. A tap opens the session info.
+            if (onCatchUpOpen == null && model.sessionID != null) ContextRingBubble(store, model)
         }
     }
 }
@@ -420,189 +411,24 @@ private fun HeaderTitle(
     }
 }
 
-/** Session actions; the rim doubles as the context gauge. */
+/** The context gauge in its own circle (it used to ring the ⋮ button). Shows only once the session has a context. */
 @Composable
-private fun SessionMenuButton(store: StoreOf<State, Action>, model: SessionHeaderModel, listContext: SessionListContext) {
-    var expanded by remember { mutableStateOf(false) }
+private fun ContextRingBubble(store: StoreOf<State, Action>, model: SessionHeaderModel) {
+    val fraction = model.contextFraction ?: return
     val value = model.contextTokens?.let { SessionContextText.accessibilityValue(it, model.contextLimit) } ?: ""
-    var anchorBottom by remember { mutableIntStateOf(0) }
-    val view = LocalView.current
-    // TalkBack goes back to More once Session Info, opened from the menu, closes (as VoiceOver
-    // returns to the menu's button); otherwise the sheet leaving dropped it into the transcript.
-    var returnsFocusAfterInfo by remember { mutableStateOf(false) }
-    val showsInfo by store.observe { it.activePicker == State.ActivePicker.session }
-    val more = remember { AccessibilityFocusTarget() }
-    // Likewise once a dialog the menu opened (Rename, Delete) closes, as VoiceOver returns to the
-    // button behind an alert; with the keyboard up it landed on the title.
-    var returnsFocusAfterDialog by remember { mutableStateOf(false) }
-    val showsDialog by store.observe { it.sessionSheet?.let { sheet -> sheet.isRenaming || sheet.confirmsDeletion } == true }
-    LaunchedEffect(showsDialog) {
-        if (showsDialog || !returnsFocusAfterDialog) return@LaunchedEffect
-        returnsFocusAfterDialog = false
-        view.focusMenuButtonForAccessibility(more)
-    }
-    LaunchedEffect(showsInfo) {
-        if (showsInfo || !returnsFocusAfterInfo) return@LaunchedEffect
-        returnsFocusAfterInfo = false
-        view.focusMenuButtonForAccessibility(more)
-    }
-    Box(Modifier.onGloballyPositioned { anchorBottom = it.boundsInWindow().bottom.toInt() }) {
-        OpenCodeIconButton(
-            symbol = SFSymbol.Ellipsis,
-            contentDescription = stringResource(R.string.session_menu_more_description),
-            onClick = { expanded = true },
-            size = headerButtonSize,
-            style = OpenCodeIconButtonStyle.Circle,
-            modifier = Modifier
-                .testTag("session-menu")
-                .accessibilityFocusTarget(more)
-                .semantics { if (value.isNotEmpty()) stateDescription = value },
-        )
-        val fraction = model.contextFraction
-        AnimatedVisibility(visible = fraction != null, modifier = Modifier.matchParentSize(), enter = fadeIn(), exit = fadeOut()) {
-            SessionContextGauge(
-                fraction = fraction ?: 0.0,
-                modifier = Modifier.fillMaxSize().padding(6.dp),
-            )
-        }
-        SessionMenu(
-            expanded = expanded,
-            anchorBottom = { anchorBottom },
-            onDismiss = { expanded = false },
-            title = model.sessionTitle ?: stringResource(R.string.session_untitled_title),
-            renameTitle = model.renameTitle,
-            listContext = listContext,
-            more = more,
-            send = {
-                expanded = false
-                if (it == Action.SessionInfoTapped) returnsFocusAfterInfo = true
-                val opensDialog = (it as? Action.SessionMenu)?.action
-                if (opensDialog is SessionSheetFeature.Action.RenameTapped || opensDialog == SessionSheetFeature.Action.DeleteTapped) {
-                    returnsFocusAfterDialog = true
-                }
-                store.send(it)
+    val label = stringResource(R.string.session_sheet_context)
+    Box(
+        Modifier
+            .size(headerButtonSize)
+            .clip(OpenCodeShape.circle)
+            .background(OpenCodeSurfaces.neutralFill)
+            .clickable(role = Role.Button, onClickLabel = stringResource(R.string.session_header_show_details_label)) { store.send(Action.SessionInfoTapped) }
+            .testTag("session-context")
+            .clearAndSetSemantics {
+                contentDescription = label
+                if (value.isNotEmpty()) stateDescription = value
             },
-        )
-    }
-}
-
-/** The session's own actions, its work, and deletion. */
-@Composable
-private fun SessionMenu(
-    expanded: Boolean,
-    anchorBottom: () -> Int,
-    onDismiss: () -> Unit,
-    title: String,
-    renameTitle: String,
-    listContext: SessionListContext,
-    more: AccessibilityFocusTarget,
-    send: (Action) -> Unit,
-) {
-    val developerMode by remember { shared(SharedKeys.developerMode) }.flow.collectAsState()
-    var exportOpen by remember(expanded) { mutableStateOf(false) }
-    fun menu(action: SessionSheetFeature.Action) = send(Action.SessionMenu(action))
-    // No title heading: the header already shows it; exports still name the file by it.
-    // Not focusable: the composer keeps the keyboard while the menu is open. A focusable popup took
-    // focus, so the keyboard left as the menu was placed against the room above it, and the menu
-    // stayed up over the ⋮. With the keyboard up the menu still hangs from the ⋮, capped
-    // to the room above the keys (it scrolls), rather than moving up over the button to fit. A
-    // non-focusable popup gets neither Back nor a hardware Escape: both close it here.
-    BackHandler(enabled = expanded, onBack = onDismiss)
-    EscapeHandler(enabled = expanded, onEscape = onDismiss)
-    // Accessibility focus isn't input focus, so TalkBack still treats the open menu as a pane.
-    val hostView = LocalView.current
-    val firstRow = remember { AccessibilityFocusTarget() }
-    MenuReturnsTalkBackFocus(expanded, more)
-    val density = LocalDensity.current
-    val windowHeight = LocalWindowInfo.current.containerSize.height
-    // Insets are read only while open, so the keyboard's animation doesn't recompose the header.
-    val room = if (expanded) {
-        val keyboard = WindowInsets.ime.getBottom(density)
-        if (keyboard > WindowInsets.navigationBars.getBottom(density)) {
-            val bottom = windowHeight - keyboard - WindowInsets.statusBars.getTop(density)
-            with(density) { (bottom - anchorBottom()).toDp() } - menuWindowMargin
-        } else {
-            Dp.Unspecified
-        }
-    } else {
-        Dp.Unspecified
-    }
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onDismiss,
-        modifier = if (room != Dp.Unspecified) Modifier.heightIn(max = room.coerceAtLeast(headerButtonSize)) else Modifier,
-        properties = PopupProperties(focusable = false),
     ) {
-        MenuTakesTalkBackFocus(hostView, expanded, firstRow)
-        listContext.isPinned?.let { isPinned ->
-            MenuItem(
-                if (isPinned) stringResource(R.string.session_unpin) else stringResource(R.string.session_pin),
-                if (isPinned) SFSymbol.PinSlash else SFSymbol.Pin,
-                Modifier.accessibilityFocusTarget(firstRow),
-            ) {
-                menu(SessionSheetFeature.Action.PinTapped)
-            }
-        }
-        MenuItem(
-            stringResource(CoreR.string.common_rename),
-            SFSymbol.Pencil,
-            if (listContext.isPinned == null) Modifier.accessibilityFocusTarget(firstRow) else Modifier,
-        ) { menu(SessionSheetFeature.Action.RenameTapped(currentTitle = renameTitle)) }
-        MenuItem(stringResource(R.string.session_copy_session_id), SFSymbol.SquareOnSquare) { menu(SessionSheetFeature.Action.CopySessionIDTapped) }
-        if (listContext.isPinned != null) {
-            MenuItem(
-                if (listContext.isUnread) stringResource(R.string.session_mark_as_read) else stringResource(R.string.session_mark_as_unread),
-                if (listContext.isUnread) SFSymbol.EnvelopeOpen else SFSymbol.EnvelopeBadge,
-            ) { menu(SessionSheetFeature.Action.ReadTapped) }
-            MenuItem(if (listContext.isMuted) stringResource(R.string.session_unmute) else stringResource(R.string.session_mute), if (listContext.isMuted) SFSymbol.Bell else SFSymbol.BellSlash) {
-                menu(SessionSheetFeature.Action.MuteTapped)
-            }
-        }
-        HorizontalDivider()
-        MenuItem(stringResource(R.string.session_compact), SFSymbol.RectangleCompressVertical) { menu(SessionSheetFeature.Action.CompactTapped) }
-        MenuItem(stringResource(R.string.session_fork), SFSymbol.ArrowTriangleBranch) { menu(SessionSheetFeature.Action.ForkTapped) }
-        val exportExpandedState = stringResource(R.string.session_menu_export_expanded_description)
-        val exportCollapsedState = stringResource(R.string.session_menu_export_collapsed_description)
-        DropdownMenuItem(
-            text = { Text(stringResource(R.string.session_export)) },
-            leadingIcon = { OpenCodeIcon(SFSymbol.SquareAndArrowUp, contentDescription = null, size = OpenCodeIconSize.small) },
-            trailingIcon = {
-                OpenCodeIcon(if (exportOpen) SFSymbol.ChevronUp else SFSymbol.ChevronDown, contentDescription = null, size = OpenCodeIconSize.small)
-            },
-            onClick = { exportOpen = !exportOpen },
-            modifier = Modifier.semantics { stateDescription = if (exportOpen) exportExpandedState else exportCollapsedState },
-        )
-        if (exportOpen) {
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.session_export_markdown)) },
-                onClick = { menu(SessionSheetFeature.Action.ExportTapped(OpenCodeExportFormat.Markdown, title)) },
-                contentPadding = PaddingWithIndent,
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.session_export_json)) },
-                onClick = { menu(SessionSheetFeature.Action.ExportTapped(OpenCodeExportFormat.Json, title)) },
-                contentPadding = PaddingWithIndent,
-            )
-        }
-        MenuItem(stringResource(R.string.session_media_title), SFSymbol.PhotoOnRectangle, Modifier.testTag("session-menu-media")) {
-            send(Action.SessionMediaTapped)
-        }
-        MenuItem(stringResource(R.string.session_info), SFSymbol.InfoCircle) { send(Action.SessionInfoTapped) }
-        if (developerMode) {
-            MenuItem("Report a Problem", SFSymbol.ExclamationmarkBubble, Modifier.testTag("session-menu-report-problem")) {
-                send(Action.ReportProblemTapped)
-            }
-        }
-        if (listContext.isPinned != null) {
-            HorizontalDivider()
-            val red = OpenCodeTheme.colors.destructive
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.session_delete_session), color = red) },
-                leadingIcon = { OpenCodeIcon(SFSymbol.Trash, contentDescription = null, size = OpenCodeIconSize.small, tint = red) },
-                onClick = { menu(SessionSheetFeature.Action.DeleteTapped) },
-            )
-        }
+        SessionContextGauge(fraction = fraction, modifier = Modifier.fillMaxSize().padding(10.dp))
     }
 }
-
-private val PaddingWithIndent = PaddingValues(start = 48.dp, end = 12.dp)

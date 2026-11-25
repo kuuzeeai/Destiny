@@ -314,6 +314,7 @@ fun HomeDrawer(
             held = selection::toggle,
             openCatchUp = viewState::openCatchUp,
             openArchived = openArchived,
+            openTerminal = { showsTerminal = true },
             modifier = Modifier.fillMaxSize().then(beneathArchived),
         ) else DrawerListView(
             store = store,

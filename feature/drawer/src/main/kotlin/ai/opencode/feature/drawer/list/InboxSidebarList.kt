@@ -94,6 +94,7 @@ internal fun InboxSidebarList(
     held: (String) -> Unit,
     openCatchUp: () -> Unit,
     openArchived: () -> Unit,
+    openTerminal: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val rows by store.observe { it.inboxSidebarRows() }
@@ -158,6 +159,9 @@ internal fun InboxSidebarList(
                         Text("$catchUpCount", style = OpenCodeTextStyles.body.copy(fontFeatureSettings = "tnum"), color = colors.secondaryText)
                     }
                 }
+            }
+            item(key = "inbox-terminal") {
+                TerminalEntryRow(onClick = openTerminal)
             }
             if (archivedCount > 0) {
                 item(key = "inbox-archived") {

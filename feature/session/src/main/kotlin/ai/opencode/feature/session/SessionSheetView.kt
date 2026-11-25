@@ -72,6 +72,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -291,6 +292,7 @@ private fun SessionSheetContent(
         DetailsCard(details, onModelTapped, providerIcon)
         MediaCard(onMediaTapped)
         TerminalCard(onTerminalTapped)
+        ReadAloudCard()
         if (isListRow && notificationsAvailable) {
             AlwaysNotifyCard(isOn = state.alwaysNotifyPending ?: details.session?.alwaysNotify ?: false, isPending = state.alwaysNotifyPending != null) {
                 sheet.send(SessionSheetFeature.Action.AlwaysNotifyToggled(it))
@@ -894,6 +896,32 @@ private fun TerminalCard(onClick: () -> Unit) {
             Text(terminalValue, style = OpenCodeTextStyles.callout, color = OpenCodeTheme.colors.secondaryText, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
             OpenCodeIcon(SFSymbol.ChevronRight, contentDescription = null, size = 16.dp, tint = OpenCodeTheme.colors.tertiaryText)
         }
+    }
+}
+
+// MARK: Read aloud
+
+@Composable
+private fun ReadAloudCard() {
+    val reads = ai.opencode.core.sharing.shared(ai.opencode.core.sharing.SharedKeys.fishReadsReplies)
+    val on by reads.flow.collectAsState()
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .testTag("session-sheet-read-aloud")
+            .background(cardFill(), cardShape)
+            .openCodeHairline(cardShape)
+            .clip(cardShape)
+            .toggleable(value = on, role = Role.Switch, onValueChange = {
+                reads.set(it)
+                if (!it) ai.opencode.feature.voice.FishSpeech.stop()
+            })
+            .padding(horizontal = 16.dp, vertical = if (isAccessibilitySize) 10.dp else 0.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text("Leer respuestas en voz alta", style = OpenCodeTextStyles.callout, color = OpenCodeTheme.colors.text, modifier = Modifier.weight(1f))
+        OpenCodeSwitch(checked = on, onCheckedChange = null)
     }
 }
 

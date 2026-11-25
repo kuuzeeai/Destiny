@@ -30,7 +30,8 @@ internal fun FishReplyEffect(store: StoreOf<State, Action>) {
                 if (reply != null && !reply.inProgress && reply.id != baseline && reply.id != lastSpoken) {
                     armed = false
                     lastSpoken = reply.id
-                    // Solo habla el asistente (botón de encendido), no el chat escrito.
+                    // Habla solo si el interruptor 'Leer respuestas en voz alta' está encendido.
+                    FishSpeech.speakReply(reply.text)
                 }
             }
         }

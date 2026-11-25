@@ -9,6 +9,7 @@ import ai.opencode.core.motion.rememberReduceMotion
 import ai.opencode.core.ui.OpenCodeIcon
 import ai.opencode.core.ui.OpenCodeMinTapTarget
 import ai.opencode.core.ui.OpenCodeShape
+import ai.opencode.core.ui.OpenCodeSurfaces
 import ai.opencode.core.ui.OpenCodeTextStyles
 import ai.opencode.core.ui.OpenCodeTheme
 import ai.opencode.core.ui.SFSymbol
@@ -252,18 +253,17 @@ private fun DrawerButtonCapsule(
     } else {
         Modifier.wrapContentWidth(Alignment.Start, unbounded = true).layoutWidth { widthDp?.invoke() ?: size.value }
     }
-    // At rest the button is a plain top-app-bar icon (no glass circle); the capsule's fill shows
-    // only while it grows into a notice.
+    // At rest the button is its own circle (neutral fill); it grows into a pill for a notice.
     val openSessionsDescription = stringResource(R.string.drawer_button_open_sessions_description)
     val attentionState = stringResource(R.string.drawer_button_attention_state)
     val unreadState = stringResource(R.string.drawer_button_unread_state)
     val fill by animateColorAsState(
-        targetValue = if (shown != null && expanded) MaterialTheme.colorScheme.surfaceContainerHigh else Color.Transparent,
+        targetValue = OpenCodeSurfaces.neutralFill,
         animationSpec = if (expanded) grow() else fold(),
         label = "drawer-button-fill",
     )
     Surface(
-        shape = OpenCodeShape.control,
+        shape = OpenCodeShape.capsule,
         color = fill,
         contentColor = OpenCodeTheme.colors.text,
         modifier = widthModifier

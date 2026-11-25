@@ -18,6 +18,8 @@ import ai.opencode.core.ui.OpenCodeIcon
 import ai.opencode.core.ui.OpenCodeIconButton
 import ai.opencode.core.ui.OpenCodeIconButtonStyle
 import ai.opencode.core.ui.OpenCodeIconSize
+import ai.opencode.core.ui.OpenCodeShape
+import ai.opencode.core.ui.OpenCodeSurfaces
 import ai.opencode.core.ui.OpenCodeTheme
 import ai.opencode.core.ui.SFSymbol
 import ai.opencode.core.ui.accessibilityFocusRequest
@@ -216,13 +218,13 @@ internal fun SessionHeaderControls(
     Row(
         modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp)
+            .padding(horizontal = 8.dp)
             // Measured with the card's top inset, so the scrolled bar and the transcript's top
             // clear the whole header.
             .onSizeChanged { onHeaderHeight(with(density) { it.height.toDp().value }) }
             .padding(top = if (onCatchUpOpen == null) 0.dp else CATCH_UP_COMPOSER_INSET.dp)
             .heightIn(min = TOP_APP_BAR_HEIGHT),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         when {
@@ -237,7 +239,7 @@ internal fun SessionHeaderControls(
         ) {
             HeaderTitle(store, model, listContext, onCatchUpOpen, reducedMotion)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(0.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             model.backToRootID?.let { rootID ->
                 FloatingControl(SFSymbol.ArrowUturnBackward, stringResource(R.string.session_back_to_main_description)) { store.send(Action.FamilyPicked(rootID)) }
             }
@@ -283,14 +285,14 @@ private fun BackControl(onBack: () -> Unit) {
         contentDescription = stringResource(CoreR.string.common_back),
         onClick = onBack,
         size = headerButtonSize,
-        style = OpenCodeIconButtonStyle.Standard,
+        style = OpenCodeIconButtonStyle.Circle,
         modifier = Modifier.testTag("subagent-back"),
     )
 }
 
 @Composable
 internal fun FloatingControl(symbol: SFSymbol, label: String, onClick: () -> Unit) {
-    OpenCodeIconButton(symbol = symbol, contentDescription = label, onClick = onClick, size = headerButtonSize, style = OpenCodeIconButtonStyle.Standard)
+    OpenCodeIconButton(symbol = symbol, contentDescription = label, onClick = onClick, size = headerButtonSize, style = OpenCodeIconButtonStyle.Circle)
 }
 
 /** Secondary under high contrast, else primary at 75 %. */
@@ -349,14 +351,13 @@ private fun HeaderTitle(
             val freshness = if (model.isResyncing) stringResource(R.string.session_header_syncing_description) else if (model.refreshFailed) stringResource(R.string.session_header_last_known_description) else null
             if (freshness == null) activity else stringResource(R.string.session_list_two, activity, freshness)
         }
-        // The title sits on the bar itself (no capsule); a press shows the ripple in a rounded
-        // rectangle around it.
+        // The title is its own bubble (a pill), like the circles beside it.
         Surface(
-            shape = MaterialTheme.shapes.medium,
-            color = Color.Transparent,
+            shape = OpenCodeShape.capsule,
+            color = OpenCodeSurfaces.neutralFill,
             tonalElevation = 0.dp,
             modifier = Modifier
-                .clip(MaterialTheme.shapes.medium)
+                .clip(OpenCodeShape.capsule)
                 .clickable(role = Role.Button, onClickLabel = hint, onClick = onClick)
                 .openCodeTapTarget()
                 .testTag(if (model.isDraft) "draft-title" else "session-title")
@@ -372,7 +373,7 @@ private fun HeaderTitle(
                     // The header doesn't carry the screen's transactions: the capsule animates its own width.
                     .then(if (!reducedMotion && animates) Modifier.animateContentSize(Motion.layout.animation(reduceMotion = false)) else Modifier)
                     .heightIn(min = headerButtonSize)
-                    .padding(horizontal = 8.dp, vertical = if (isAccessibilityFontScale(fontScale)) 8.dp else 3.dp),
+                    .padding(horizontal = 18.dp, vertical = if (isAccessibilityFontScale(fontScale)) 8.dp else 3.dp),
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.Center,
             ) {
@@ -451,7 +452,7 @@ private fun SessionMenuButton(store: StoreOf<State, Action>, model: SessionHeade
             contentDescription = stringResource(R.string.session_menu_more_description),
             onClick = { expanded = true },
             size = headerButtonSize,
-            style = OpenCodeIconButtonStyle.Standard,
+            style = OpenCodeIconButtonStyle.Circle,
             modifier = Modifier
                 .testTag("session-menu")
                 .accessibilityFocusTarget(more)

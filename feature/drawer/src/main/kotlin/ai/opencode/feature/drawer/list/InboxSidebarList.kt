@@ -7,6 +7,7 @@ import ai.opencode.core.store.StoreOf
 import ai.opencode.core.store.observe
 import ai.opencode.core.ui.OpenCodeIcon
 import ai.opencode.core.ui.OpenCodeTextStyles
+import ai.opencode.core.ui.OpenCodeSurfaces
 import ai.opencode.core.ui.OpenCodeTheme
 import ai.opencode.core.ui.SFSymbol
 import ai.opencode.core.ui.openCodeTapTarget
@@ -67,6 +68,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import java.time.Instant
@@ -214,6 +216,10 @@ internal fun InboxSidebarSessionRow(
     Box(
         Modifier
             .fillMaxWidth()
+            // Each chat is its own bubble.
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .clip(CircleShape)
+            .background(OpenCodeSurfaces.neutralFill)
             .background(openTint)
             .drawBehind {
                 val tintAlpha = checkedTintAlpha()
@@ -269,12 +275,13 @@ internal fun InboxSidebarRowView(row: InboxSidebarRow, now: Instant, checked: Bo
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = InboxSidebarMetrics.edge, vertical = 10.dp)
+            .padding(horizontal = 18.dp, vertical = 14.dp)
             .clearAndSetSemantics {
                 contentDescription = row.title
                 stateDescription = description
             },
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         // The check takes the unread dot's place while the drawer selects.
         SelectionLead(
@@ -282,39 +289,20 @@ internal fun InboxSidebarRowView(row: InboxSidebarRow, now: Instant, checked: Bo
             restWidth = 8.dp,
             selectWidth = 18.dp,
             checkSize = 18.dp,
-            modifier = Modifier.padding(top = 2.dp).height(18.dp),
+            modifier = Modifier.height(18.dp),
         ) {
             Box(Modifier.size(8.dp).background(if (row.unread) colors.signal else Color.Transparent, CircleShape))
         }
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            // Text + Spacer(minLength: 8) + age. The title takes all the width the age leaves (a
-            // second weighted spacer would cap it at half), so the age stays trailing.
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    row.title,
-                    style = OpenCodeTextStyles.body,
-                    fontWeight = if (row.unread) FontWeight.SemiBold else FontWeight.Normal,
-                    color = colors.text,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(age, style = OpenCodeTextStyles.footnote.copy(fontFeatureSettings = "tnum"), color = colors.secondaryText)
-            }
-            row.project?.let { project ->
-                Text(project, style = OpenCodeTextStyles.subheadline, color = colors.secondaryText, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-            when (val line = row.line) {
-                InboxSidebarRow.Line.NeedsInput -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    OpenCodeIcon(SFSymbol.ExclamationmarkCircleFill, null, size = 16.dp, tint = OpenCodeTheme.colors.warning)
-                    Text(needsInputText, style = OpenCodeTextStyles.subheadline, fontWeight = FontWeight.Medium, color = colors.text)
-                }
-                InboxSidebarRow.Line.Working -> Text(workingText, style = OpenCodeTextStyles.subheadline, color = colors.secondaryText)
-                is InboxSidebarRow.Line.Reply -> Text(line.text, style = OpenCodeTextStyles.subheadline, color = colors.secondaryText, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                InboxSidebarRow.Line.None -> Unit
-            }
-        }
+        // Only the title: no age, project or reply preview.
+        Text(
+            row.title,
+            style = OpenCodeTextStyles.body,
+            fontWeight = if (row.unread) FontWeight.SemiBold else FontWeight.Normal,
+            color = colors.text,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 

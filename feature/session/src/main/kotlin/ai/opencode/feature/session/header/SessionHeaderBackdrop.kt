@@ -77,7 +77,8 @@ fun SessionHeaderBackdrop(
     val barHeight = top + max(header, 0f)
     val height = max(barHeight, top + (backdrop?.fadeEnd ?: 0f))
     // M3 `TopAppBar`: the scrolled colour turns on as soon as anything is under the bar.
-    val showsBar = appBlur != null && appBlur.radius > 0
+    // The header controls float as bubbles: no bar or hairline under them.
+    val showsBar = false
     val barTarget = { if (showsBar && scrolledUnderHeader() > 0.5f) 1f else 0f }
     val bar = remember { Animatable(0f) }
     var barAnimates by remember { mutableStateOf(false) }

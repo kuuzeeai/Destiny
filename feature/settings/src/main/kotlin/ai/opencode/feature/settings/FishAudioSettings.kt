@@ -137,10 +137,15 @@ internal fun ReplyRows() {
             if (!it) FishSpeech.stop()
         },
     )
+    if (!readsOn) return
     SettingsDivider()
     VolumeBlock("Día", shared(SharedKeys.fishDayVolume), shared(SharedKeys.fishDayStart), !keyText.isNullOrBlank())
     SettingsDivider()
     VolumeBlock("Noche", shared(SharedKeys.fishNightVolume), shared(SharedKeys.fishNightStart), !keyText.isNullOrBlank())
+    SettingsFooterText(
+        "El volumen cambia solo según la hora y es relativo al volumen multimedia del teléfono. No afecta al asistente del micrófono.",
+        Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+    )
 }
 
 /** Menú que se abre para agregar todas las claves de respaldo que quieras; se usan en orden. */

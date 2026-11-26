@@ -416,7 +416,6 @@ fun HomeDrawer(
                         text = localized(R.string.drawer_filter_terminal),
                         selected = false,
                         onClick = { showsTerminal = true },
-                        icon = SFSymbol.Terminal,
                     )
                 }
             }

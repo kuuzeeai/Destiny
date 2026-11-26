@@ -141,7 +141,7 @@ fun VoiceSettingsView(store: SettingsStore) {
                     .clearAndSetSemantics {},
             )
         }
-        settingsSection(key = "replies", header = "Respuestas del chat", footer = footerText("El volumen cambia solo según la hora y es relativo al volumen multimedia del teléfono. No afecta al asistente del micrófono.")) {
+        settingsSection(key = "replies", header = "Respuestas del chat") {
             ReplyRows()
         }
         settingsSection(key = "assistant", header = "Asistente (botón de encendido)", footer = footerText("Si no eliges chat, usa el último que viste.")) {

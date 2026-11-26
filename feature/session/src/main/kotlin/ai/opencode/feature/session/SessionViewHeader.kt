@@ -429,6 +429,13 @@ private fun ContextRingBubble(store: StoreOf<State, Action>, model: SessionHeade
                 if (value.isNotEmpty()) stateDescription = value
             },
     ) {
-        SessionContextGauge(fraction = fraction, modifier = Modifier.fillMaxSize().padding(10.dp))
+        SessionContextGauge(fraction = fraction, modifier = Modifier.fillMaxSize().padding(5.dp))
+        androidx.compose.material3.Text(
+            ai.opencode.feature.session.header.SessionContextRing.percent(fraction).toString(),
+            modifier = Modifier.align(androidx.compose.ui.Alignment.Center),
+            style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+            color = OpenCodeTheme.colors.text,
+            maxLines = 1,
+        )
     }
 }

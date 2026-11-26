@@ -92,6 +92,12 @@ object SharedKeys {
     val assistModel = SharedKey.appStorage("assist-model", "")
 
     /** Whether the agent's replies are read aloud with Fish Audio. Off by default. */
+    val fishDayVolume = SharedKey.appStorage("fish-day-volume", 100)
+    val fishNightVolume = SharedKey.appStorage("fish-night-volume", 40)
+    val fishDayStart = SharedKey.appStorage("fish-day-start", 7)
+    val fishNightStart = SharedKey.appStorage("fish-night-start", 21)
+
+    /** Whether the agent's replies are read aloud. */
     val fishReadsReplies = SharedKey.appStorage("fish-reads-replies", false)
 
     /** The random key that owns this phone's uploaded voice calls; whoever has it can view them. Made on first upload. */

@@ -67,14 +67,28 @@ object FishSpeech {
 
     /** Reads an agent reply when Fish is switched on. */
     fun speakReply(markdown: String) {
-        if (readsReplies) speak(markdown)
+        if (readsReplies) speak(markdown, replyVolume())
     }
 
     /** Settings' Test voice button. */
-    fun test() = speak("Hola, esta es tu voz de Fish Audio.")
+    fun test(percent: Int = 100) = speak("Hola, esta es tu voz de Fish Audio.", percent / 100f)
+
+    /** Volumen (0 a 1) segun la hora: de dia o de noche. */
+    private fun replyVolume(): Float {
+        val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+        val day = shared(SharedKeys.fishDayStart).value
+        val night = shared(SharedKeys.fishNightStart).value
+        val isDay = when {
+            day == night -> true
+            day < night -> hour >= day && hour < night
+            else -> hour >= day || hour < night
+        }
+        val percent = shared(if (isDay) SharedKeys.fishDayVolume else SharedKeys.fishNightVolume).value
+        return percent.coerceIn(0, 100) / 100f
+    }
 
     /** Reads [markdown] sentence by sentence (the next one is made while the last plays); [onDone] runs when it ends. */
-    fun speak(markdown: String, onDone: () -> Unit = {}) {
+    fun speak(markdown: String, volume: Float = 1f, onDone: () -> Unit = {}) {
         val key = shared(SharedKeys.fishAPIKey).value?.trim().orEmpty()
         if (key.isEmpty()) return
         val text = spokenText(markdown)
@@ -92,7 +106,7 @@ object FishSpeech {
                         val file = next!!.await()
                         next = if (i + 1 < parts.size) async(Dispatchers.IO) { synthesize(key, voice, parts[i + 1]) } else null
                         try {
-                            play(file)
+                            play(file, volume)
                         } finally {
                             file.delete()
                         }
@@ -168,7 +182,7 @@ object FishSpeech {
         return file
     }
 
-    private suspend fun play(file: File) {
+    private suspend fun play(file: File, volume: Float) {
         val context = dependency(AppContext).applicationContext
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val attributes = AudioAttributes.Builder()
@@ -183,6 +197,7 @@ object FishSpeech {
         val player = MediaPlayer()
         try {
             player.setAudioAttributes(attributes)
+            player.setVolume(volume, volume)
             player.setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK)
             player.setDataSource(file.absolutePath)
             player.setOnPreparedListener {

@@ -15,6 +15,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import kotlin.math.roundToInt
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Slider
+import androidx.compose.foundation.layout.ColumnScope
+import ai.opencode.core.ui.SFSymbol
+import ai.opencode.core.ui.OpenCodeIcon
+import ai.opencode.core.sharing.Shared
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -30,7 +37,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
-/** Un campo con su título arriba y, al lado, si ya hay algo guardado. */
+/** Un campo con su título arriba. */
 @Composable
 private fun LabeledField(
     title: String,
@@ -39,16 +46,8 @@ private fun LabeledField(
     placeholder: String,
     onChange: (String) -> Unit,
 ) {
-    val saved = value.isNotBlank()
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(title, style = SettingsText.title, color = OpenCodeTheme.colors.text, modifier = Modifier.weight(1f))
-            Text(
-                if (saved) "✓ Guardado" else "Falta",
-                style = SettingsText.summary,
-                color = if (saved) SettingsTint.Green.color() else OpenCodeTheme.colors.secondaryText,
-            )
-        }
+        Text(title, style = SettingsText.summary, color = OpenCodeTheme.colors.secondaryText, modifier = Modifier.padding(horizontal = 4.dp))
         OpenCodeTextField(
             value = value,
             onValueChange = onChange,
@@ -63,6 +62,85 @@ private fun LabeledField(
             modifier = Modifier.fillMaxWidth(),
         )
     }
+}
+
+/** Una fila que se abre y se cierra; cerrada solo dice cómo está. */
+@Composable
+private fun ExpandableRow(title: String, summary: String, content: @Composable ColumnScope.() -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    SettingsRowFrame(onClick = { open = !open }) {
+        SettingsRowText(title, summary, Modifier.weight(1f))
+        OpenCodeIcon(
+            if (open) SFSymbol.ChevronDown else SFSymbol.ChevronRight,
+            contentDescription = null,
+            size = 16.dp,
+            tint = OpenCodeTheme.colors.secondaryText,
+        )
+    }
+    if (open) {
+        Column(
+            Modifier.padding(start = 16.dp, end = 16.dp, bottom = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            content = content,
+        )
+    }
+}
+
+private fun hourLabel(hour: Int): String {
+    val h = if (hour % 12 == 0) 12 else hour % 12
+    return "$h:00 " + if (hour < 12) "a. m." else "p. m."
+}
+
+/** Volumen de un horario: la hora en que empieza, la barra y un botón para oírlo. */
+@Composable
+private fun VolumeBlock(title: String, volume: Shared<Int>, start: Shared<Int>, canTest: Boolean) {
+    val saved by volume.flow.collectAsState()
+    val from by start.flow.collectAsState()
+    var shown by remember(saved) { mutableStateOf(saved.toFloat()) }
+    SettingsMenuRow(
+        title = "$title empieza",
+        value = hourLabel(from),
+        selection = from,
+        options = (0..23).map { SettingsMenuOption(it, hourLabel(it)) },
+        onSelect = { start.set(it) },
+    )
+    Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "Volumen: ${shown.roundToInt()} %",
+                style = SettingsText.summary,
+                color = OpenCodeTheme.colors.secondaryText,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = { FishSpeech.test(shown.roundToInt()) }, enabled = canTest) { Text("Probar") }
+        }
+        Slider(
+            value = shown,
+            onValueChange = { shown = it },
+            onValueChangeFinished = { volume.set(shown.roundToInt()) },
+            valueRange = 5f..100f,
+        )
+    }
+}
+
+/** Ajustes › Voz › Respuestas del chat: leerlas o no, y con qué volumen de día y de noche. */
+@Composable
+internal fun ReplyRows() {
+    val reads = shared(SharedKeys.fishReadsReplies)
+    val readsOn by reads.flow.collectAsState()
+    val keyText by shared(SharedKeys.fishAPIKey).flow.collectAsState()
+    SettingsToggleRow(
+        stringResource(R.string.settings_fish_read_replies),
+        checked = readsOn,
+        onCheckedChange = {
+            reads.set(it)
+            if (!it) FishSpeech.stop()
+        },
+    )
+    SettingsDivider()
+    VolumeBlock("Día", shared(SharedKeys.fishDayVolume), shared(SharedKeys.fishDayStart), !keyText.isNullOrBlank())
+    SettingsDivider()
+    VolumeBlock("Noche", shared(SharedKeys.fishNightVolume), shared(SharedKeys.fishNightStart), !keyText.isNullOrBlank())
 }
 
 /** Menú que se abre para agregar todas las claves de respaldo que quieras; se usan en orden. */
@@ -82,7 +160,7 @@ private fun KeyListSection(title: String, stored: String?, onSave: (String?) -> 
         ) {
             Text(title, style = SettingsText.title, color = OpenCodeTheme.colors.text, modifier = Modifier.weight(1f))
             Text(
-                rows.count { it.isNotBlank() }.toString() + (if (open) "  ^" else "  v"),
+                rows.count { it.isNotBlank() }.toString() + if (open) "  ▾" else "  ▸",
                 style = SettingsText.summary,
                 color = OpenCodeTheme.colors.secondaryText,
             )
@@ -111,70 +189,48 @@ private fun KeyListSection(title: String, stored: String?, onSave: (String?) -> 
     }
 }
 
-/** Ajustes › Voz › Fish Audio: la voz que habla (clave, claves de respaldo, ID de la voz y una prueba). */
+/** Ajustes › Voz › Claves: Fish (habla) y Groq (te entiende), cerradas hasta que se tocan. */
 @Composable
-internal fun FishRows() {
+internal fun KeyRows() {
     val key = shared(SharedKeys.fishAPIKey)
     val extra = shared(SharedKeys.fishExtraKeys)
     val voice = shared(SharedKeys.fishVoiceID)
+    val groq = shared(SharedKeys.groqAPIKey)
+    val groqExtra = shared(SharedKeys.groqExtraKeys)
     val keyText by key.flow.collectAsState()
     val extraText by extra.flow.collectAsState()
     val voiceText by voice.flow.collectAsState()
-    Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        LabeledField("Clave de Fish Audio", true, keyText.orEmpty(), stringResource(R.string.settings_fish_key_placeholder)) {
+    val groqText by groq.flow.collectAsState()
+    val groqExtraText by groqExtra.flow.collectAsState()
+    ExpandableRow("Fish Audio (la voz que habla)", if (keyText.isNullOrBlank()) "Falta la clave" else "Clave guardada") {
+        LabeledField("Clave", true, keyText.orEmpty(), stringResource(R.string.settings_fish_key_placeholder)) {
             key.set(it.trim().ifEmpty { null })
         }
         KeyListSection("Claves de respaldo", extraText) { extra.set(it) }
-        LabeledField("ID de la voz", false, voiceText, "Pega aquí el ID de la voz") {
-            voice.set(it.trim())
-        }
+        LabeledField("ID de la voz", false, voiceText, "Pega aquí el ID de la voz") { voice.set(it.trim()) }
         FilledTonalButton(
             onClick = { FishSpeech.test() },
             enabled = !keyText.isNullOrBlank(),
             shape = OpenCodeShape.control,
         ) { Text(stringResource(R.string.settings_fish_test)) }
     }
-}
-
-/** Ajustes › Voz › Groq: lo que te entiende (clave y claves de respaldo). */
-@Composable
-internal fun GroqRows() {
-    val groq = shared(SharedKeys.groqAPIKey)
-    val groqExtra = shared(SharedKeys.groqExtraKeys)
-    val groqText by groq.flow.collectAsState()
-    val groqExtraText by groqExtra.flow.collectAsState()
-    Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        LabeledField("Clave de Groq", true, groqText.orEmpty(), "Pega aquí la clave de Groq") {
+    SettingsDivider()
+    ExpandableRow("Groq (lo que te entiende)", if (groqText.isNullOrBlank()) "Falta la clave" else "Clave guardada") {
+        LabeledField("Clave", true, groqText.orEmpty(), "Pega aquí la clave de Groq") {
             groq.set(it.trim().ifEmpty { null })
         }
         KeyListSection("Claves de respaldo", groqExtraText) { groqExtra.set(it) }
     }
 }
 
-/** Ajustes › Voz › Comportamiento: leer respuestas, asistente listo con la app cerrada y solo isla. */
+/** Ajustes › Voz › Asistente: que siga listo con la app cerrada y mostrar solo la isla. */
 @Composable
 internal fun BehaviorRows() {
-    val reads = shared(SharedKeys.fishReadsReplies)
     val keepAlive = shared(SharedKeys.assistKeepAlive)
     val islandOnly = shared(SharedKeys.assistIslandOnly)
-    val readsOn by reads.flow.collectAsState()
     val keepAliveOn by keepAlive.flow.collectAsState()
     val islandOnlyOn by islandOnly.flow.collectAsState()
-    SettingsToggleRow(
-        stringResource(R.string.settings_fish_read_replies),
-        checked = readsOn,
-        onCheckedChange = { reads.set(it) },
-    )
+    SettingsToggleRow("Funcionar con la app cerrada", checked = keepAliveOn, onCheckedChange = { keepAlive.set(it) })
     SettingsDivider()
-    SettingsToggleRow(
-        "Asistente listo (botón de encendido con la app cerrada)",
-        checked = keepAliveOn,
-        onCheckedChange = { keepAlive.set(it) },
-    )
-    SettingsDivider()
-    SettingsToggleRow(
-        "Solo isla (ocultar el recuadro del asistente)",
-        checked = islandOnlyOn,
-        onCheckedChange = { islandOnly.set(it) },
-    )
+    SettingsToggleRow("Mostrar solo la isla", checked = islandOnlyOn, onCheckedChange = { islandOnly.set(it) })
 }

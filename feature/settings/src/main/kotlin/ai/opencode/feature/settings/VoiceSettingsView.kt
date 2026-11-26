@@ -141,17 +141,16 @@ fun VoiceSettingsView(store: SettingsStore) {
                     .clearAndSetSemantics {},
             )
         }
-        settingsSection(key = "assistant", header = "Asistente (botón de encendido)", footer = footerText("Elegir un modelo lo deja puesto en ese chat. Si no eliges chat, usa el último que viste.")) {
-            AssistantRows()
+        settingsSection(key = "replies", header = "Respuestas del chat", footer = footerText("El volumen cambia solo según la hora y es relativo al volumen multimedia del teléfono. No afecta al asistente del micrófono.")) {
+            ReplyRows()
         }
-        settingsSection(key = "behavior", header = "Comportamiento", footer = footerText("«Asistente listo» deja Destiny vivo para que el botón de encendido funcione con la app cerrada. «Solo isla» oculta el recuadro y deja solo la isla.")) {
+        settingsSection(key = "assistant", header = "Asistente (botón de encendido)", footer = footerText("Si no eliges chat, usa el último que viste.")) {
+            AssistantRows()
+            SettingsDivider()
             BehaviorRows()
         }
-        settingsSection(key = "fish", header = "Voz · Fish Audio", footer = footerText("Fish convierte las respuestas en voz. Si una clave falla o se agota, se usan las de respaldo en orden. Las claves se quedan en este teléfono.")) {
-            FishRows()
-        }
-        settingsSection(key = "groq", header = "Escucha · Groq", footer = footerText("Groq convierte lo que dices en texto. También usa las claves de respaldo en orden.")) {
-            GroqRows()
+        settingsSection(key = "keys", header = "Claves y voz", footer = footerText("Las claves se quedan en este teléfono. Si una se agota, se usan las de respaldo.")) {
+            KeyRows()
         }
     }
 }

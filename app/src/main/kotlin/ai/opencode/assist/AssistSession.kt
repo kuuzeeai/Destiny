@@ -110,7 +110,6 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
             }
         })
         pill.addView(heard)
-        pill.addView(diagText)
         diagView = diagText
         statusView = status
         heardView = heard
@@ -302,7 +301,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                     when (kind) {
                         VoiceListen.Failure.Silence ->
                             if (followUp) hide() else setStatus("No te escuché. Toca para reintentar.")
-                        VoiceListen.Failure.Mic -> setStatus("No pude usar el micrófono" + (if (why != null) " ($why)" else "") + ". Toca para reintentar.")
+                        VoiceListen.Failure.Mic -> setStatus("No pude usar el micrófono. Toca para reintentar.")
                         VoiceListen.Failure.Network -> setStatus("No pude entender el audio. Toca para reintentar.")
                     }
                 }
@@ -334,7 +333,7 @@ class AssistSession(context: Context) : VoiceInteractionSession(context) {
                         when {
                             quiet -> "No te escuché. Toca para reintentar."
                             error == 8 -> "Reconocedor ocupado. Toca para reintentar."
-                            else -> "Error de voz ($error). Toca para reintentar."
+                            else -> "No pude escucharte. Toca para reintentar."
                         },
                     )
                 }

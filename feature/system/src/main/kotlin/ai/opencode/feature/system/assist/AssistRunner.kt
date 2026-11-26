@@ -31,6 +31,11 @@ object AssistRunner {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var job: Job? = null
 
+    @Volatile private var target: String? = null
+
+    /** El chat cuya respuesta está esperando el asistente, o null. */
+    val waitingOn: String? get() = if (job?.isActive == true) target else null
+
     fun cancel() {
         job?.cancel()
         job = null
@@ -100,6 +105,7 @@ object AssistRunner {
             onStage(Stage.Failed, "Abre Destiny una vez y entra a un chat")
             return
         }
+        target = session.id
         val server = credentials.server
         onStage(Stage.Sending, null)
         applyModel(server, session.id)

@@ -72,6 +72,7 @@ class OpenCodeApplication : Application(), Configuration.Provider {
         // The app's windows, from the first activity: the one in use and the one a URL opens beside.
         ActiveScene.install(this)
         if (BuildConfig.DEBUG) AppLog.minimumPriority = Log.DEBUG
+        ai.opencode.assist.ReplyReadService.install(this)
         DevTools.install()
         // Voice's admitted sends, log uploads, diagnostics sinks and screen hold (installed
         // before anything resolves their keys).

@@ -12,7 +12,6 @@ rm -rf .github/workflows/release.yml \
        .github/release \
        .github/CODEOWNERS \
        docs scripts AGENTS.md
-find . -type d \( -path '*/src/test' -o -path '*/src/testFixtures' \) -prune -exec rm -rf {} +
 
 echo "==> Borrando idiomas (se queda inglés y español)"
 find . -type d -regextype posix-extended \

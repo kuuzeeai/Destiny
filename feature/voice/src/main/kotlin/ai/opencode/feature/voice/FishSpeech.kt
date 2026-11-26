@@ -78,11 +78,7 @@ object FishSpeech {
         val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
         val day = shared(SharedKeys.fishDayStart).value
         val night = shared(SharedKeys.fishNightStart).value
-        val isDay = when {
-            day == night -> true
-            day < night -> hour >= day && hour < night
-            else -> hour >= day || hour < night
-        }
+        val isDay = ai.opencode.core.speech.SpeechRules.isDay(hour, day, night)
         val percent = shared(if (isDay) SharedKeys.fishDayVolume else SharedKeys.fishNightVolume).value
         return percent.coerceIn(0, 100) / 100f
     }
@@ -217,23 +213,5 @@ object FishSpeech {
         }
     }
 
-    /** Markdown as it should sound: no code blocks, links, URLs or marks; short enough to start fast. */
-    internal fun spokenText(markdown: String): String {
-        var t = markdown
-        t = Regex("```[\\s\\S]*?```").replace(t, " ")
-        t = Regex("!\\[[^\\]]*]\\([^)]*\\)").replace(t, " ")
-        t = Regex("\\[([^\\]]+)]\\([^)]*\\)").replace(t, "$1")
-        t = Regex("https?://\\S+").replace(t, " ")
-        t = Regex("(?m)^\\s{0,3}#{1,6}\\s*").replace(t, "")
-        t = Regex("(?m)^\\s*[-*+]\\s+").replace(t, "")
-        t = t.replace(Regex("[`*~>|]"), "")
-        t = Regex("\\s+").replace(t, " ").trim()
-        if (t.length > MAX_CHARS) {
-            val cut = t.lastIndexOf('.', MAX_CHARS)
-            t = t.substring(0, if (cut > MAX_CHARS / 3) cut + 1 else MAX_CHARS)
-        }
-        return t
-    }
-
-    private const val MAX_CHARS = 1200
+    internal fun spokenText(markdown: String): String = ai.opencode.core.speech.SpeechRules.spokenText(markdown)
 }

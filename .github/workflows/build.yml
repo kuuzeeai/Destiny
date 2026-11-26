@@ -55,6 +55,9 @@ jobs:
           echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/destiny.jks"
           echo "KEYSTORE_FILE=$RUNNER_TEMP/destiny.jks" >> "$GITHUB_ENV"
 
+      - name: Pruebas
+        run: ./gradlew :core:testDebugUnitTest --tests 'ai.opencode.core.speech.*'
+
       - name: Compilar release
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}

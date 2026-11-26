@@ -71,7 +71,7 @@ object FishSpeech {
     }
 
     /** Settings' Test voice button. */
-    fun test(percent: Int = 100) = speak("Hola, esta es tu voz de Fish Audio.", percent / 100f)
+    fun test(percent: Int? = null) = speak("Hola, esta es tu voz de Fish Audio.", percent?.let { it / 100f })
 
     /** Volumen (0 a 1) segun la hora: de dia o de noche. */
     private fun replyVolume(): Float {
@@ -84,7 +84,7 @@ object FishSpeech {
     }
 
     /** Reads [markdown] sentence by sentence (the next one is made while the last plays); [onDone] runs when it ends. */
-    fun speak(markdown: String, volume: Float = 1f, onDone: () -> Unit = {}) {
+    fun speak(markdown: String, volume: Float? = null, onDone: () -> Unit = {}) {
         val key = shared(SharedKeys.fishAPIKey).value?.trim().orEmpty()
         if (key.isEmpty()) return
         val text = spokenText(markdown)
@@ -94,6 +94,7 @@ object FishSpeech {
         startedAt = System.currentTimeMillis()
         firstSoundAt = 0L
         job = scope.launch {
+            if (volume != null) applyPhoneVolume(volume)
             try {
                 coroutineScope {
                     val parts = chunks(text)
@@ -102,7 +103,7 @@ object FishSpeech {
                         val file = next!!.await()
                         next = if (i + 1 < parts.size) async(Dispatchers.IO) { synthesize(key, voice, parts[i + 1]) } else null
                         try {
-                            play(file, volume)
+                            play(file)
                         } finally {
                             file.delete()
                         }
@@ -114,6 +115,7 @@ object FishSpeech {
                 lastError = e.message ?: e.javaClass.simpleName
                 AppLog.voice.notice("Fish Audio couldn’t read the reply: ${e.message ?: e.javaClass.simpleName}")
             }
+            restorePhoneVolume()
             onDone()
         }
     }
@@ -139,6 +141,7 @@ object FishSpeech {
     fun stop() {
         job?.cancel()
         job = null
+        restorePhoneVolume()
     }
 
     private suspend fun synthesize(key: String, voice: String, text: String): File {
@@ -178,7 +181,38 @@ object FishSpeech {
         return file
     }
 
-    private suspend fun play(file: File, volume: Float) {
+    /** Volumen multimedia que habia antes de leer, y el que puso la lectura. */
+    private var previousVolume: Int? = null
+    private var appliedVolume = 0
+
+    private fun audioManager() =
+        dependency(AppContext).applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+    /** Pone el volumen multimedia en [level] (0 a 1) mientras dura la lectura. */
+    private fun applyPhoneVolume(level: Float) {
+        runCatching {
+            val audio = audioManager()
+            val max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            val before = audio.getStreamVolume(AudioManager.STREAM_MUSIC)
+            appliedVolume = Math.round(level * max).coerceIn(1, max)
+            audio.setStreamVolume(AudioManager.STREAM_MUSIC, appliedVolume, 0)
+            if (previousVolume == null) previousVolume = before
+        }
+    }
+
+    /** Devuelve el volumen que habia, salvo que lo hayas cambiado tu mientras leia. */
+    private fun restorePhoneVolume() {
+        val before = previousVolume ?: return
+        previousVolume = null
+        runCatching {
+            val audio = audioManager()
+            if (audio.getStreamVolume(AudioManager.STREAM_MUSIC) == appliedVolume) {
+                audio.setStreamVolume(AudioManager.STREAM_MUSIC, before, 0)
+            }
+        }
+    }
+
+    private suspend fun play(file: File) {
         val context = dependency(AppContext).applicationContext
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val attributes = AudioAttributes.Builder()
@@ -193,7 +227,6 @@ object FishSpeech {
         val player = MediaPlayer()
         try {
             player.setAudioAttributes(attributes)
-            player.setVolume(volume, volume)
             player.setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK)
             player.setDataSource(file.absolutePath)
             player.setOnPreparedListener {

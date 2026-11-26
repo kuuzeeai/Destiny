@@ -143,7 +143,7 @@ internal fun ReplyRows() {
     SettingsDivider()
     VolumeBlock("Noche", shared(SharedKeys.fishNightVolume), shared(SharedKeys.fishNightStart), !keyText.isNullOrBlank())
     SettingsFooterText(
-        "El volumen cambia solo según la hora y es relativo al volumen multimedia del teléfono. No afecta al asistente del micrófono.",
+        "El volumen cambia según la hora y se aplica aunque el teléfono esté en otro volumen; al terminar vuelve como estaba. No afecta al asistente del micrófono.",
         Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
     )
 }
